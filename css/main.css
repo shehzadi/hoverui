@@ -1,0 +1,450 @@
+/* Variables */
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+  font-family: Helvetica, Arial, Sans-Serif;
+  cursor: default;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  box-sizing: border-box;
+}
+
+/* Patterns */
+.pattern {
+  background-image: -webkit-linear-gradient(#c7c7c7 1px, transparent 1px), -webkit-linear-gradient(0deg, #c7c7c7 1px, transparent 1px);
+  background-image: linear-gradient(#c7c7c7 1px, transparent 1px), linear-gradient(90deg, #c7c7c7 1px, transparent 1px);
+  background-size: 10px 10px, 10px 10px;
+  background-position: 0 0, 0 0;
+}
+
+/* Mixins */
+/* Layout */
+.ui-module {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: scroll;
+}
+
+#IOConsole {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  background-color: grey;
+  min-width: 400px;
+  min-height: 300px;
+  width: 100vw;
+  height: 100vh;
+}
+
+#navigation {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  background-color: #999999;
+  min-width: 175px;
+  max-width: 250px;
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+}
+
+#workspace {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  background-color: #bfbfbf;
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  position: relative;
+}
+
+#main {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-flex: 3;
+  -webkit-flex: 3;
+      -ms-flex: 3;
+          flex: 3;
+}
+
+#header {
+  background-color: #666666;
+}
+
+.secondaryNav {
+  height: 35px;
+}
+
+/* Element styling */
+.componentInProgress {
+  position: absolute;
+  background-color: rgba(230, 230, 230, 0.6);
+  outline: 1px dashed rgba(128, 128, 128, 0.6);
+  font-size: 12px;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.componentInProgress .componentName {
+  text-align: center;
+  line-height: 1;
+}
+
+.componentInProgress .componentVersion {
+  font-size: 85%;
+  opacity: 0.6;
+}
+
+.workspace .component {
+  padding: 5px;
+  display: block;
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.6);
+  outline: 1px solid rgba(153, 153, 153, 0.6);
+  font-size: 12px;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.workspace .component .componentName {
+  text-align: center;
+  line-height: 1;
+}
+
+.workspace .component .componentVersion {
+  font-size: 85%;
+  opacity: 0.6;
+}
+
+.workspace .attachment {
+  position: absolute;
+  background-color: rgba(140, 140, 140, 0.8);
+  outline: 1px solid rgba(0, 0, 0, 0.35);
+  font-size: 11px;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.8);
+  padding-top: 2px;
+}
+
+.workspace .interface {
+  position: absolute;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.workspace .attachmentInterface {
+  position: absolute;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.workspace .discreet {
+  opacity: 0.2;
+}
+
+.workspace .wireContainer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.selected {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.version {
+  font-size: 85%;
+  opacity: 0.6;
+  margin: 0 8px 0 5px;
+}
+
+.projects .add {
+  display: none;
+}
+
+#navigation:hover .add {
+  display: inline-block;
+  vertical-align: baseline;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  padding: 0px 8px;
+  font-size: 11px;
+  margin-left: 8px;
+  color: #4d4d4d;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+#navigation:hover .add:hover {
+  border: 1px solid rgba(0, 0, 0, 0.27);
+  background-color: rgba(255, 255, 255, 0.27);
+}
+
+.project, .moduleItem {
+  padding: 2px 8px;
+  margin-left: -8px;
+}
+
+.project .version, .moduleItem .version {
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+}
+
+.project h2, .moduleItem h2 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  font-size: 13px;
+  -webkit-box-align: baseline;
+  -webkit-align-items: baseline;
+      -ms-flex-align: baseline;
+          align-items: baseline;
+}
+
+.project .name, .moduleItem .name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project:not(.selected):hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.project:not(.selected):hover * {
+  cursor: pointer;
+}
+
+.moduleItem:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: -webkit-grab;
+  cursor: grab;
+}
+
+.moduleItem:hover * {
+  cursor: -webkit-grab;
+  cursor: grab;
+}
+
+.moduleDescription {
+  font-size: 70%;
+  padding: 2px 20px 0 16px;
+  margin-bottom: 6px;
+  color: #616161;
+}
+
+.home {
+  background-color: #d0113d;
+  padding: 0 15px;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-flex: 0;
+  -webkit-flex: 0 0 30px;
+      -ms-flex: 0 0 30px;
+          flex: 0 0 30px;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.home:hover {
+  background-color: #b80f36;
+  cursor: pointer;
+}
+
+.home:hover .app-actions {
+  display: block;
+}
+
+.home:hover * {
+  cursor: pointer;
+}
+
+.home h1 {
+  color: white;
+  font-size: 11px;
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+}
+
+.home .logo {
+  height: 14px;
+  width: 14px;
+  margin-right: 6px;
+}
+
+.home .app-actions {
+  width: 16px;
+  height: 16px;
+  display: none;
+}
+
+.primaryNav {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  padding: 15px;
+  padding-right: 8px;
+  overflow-y: scroll;
+}
+
+.primaryNav h1 {
+  color: #4d4d4d;
+  font-size: 11.5px;
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  padding-bottom: 2px;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+  height: 15px;
+}
+
+.primaryNav section {
+  margin-bottom: 12px;
+}
+
+.tools {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: baseline;
+  -webkit-align-items: baseline;
+      -ms-flex-align: baseline;
+          align-items: baseline;
+  background-color: #b3b3b3;
+  height: 40px;
+  font-size: 13px;
+  padding: 7px 15px;
+}
+
+.tools button {
+  padding: 1px 7px;
+  min-width: 20px;
+  margin: 2px;
+  background-color: #ababab;
+  border: 1px solid #a3a3a3;
+  border-radius: 2px;
+  white-space: nowrap;
+  font-size: 10px;
+  color: #4d4d4d;
+}
+
+.tools button:hover {
+  background-color: #a6a6a6;
+  border: 1px solid #9e9e9e;
+}
+
+.tools .buttons {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: end;
+  -webkit-justify-content: flex-end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
+  font-size: 11.5px;
+}
+
+.tools .buttons button {
+  padding: 3px 10px;
+  min-width: 50px;
+  margin: 3px;
+  background-color: #9e9e9e;
+  border: 1px solid #919191;
+  border-radius: 3px;
+  color: #1a1a1a;
+  white-space: nowrap;
+}
+
+.tools .buttons button:hover {
+  background-color: #a6a6a6;
+}

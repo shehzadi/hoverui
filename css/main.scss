@@ -1,0 +1,384 @@
+/* Variables */
+$app-background-color: grey;
+$primary-brand-color: hsl(346, 85%, 44%);
+$primary-nav-color: hsl(0, 0%, 60%);
+$header-color: hsl(0, 0%, 40%);
+$tab-color: hsl(0, 0%, 70%);
+$workspace-color: hsl(0, 0%, 75%);
+$topoItem-color: hsla(0, 0%, 100%, 0.6);
+$nav-section-text-color: hsl(0, 0%, 30%);
+
+$button-color: hsl(0, 0%, 62%);
+
+
+$app-min-width : 400px;
+$app-min-height : 300px;
+
+$home-height: 30px;
+$tools-height: 40px;
+$secondary-nav-height: 35px;
+
+$default-font-family: Helvetica, Arial, Sans-Serif;
+
+$default-padding: 15px;
+
+$pattern-pitch: 10px;
+$pattern-line-color: lighten($workspace-color, 3%);
+
+
+/* Reset */
+* {	
+	margin: 0;
+	padding: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: none;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+	font-family: $default-font-family;
+	cursor: default;
+	user-select: none;
+	box-sizing: border-box
+}
+
+/* Patterns */
+.pattern {
+	background-image: linear-gradient($pattern-line-color 1px, transparent 1px),
+						linear-gradient(90deg, $pattern-line-color 1px, transparent 1px);
+	background-size:$pattern-pitch $pattern-pitch, $pattern-pitch $pattern-pitch;
+	background-position:0 0, 0 0
+}
+
+/* Mixins */
+@mixin flexbox {
+  display: flex;
+}
+
+@mixin columnar-flexbox {
+  flex-direction: column;
+}
+
+@mixin flex-grow {
+  flex-grow: 1;
+}
+
+@mixin flex-align($location){
+	align-items: $location;
+}
+
+@mixin subtext {
+	font-size: 85%;
+	opacity: 0.6;
+}
+
+@mixin fill-container {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	overflow: scroll;
+}
+
+/* Layout */
+.ui-module {
+	@include fill-container;
+}
+
+#IOConsole {
+	@include flexbox;
+	background-color: $app-background-color;
+	min-width: $app-min-width;
+	min-height: $app-min-height;
+	width: 100vw;
+	height: 100vh;
+}
+
+#navigation {
+	@include flexbox;
+	@include columnar-flexbox;
+	background-color: $primary-nav-color;
+	min-width: 175px;
+	max-width: 250px;
+	flex: 1;
+}
+
+#workspace {
+	@include flexbox;
+	@include columnar-flexbox;
+	background-color: $workspace-color;
+	@include flex-grow;
+	position: relative;
+}
+
+#main {
+	@include flexbox;
+	@include columnar-flexbox;
+	flex: 3;
+}
+
+#header {
+	background-color: $header-color
+}
+
+.secondaryNav {
+	height: $secondary-nav-height;
+}
+
+/* Element styling */
+
+.componentInProgress {
+	position: absolute;
+	background-color: darken($topoItem-color, 10%);
+	outline: 1px dashed darken($topoItem-color, 50%);
+	font-size: 12px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+		.componentName {
+			text-align: center;
+			line-height: 1;
+		}
+		.componentVersion {
+			@include subtext;
+		}
+}
+
+.workspace {
+	.component {
+		padding: 5px;
+		display: block;
+		position: absolute;
+		background-color: $topoItem-color;
+		outline: 1px solid darken($topoItem-color, 40%);
+		font-size: 12px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+
+		.componentName {
+			text-align: center;
+			line-height: 1;
+		}
+		.componentVersion {
+			@include subtext;
+		}
+	}
+
+	.attachment {
+		position: absolute;
+		background-color: hsla(0, 0%, 55%, 0.8);
+		outline: 1px solid hsla(0, 0%, 0%, 0.35);
+		font-size: 11px;
+		text-align: center;
+		color: hsla(0, 0%, 0%, 0.8);
+		padding-top: 2px;
+	}
+
+	.interface {
+		position: absolute;
+		border: 1px solid hsla(0, 0%, 0%, 0.1);
+	}
+
+	.attachmentInterface {
+		position: absolute;
+		border: 1px solid hsla(0, 0%, 0%, 0.1);
+	}
+
+	.discreet {
+		opacity: 0.2;
+	}
+
+	.wireContainer {
+		position: absolute;
+		top:0;
+		bottom:0;
+		left:0;
+		right:0;
+	}
+}
+
+.selected {
+	background-color: hsla(0, 0%, 100%, 0.5)
+}
+
+.version {
+	@include subtext;
+	margin: 0 8px 0 5px;
+}
+
+.projects {
+	.add {
+		display: none;
+	}
+}
+
+#navigation:hover {
+	.add {
+		display: inline-block;
+		vertical-align: baseline;
+		border-radius: 3px;
+		border: 1px solid hsla(0, 0%, 0%, 0.2);
+		padding: 0px 8px;
+		font-size: 11px;
+		margin-left: 8px;
+		color: hsl(0, 0%, 30%);
+		background-color: hsla(0, 0%, 100%, 0.2);
+	}
+	.add:hover {
+		border: 1px solid hsla(0, 0%, 0%, 0.27);
+		background-color: hsla(0, 0%, 100%, 0.27);
+	}
+}
+
+.project, .moduleItem {
+	padding: 2px 8px;
+	margin-left: -8px;
+	.version {
+		flex: 1;
+	}
+	h2 {
+		display: flex;
+		font-size: 13px;
+		align-items: baseline;
+	}
+	.name {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+}
+
+.project:not(.selected):hover {
+	background-color: hsla(0, 0%, 100%, 0.1);
+	cursor: pointer;
+	* {
+		cursor: pointer;
+	}
+}
+
+.moduleItem:hover {
+	background-color: hsla(0, 0%, 100%, 0.1);
+	cursor: grab;
+	* {
+		cursor: grab;
+	}
+}
+
+.moduleDescription {
+	font-size: 70%;
+	padding: 2px 20px 0 16px;
+	margin-bottom: 6px;
+	color: hsl(0, 0%, 38%)
+}
+
+.home {
+	background-color: $primary-brand-color;
+	padding: 0 $default-padding;
+	@include flexbox;
+	flex: 0 0 $home-height;
+	@include flex-align(center);
+
+	&:hover {
+        background-color: darken($primary-brand-color, 5%);
+        cursor: pointer;
+        .app-actions {
+			display: block;
+		}
+		* {
+			cursor: pointer;
+		}
+    }
+
+	h1 {
+		color: white;
+		font-size: 11px;
+		@include flex-grow;
+	}
+
+	.logo {
+		height: 14px;
+		width: 14px;
+		margin-right: 6px;
+	}
+
+	.app-actions {
+		width: 16px;
+		height: 16px;
+		display: none;
+	}
+}
+
+.primaryNav {
+	@include flex-grow;
+	padding: $default-padding;
+	padding-right: 8px;
+	overflow-y: scroll;
+
+	h1 {
+		color: $nav-section-text-color;
+		font-size: 11.5px;
+		@include flex-grow;
+		padding-bottom: 2px;
+		display: flex;
+		align-items: center;
+		height: 15px;
+	}
+
+	section {
+		margin-bottom: 12px;
+	}
+}
+
+.tools {
+	display: flex;
+	align-items: baseline;
+	background-color: $tab-color;
+	height: $tools-height;
+	font-size: 13px;
+	padding: 7px 15px;
+
+	button {
+		padding: 1px 7px;
+		min-width: 20px;
+		margin: 2px;
+		background-color: lighten($button-color, 5%);
+		border: 1px solid lighten($button-color, 2%);
+		border-radius: 2px;
+		white-space: nowrap;
+		font-size: 10px;
+		color: hsl(0, 0%, 30%);
+
+		&:hover {
+			background-color: lighten($button-color, 3%);
+			border: 1px solid lighten($button-color, 0%);
+		}
+	}
+	
+	.buttons {
+		flex-grow: 1;
+		display: flex;
+		justify-content: flex-end;
+		font-size: 11.5px;
+
+		button {
+			padding: 3px 10px;
+			min-width: 50px;
+			margin: 3px;
+			background-color: $button-color;
+			border: 1px solid darken($button-color, 5%);
+			border-radius: 3px;
+			color: hsl(0, 0%, 10%);
+			white-space: nowrap;
+
+			&:hover {
+				background-color: lighten($button-color, 3%);
+			}
+		}
+	}
+}
+
