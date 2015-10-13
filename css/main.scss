@@ -40,6 +40,9 @@ $pattern-line-color: lighten($workspace-color, 3%);
 	font-family: $default-font-family;
 	cursor: default;
 	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
 	box-sizing: border-box
 }
 
@@ -169,6 +172,14 @@ $pattern-line-color: lighten($workspace-color, 3%);
 		}
 	}
 
+	svg {
+		pointer-events: none
+	}
+
+	svg *{
+		pointer-events: fill
+	}
+
 	.attachment {
 		position: absolute;
 		background-color: hsla(0, 0%, 55%, 0.8);
@@ -181,7 +192,7 @@ $pattern-line-color: lighten($workspace-color, 3%);
 
 	.interface {
 		position: absolute;
-		border: 1px solid hsla(0, 0%, 0%, 0.1);
+		border: 1px solid red;
 	}
 
 	.attachmentInterface {

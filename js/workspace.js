@@ -24,8 +24,8 @@ var Workspace = React.createClass({
     			height: 55
     		},
     		ifc: {
-    			width: 18,
-    			height: 5,
+    			width: 20,
+    			height: 1,
     			margin: 5
     		},
     		wire: {
@@ -53,7 +53,7 @@ var Workspace = React.createClass({
 
 			if (interfaceID){ //mouse down on interface
 				this.thisWireInProgressProtocol = this.getProtocol(componentID, interfaceID);
-				console.log (this.thisWireInProgressProtocol)
+				this.thisWireInProgressStartMode = this.getMode(componentID, interfaceID);
 			}
     		
     		this.setState({
@@ -87,9 +87,17 @@ var Workspace = React.createClass({
 		}
 		else {
 			var thisRefModule = this.props.selectedProject.topology.components[componentID];
-			thisProtocol = this.props.modules[thisRefModule].interfaces[interfaceID];
+			thisProtocol = this.props.modules[thisRefModule].interfaces[interfaceID].protocol;
 		}
 		return thisProtocol
+	},
+
+	getMode: function(componentID, interfaceID) {
+
+		var thisMode = "";
+		var thisRefModule = this.props.selectedProject.topology.components[componentID];
+		thisMode = this.props.modules[thisRefModule].interfaces[interfaceID].mode;
+		return thisMode
 	},
 
 	onMouseMove: function(event) { //captured on document
@@ -215,12 +223,13 @@ var Workspace = React.createClass({
   			);
 
   			this.interfaceCoordinates[componentID] = {};
-
+//hello
 	  		var interfacesObject = componentModuleObject.interfaces;
 			var nInterfaces = _.size(interfacesObject);
 			var thisN = 1;
 			for (var _interface in interfacesObject) {
-				var interfaceProtocol = interfacesObject[_interface];
+				var interfaceProtocol = interfacesObject[_interface].protocol;
+				var interfaceMode = interfacesObject[_interface].mode;
 
 				var thisKey = "" + componentID +  _interface;
 
@@ -230,24 +239,43 @@ var Workspace = React.createClass({
 				var thisTop = componentY + this.props.component.height - (this.props.ifc.height / 2) + 1;
 
 				this.isDiscreet = false;
+				var isStartOfNewWire = false;
 
 				if (this.state.isWireInProgress){
-					if (interfaceProtocol != this.thisWireInProgressProtocol || componentID == this.state.componentID) {
+					
+
+					if (interfaceMode == this.thisWireInProgressStartMode) { // differing mode
 						this.isDiscreet = true;
 					}
 
-					if (componentID == this.state.componentID && _interface == this.state.interfaceID) {
+					if (interfaceMode == "bidirectional") {
 						this.isDiscreet = false;
+					}
+
+					if (interfaceProtocol != this.thisWireInProgressProtocol) { // differing protocols
+						this.isDiscreet = true;
+					}
+
+					if (componentID == this.state.componentID) { // other interfaces on self
+						this.isDiscreet = true;
+					}
+
+					if (componentID == this.state.componentID && _interface == this.state.interfaceID) { // source interface
+						this.isDiscreet = false;
+						isStartOfNewWire = true
 					}
 				}
 
 				ifcs.push(
 					<Interface 
-						isDiscreet = {this.isDiscreet}
+						isDiscreet = {this.isDiscreet} 
+						isStartOfNewWire = {isStartOfNewWire} 
+						interfaceMode = {interfaceMode} 
 						key = {thisKey} 
 						onMouseDown = {this.onMouseDown} 
 						onMouseUp = {this.onInterfaceMouseUp} 
 						color = {this.props.protocols[interfaceProtocol].color} 
+						interfaceMode = {interfaceMode} 
 						width = {this.props.ifc.width} 
 						height = {this.props.ifc.height} 
 						left = {thisLeft} 
@@ -363,7 +391,8 @@ var Workspace = React.createClass({
 			var thisRefComponent = thisWire["endpoint-1"].component;
 			var thisRefInterface = thisWire["endpoint-1"].ifc;
 			var thisProtocol = this.getProtocol(thisRefComponent, thisRefInterface);
-			
+			console.log("component: " + thisRefComponent + ", interface: " + thisRefInterface);
+			console.log("protocol: " + thisProtocol);
 			var wireClass = "";
 			if (this.state.isWireInProgress){
 				wireClass = "discreet"
@@ -398,13 +427,15 @@ var Workspace = React.createClass({
 		svgExtents.height += 20;
 
 		return (
-			<div className="ui-module workspace pattern">	
+			<div className="ui-module workspace pattern">		
 				<svg className="wireContainer ui-module" width={svgExtents.width} height={svgExtents.height}>
 					{wires}
 					{wireInProgress}
 				</svg>
 				{components}
-				{ifcs}
+				<svg className="ifcContainer ui-module" width={svgExtents.width} height={svgExtents.height}>
+					{ifcs}
+				</svg>
 				{attachments}
 				{attachmentInterfaces}	
 			</div>
@@ -596,6 +627,12 @@ var Interface = React.createClass({
 		};
 	},
 
+	getDefaultProps: function() {
+		return {
+			arrow: 5,
+		};
+	},
+
 	onMouseEnter: function() {	
 		this.setState({
 			isHover: true
@@ -611,7 +648,7 @@ var Interface = React.createClass({
 	render: function() {
 		var growthW = 0;
 		var growthH = 0;
-		if (this.state.isHover && !this.props.isDiscreet){
+		if ((this.state.isHover && !this.props.isDiscreet) || this.props.isStartOfNewWire){
 			growthW = 5;
 			growthH = 9;
 		}
@@ -620,23 +657,45 @@ var Interface = React.createClass({
 		if (this.props.isDiscreet){
 			thisOpacity = 0.2
 		}
-		var interfaceStyle = {
-			backgroundColor: this.props.color,
-			opacity: thisOpacity,
+
+		console.log (this.props.isDiscreet + ", " + thisOpacity);
+		var polygon = {	
 			width: this.props.width + growthW,
 			height: this.props.height + growthH,
 			left: this.props.left - growthW/2,
 			top: this.props.top - growthH/2 
 		};
 
+		var style = {
+			fill: this.props.color,
+			opacity: thisOpacity
+		}
+
+		var inputPointer = "";
+		var outputPointer = "";
+		if (this.props.interfaceMode == "input" || this.props.interfaceMode == "bidirectional"){
+			inputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top - this.props.arrow)
+		}
+		if (this.props.interfaceMode == "output" || this.props.interfaceMode == "bidirectional"){
+			outputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top  + polygon.height + this.props.arrow)
+		}
+
+		var points = "" + polygon.left + ", " + polygon.top; //top-left
+		points += inputPointer;
+		points += " " + (polygon.left + polygon.width) + ", " + polygon.top; //top-right
+		points += " " + (polygon.left + polygon.width) + ", " + (polygon.top + polygon.height); //bottom-right
+		points += outputPointer;
+		points += " " + polygon.left + ", " + (polygon.top + polygon.height); //bottom-left
+ 
 		return (
-			<div 
-				className="interface" 
-				style={interfaceStyle} 
-				onMouseEnter={this.onMouseEnter} 
-				onMouseLeave={this.onMouseLeave} 
-				onMouseUp={this.props.onMouseUp.bind(null, this.props.componentID, this.props.interfaceID)} 
-				onMouseDown={this.props.onMouseDown.bind(null, this.props.componentID, this.props.interfaceID)}/>
+			<polygon 
+				className = "interface" 
+				style = {style} 
+				points = {points} 
+				onMouseEnter = {this.onMouseEnter} 
+				onMouseLeave = {this.onMouseLeave} 
+				onMouseUp = {this.props.onMouseUp.bind(null, this.props.componentID, this.props.interfaceID)} 
+				onMouseDown = {this.props.onMouseDown.bind(null, this.props.componentID, this.props.interfaceID)}/>
   		)
 	},
 });

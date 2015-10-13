@@ -12,16 +12,15 @@
   vertical-align: baseline;
   font-family: Helvetica, Arial, Sans-Serif;
   cursor: default;
+  user-select: none;
+  -moz-user-select: none;
   -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+  -ms-user-select: none;
   box-sizing: border-box;
 }
 
 /* Patterns */
 .pattern {
-  background-image: -webkit-linear-gradient(#c7c7c7 1px, transparent 1px), -webkit-linear-gradient(0deg, #c7c7c7 1px, transparent 1px);
   background-image: linear-gradient(#c7c7c7 1px, transparent 1px), linear-gradient(90deg, #c7c7c7 1px, transparent 1px);
   background-size: 10px 10px, 10px 10px;
   background-position: 0 0, 0 0;
@@ -39,9 +38,6 @@
 }
 
 #IOConsole {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
   display: flex;
   background-color: grey;
   min-width: 400px;
@@ -51,56 +47,26 @@
 }
 
 #navigation {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: column;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   background-color: #999999;
   min-width: 175px;
   max-width: 250px;
-  -webkit-box-flex: 1;
-  -webkit-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
 }
 
 #workspace {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: column;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex-direction: column;
   background-color: #bfbfbf;
-  -webkit-box-flex: 1;
-  -webkit-flex-grow: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
+  flex-grow: 1;
   position: relative;
 }
 
 #main {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: column;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-flex: 3;
-  -webkit-flex: 3;
-      -ms-flex: 3;
-          flex: 3;
+  flex-direction: column;
+  flex: 3;
 }
 
 #header {
@@ -117,23 +83,10 @@
   background-color: rgba(230, 230, 230, 0.6);
   outline: 1px dashed rgba(128, 128, 128, 0.6);
   font-size: 12px;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: column;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-pack: center;
-  -webkit-justify-content: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-      -ms-flex-align: center;
-          align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .componentInProgress .componentName {
@@ -153,23 +106,10 @@
   background-color: rgba(255, 255, 255, 0.6);
   outline: 1px solid rgba(153, 153, 153, 0.6);
   font-size: 12px;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: column;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  -webkit-box-pack: center;
-  -webkit-justify-content: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-      -ms-flex-align: center;
-          align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .workspace .component .componentName {
@@ -180,6 +120,14 @@
 .workspace .component .componentVersion {
   font-size: 85%;
   opacity: 0.6;
+}
+
+.workspace svg {
+  pointer-events: none;
+}
+
+.workspace svg * {
+  pointer-events: fill;
 }
 
 .workspace .attachment {
@@ -194,7 +142,7 @@
 
 .workspace .interface {
   position: absolute;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid red;
 }
 
 .workspace .attachmentInterface {
@@ -251,22 +199,13 @@
 }
 
 .project .version, .moduleItem .version {
-  -webkit-box-flex: 1;
-  -webkit-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
 }
 
 .project h2, .moduleItem h2 {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
   display: flex;
   font-size: 13px;
-  -webkit-box-align: baseline;
-  -webkit-align-items: baseline;
-      -ms-flex-align: baseline;
-          align-items: baseline;
+  align-items: baseline;
 }
 
 .project .name, .moduleItem .name {
@@ -286,12 +225,10 @@
 
 .moduleItem:hover {
   background-color: rgba(255, 255, 255, 0.1);
-  cursor: -webkit-grab;
   cursor: grab;
 }
 
 .moduleItem:hover * {
-  cursor: -webkit-grab;
   cursor: grab;
 }
 
@@ -305,18 +242,9 @@
 .home {
   background-color: #d0113d;
   padding: 0 15px;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-flex: 0;
-  -webkit-flex: 0 0 30px;
-      -ms-flex: 0 0 30px;
-          flex: 0 0 30px;
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-      -ms-flex-align: center;
-          align-items: center;
+  flex: 0 0 30px;
+  align-items: center;
 }
 
 .home:hover {
@@ -335,10 +263,7 @@
 .home h1 {
   color: white;
   font-size: 11px;
-  -webkit-box-flex: 1;
-  -webkit-flex-grow: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
+  flex-grow: 1;
 }
 
 .home .logo {
@@ -354,10 +279,7 @@
 }
 
 .primaryNav {
-  -webkit-box-flex: 1;
-  -webkit-flex-grow: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
+  flex-grow: 1;
   padding: 15px;
   padding-right: 8px;
   overflow-y: scroll;
@@ -366,19 +288,10 @@
 .primaryNav h1 {
   color: #4d4d4d;
   font-size: 11.5px;
-  -webkit-box-flex: 1;
-  -webkit-flex-grow: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
+  flex-grow: 1;
   padding-bottom: 2px;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-      -ms-flex-align: center;
-          align-items: center;
+  align-items: center;
   height: 15px;
 }
 
@@ -387,14 +300,8 @@
 }
 
 .tools {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: baseline;
-  -webkit-align-items: baseline;
-      -ms-flex-align: baseline;
-          align-items: baseline;
+  align-items: baseline;
   background-color: #b3b3b3;
   height: 40px;
   font-size: 13px;
@@ -419,18 +326,9 @@
 }
 
 .tools .buttons {
-  -webkit-box-flex: 1;
-  -webkit-flex-grow: 1;
-      -ms-flex-positive: 1;
-          flex-grow: 1;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
+  flex-grow: 1;
   display: flex;
-  -webkit-box-pack: end;
-  -webkit-justify-content: flex-end;
-      -ms-flex-pack: end;
-          justify-content: flex-end;
+  justify-content: flex-end;
   font-size: 11.5px;
 }
 
