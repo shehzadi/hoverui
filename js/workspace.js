@@ -3,7 +3,8 @@ var Workspace = React.createClass({
 	getInitialState: function() {
 		return {
 			dragComponentID: null,
-			interfaceID: null,
+			interfaceIDObject: null,
+			interfaceGroupID: null,
 			componentID: null,
 			mouseDown: false,
 			dragging: false,
@@ -20,8 +21,8 @@ var Workspace = React.createClass({
   	getDefaultProps: function() {
     	return {
     		component: {
-    			width: 120,
-    			height: 55
+    			width: 130,
+    			height: 65
     		},
     		ifc: {
     			width: 20,
@@ -42,7 +43,7 @@ var Workspace = React.createClass({
     	};
 	},
 
-	onMouseDown: function(componentID, interfaceID) {	
+	onMouseDown: function(componentID, interfaceIDObject, interfaceGroupID) {			
 		if (event.button == 0){	
 			event.stopPropagation();
 			this.addDocumentEvents();
@@ -51,15 +52,26 @@ var Workspace = React.createClass({
 			var workspaceOriginX = workspaceBox.left;
 			var workspaceOriginY = workspaceBox.top;
 
-			if (interfaceID){ //mouse down on interface
-				this.thisWireInProgressProtocol = this.getProtocol(componentID, interfaceID);
-				this.thisWireInProgressStartMode = this.getMode(componentID, interfaceID);
+			//console.log(interfaceIDObject);
+
+
+
+			if (interfaceIDObject){ //mouse down on interface
+				var refInterfaceID = Object.keys(interfaceIDObject)[0];
+				this.thisWireInProgressProtocol = this.getProtocol(componentID, refInterfaceID);
+				this.thisWireInProgressStartMode = this.getMode(componentID, refInterfaceID);
+				this.thisWireInProgressN = Object.keys(interfaceIDObject).length;
+			}
+
+			else {
+				interfaceIDObject = null
 			}
     		
     		this.setState({
     			mouseDown: true,
     			componentID: componentID,
-    			interfaceID: interfaceID,
+    			interfaceIDObject: interfaceIDObject,
+    			interfaceGroupID: interfaceGroupID,
     			workspaceOriginX: workspaceOriginX,
     			workspaceOriginY: workspaceOriginY,
     			startX: event.pageX - workspaceOriginX,
@@ -68,19 +80,17 @@ var Workspace = React.createClass({
 		}
 	},
 
-
-	onInterfaceMouseUp: function(componentID, interfaceID) {
+	onInterfaceMouseUp: function(componentID, interfaceGroupID, isDiscreet) {
 		event.stopPropagation();
-		var sourceProtocol = this.getProtocol(this.state.componentID, this.state.interfaceID);
-		var dropProtocol = this.getProtocol(componentID, interfaceID);
-		if (sourceProtocol == dropProtocol) {
-			this.props.handleWireDrop(componentID, interfaceID, this.state.componentID, this.state.interfaceID);
-		}
-		
+		//var sourceProtocol = this.getProtocol(this.state.componentID, Object.keys(this.state.interfaceIDObject)[0]);
+		//var dropProtocol = this.getProtocol(componentID, Object.keys(interfaceIDObject)[0]);
+		if (!isDiscreet) {
+			console.log("Create new wire");
+			this.props.handleWireDrop(componentID, interfaceGroupID, this.state.componentID, this.state.interfaceGroupID);
+		}		
 	},
 
 	getProtocol: function(componentID, interfaceID) {
-
 		var thisProtocol = "";
 		if (componentID.indexOf('att') == 0){ //is an attachment wire
 			thisProtocol = this.props.selectedProject.topology.attachments[componentID]
@@ -93,7 +103,6 @@ var Workspace = React.createClass({
 	},
 
 	getMode: function(componentID, interfaceID) {
-
 		var thisMode = "";
 		var thisRefModule = this.props.selectedProject.topology.components[componentID];
 		thisMode = this.props.modules[thisRefModule].interfaces[interfaceID].mode;
@@ -112,7 +121,7 @@ var Workspace = React.createClass({
 				dragging: true,
 			});
 
-			if (this.state.interfaceID){ //dragging from interface
+			if (this.state.interfaceIDObject){ //dragging from interface
 				this.setState({
 					isWireInProgress: this.thisWireInProgressProtocol
 				});
@@ -147,7 +156,7 @@ var Workspace = React.createClass({
     	if (!this.state.mouseOver){
     		this.setState({
     			componentID: null,
-    			interfaceID: null
+    			interfaceIDObject: null
     		});
     	};
 
@@ -187,7 +196,7 @@ var Workspace = React.createClass({
     		}
 		}
 
-		this.interfaceCoordinates = {};
+		this.interfaceGroupCoordinates = {};
 		var svgExtents = {
 			width: 0,
 			height: 0
@@ -222,72 +231,84 @@ var Workspace = React.createClass({
 					protocols = {this.props.protocols}/>
   			);
 
-  			this.interfaceCoordinates[componentID] = {};
-//hello
+  			// Interfaces
+  			this.interfaceGroupCoordinates[componentID] = {};
+
 	  		var interfacesObject = componentModuleObject.interfaces;
-			var nInterfaces = _.size(interfacesObject);
-			var thisN = 1;
-			for (var _interface in interfacesObject) {
-				var interfaceProtocol = interfacesObject[_interface].protocol;
-				var interfaceMode = interfacesObject[_interface].mode;
+	  		var interfaceGroups = componentViewData.groups;
+	  		var nInterfaceGroups = Object.keys(interfaceGroups).length
 
-				var thisKey = "" + componentID +  _interface;
+			//loop through internal interface groups
+			var groupIndex = 0;
+			for (var group in interfaceGroups) {
+				var thisGroupID = group;
+			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
+				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
+				//hello
+				var referenceInterface = Object.keys(thisInterfaceGroup)[0];
 
-				var leftDatum = (0.5 * this.props.component.width) - (0.5 * ((nInterfaces * (this.props.ifc.width + this.props.ifc.margin)) - this.props.ifc.margin));
-				var thisLeft = componentX + leftDatum + ((thisN - 1) * (this.props.ifc.width + this.props.ifc.margin));
+				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
+				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
 
+				var thisKey = "" + componentID + thisGroupID;
+
+				//console.log ("ref interface key: " + thisKey);
+
+				var leftDatum = (0.5 * this.props.component.width) - (0.5 * ((nInterfaceGroups * (this.props.ifc.width + this.props.ifc.margin)) - this.props.ifc.margin));
+				var thisLeft = componentX + leftDatum + ((groupIndex) * (this.props.ifc.width + this.props.ifc.margin));
 				var thisTop = componentY + this.props.component.height - (this.props.ifc.height / 2) + 1;
 
-				this.isDiscreet = false;
+				var isDiscreet = false;
 				var isStartOfNewWire = false;
 
-				if (this.state.isWireInProgress){
-					
-
-					if (interfaceMode == this.thisWireInProgressStartMode) { // differing mode
-						this.isDiscreet = true;
+				if (this.state.isWireInProgress){ // test for mode, protocol and number of interfaces	
+					if (interfaceGroupMode == this.thisWireInProgressStartMode) { //differing mode
+						isDiscreet = true;
 					}
 
-					if (interfaceMode == "bidirectional") {
-						this.isDiscreet = false;
+					if (interfaceGroupMode == "bidirectional") {
+						isDiscreet = false;
 					}
 
-					if (interfaceProtocol != this.thisWireInProgressProtocol) { // differing protocols
-						this.isDiscreet = true;
+					if (interfaceGroupProtocol != this.thisWireInProgressProtocol) { //differing protocols
+						isDiscreet = true;
 					}
 
-					if (componentID == this.state.componentID) { // other interfaces on self
-						this.isDiscreet = true;
+					if (componentID == this.state.componentID) { //other interfaces on self
+						isDiscreet = true;
 					}
 
-					if (componentID == this.state.componentID && _interface == this.state.interfaceID) { // source interface
-						this.isDiscreet = false;
+					if (componentID == this.state.componentID && thisGroupID == this.state.interfaceGroupID) { //source interface
+						isDiscreet = false;
 						isStartOfNewWire = true
 					}
 				}
 
+				this.interfaceGroupCoordinates[componentID][thisGroupID] = {
+					top: thisTop + (this.props.ifc.height / 2),
+					left: thisLeft + (this.props.ifc.width / 2)
+				};
+
 				ifcs.push(
-					<Interface 
-						isDiscreet = {this.isDiscreet} 
+					<InterfaceGroup 
+						isDiscreet = {isDiscreet} 
 						isStartOfNewWire = {isStartOfNewWire} 
-						interfaceMode = {interfaceMode} 
 						key = {thisKey} 
 						onMouseDown = {this.onMouseDown} 
 						onMouseUp = {this.onInterfaceMouseUp} 
-						color = {this.props.protocols[interfaceProtocol].color} 
-						interfaceMode = {interfaceMode} 
+						interfaceMode = {interfaceGroupMode} 
+						color = {this.props.protocols[interfaceGroupProtocol].color} 
 						width = {this.props.ifc.width} 
 						height = {this.props.ifc.height} 
 						left = {thisLeft} 
 						top = {thisTop} 
-						interfaceID = {_interface} 
+						interfaceGroupID = {thisGroupID} 
+						interfaceIDObject = {thisInterfaceGroup} 
 						componentID = {componentID}/>				
 				);
 
-				this.interfaceCoordinates[componentID][_interface] = {
-					top: thisTop + (this.props.ifc.height / 2),
-					left: thisLeft + (this.props.ifc.width / 2)
-				};
+				
+				//console.log (this.interfaceGroupCoordinates);
 
 				if (thisTop > svgExtents.height){
 					svgExtents.height = thisTop + this.props.ifc.height
@@ -305,9 +326,8 @@ var Workspace = React.createClass({
 					svgExtents.width = this.state.cursorX
 				}
 
-				thisN = thisN + 1
+				groupIndex += 1;
 			};
-
 		};
 
 		
@@ -345,7 +365,7 @@ var Workspace = React.createClass({
 			var ifcX = attachmentX + (this.props.attachment.width - this.props.attachmentInterface.width) / 2;
 			var ifcY = attachmentY + this.props.attachment.height - (this.props.attachmentInterface.height / 2) - 1;
 
-			this.interfaceCoordinates[attachment] = {
+			this.interfaceGroupCoordinates[attachment] = {
 				"interface-1": {
 					top: ifcY + (this.props.attachmentInterface.height / 2),
 					left: ifcX +(this.props.attachmentInterface.width / 2)
@@ -386,45 +406,90 @@ var Workspace = React.createClass({
 		};
 
 		var wires = [];
+		var localGroupArray = [];
 		for (var wire in wiresObject) {
 			var thisWire = wiresObject[wire];
-			var thisRefComponent = thisWire["endpoint-1"].component;
-			var thisRefInterface = thisWire["endpoint-1"].ifc;
-			var thisProtocol = this.getProtocol(thisRefComponent, thisRefInterface);
-			console.log("component: " + thisRefComponent + ", interface: " + thisRefInterface);
-			console.log("protocol: " + thisProtocol);
+			var thisProtocol = this.getProtocol(thisWire["endpoint-1"].component, thisWire["endpoint-1"].ifc);
 			var wireClass = "";
 			if (this.state.isWireInProgress){
 				wireClass = "discreet"
+			};
+
+			var convertToGroup = function(componentID, interfaceID){
+				var thisGroupData = selectedProjectObject.view[componentID].groups;
+				for (var group in thisGroupData) {
+					var interfaceArray = Object.keys(thisGroupData[group]);
+					if (interfaceArray.indexOf(interfaceID) > -1){
+						return group
+					}		
+				}		
+			};
+
+			var endpoints = {
+				"endpoint-1": {
+					"component": thisWire["endpoint-1"].component,
+					"interfaceGroup": convertToGroup(thisWire["endpoint-1"].component, thisWire["endpoint-1"].ifc)
+				},
+				"endpoint-2": {
+					"component": thisWire["endpoint-2"].component,
+					"interfaceGroup": convertToGroup(thisWire["endpoint-2"].component, thisWire["endpoint-2"].ifc)
+				}
+			};
+
+			console.log(localGroupArray);
+			console.log(endpoints["endpoint-1"]);
+			console.log(_.includes(localGroupArray, endpoints["endpoint-1"]));
+			//hello
+
+			//if (localGroupArray.indexOf(endpoints["endpoint-1"].interfaceGroup) > -1){ //wire already exists
+			//	break
+			//}
+
+			//if (_.isEqual(thisInterfaceDetails, existingGroupMemberDetails)){
+    		//	existingGroup = group;
+    		//	break
+    		//}
+
+    		var isWireExists = false;
+    		_.forEach(localGroupArray, function(thisEndpoint) {
+    			if (_.isEqual(thisEndpoint, endpoints["endpoint-1"])){
+    				isWireExists = true;
+    			}
+    		});
+
+			if (!isWireExists) {
+				localGroupArray.push(endpoints["endpoint-1"]);
+				localGroupArray.push(endpoints["endpoint-2"]);
+				wires.push(
+					<WireGroup
+						key = {wire} 
+						wireClass = {wireClass} 
+						color = {this.props.protocols[thisProtocol].color} 
+						stroke = {this.props.wire.width} 
+						interfaceGroupCoordinates = {this.interfaceGroupCoordinates} 
+						endpoints = {endpoints}/>
+				);
 			}
 
-			wires.push(
-				<Wire
-					key = {wire} 
-					wireClass = {wireClass} 
-					color = {this.props.protocols[thisProtocol].color} 
-					stroke = {this.props.wire.width} 
-					interfaceCoordinates = {this.interfaceCoordinates}
-					thisWire = {thisWire}/>
-			);
 		};
 
-		if (this.state.interfaceID && this.state.dragging) {
-			var thisProtocol = this.getProtocol(this.state.componentID, this.state.interfaceID);
+		if (this.state.interfaceIDObject && this.state.dragging) {
+			var referenceInterface = Object.keys(this.state.interfaceIDObject)[0];
+			var thisProtocol = this.getProtocol(this.state.componentID, referenceInterface);
 
 			var wireInProgress = <WireInProgress
 				color = {this.props.protocols[thisProtocol].color} 
-				thisInterface = {this.state.interfaceID} 
+				thisInterfaceGroup = {this.state.interfaceGroupID} 
 				thisComponent = {this.state.componentID} 
-				interfaceCoordinates = {this.interfaceCoordinates} 
+				interfaceGroupCoordinates = {this.interfaceGroupCoordinates} 
 				thisAbsX = {this.state.cursorX} 
 				thisAbsY = {this.state.cursorY} 
 				stroke = {this.props.wire.width} 
 				ifcDims = {this.props.ifc}/>
 		}
 
-		svgExtents.width += 20;
-		svgExtents.height += 20;
+		svgExtents.width += 30;
+		svgExtents.height += 30;
 
 		return (
 			<div className="ui-module workspace pattern">		
@@ -516,6 +581,10 @@ var AttachmentInterface = React.createClass({
 });
 
 var Component = React.createClass({
+	handleMouseDown: function(){
+		this.props.onMouseDown(this.props.thisComponentID)
+	},
+
 	render: function() {
 		var componentStyle = {
 			width: this.props.width,
@@ -524,12 +593,10 @@ var Component = React.createClass({
 			left: this.props.thisComponentX
 		};
 
-		var componentID = this.props.thisComponentID;
-
 		return (
 			<div 
 				className="component" 
-				onMouseDown={this.props.onMouseDown.bind(null, componentID, null)}  
+				onMouseDown={this.handleMouseDown}  
 				style={componentStyle}>
   				<div className="componentName">
   					{this.props.thisModule.name}
@@ -542,63 +609,12 @@ var Component = React.createClass({
 	}
 });
 
-var Wire = React.createClass({
-	getInitialState: function() {
-		return {
-			isHover: false,
-		};
-	},
-
-	onMouseEnter: function() {	
-		this.setState({
-			isHover: true
-    	});
-	},
-
-	onMouseLeave: function() {	
-		this.setState({
-			isHover: false
-    	});
-	},
-
-	render: function() {
-
-		var end1Comp = this.props.thisWire["endpoint-1"].component;
-		var end1Int = this.props.thisWire["endpoint-1"].ifc;
-
-		var end2Comp = this.props.thisWire["endpoint-2"].component;
-		var end2Int = this.props.thisWire["endpoint-2"].ifc;
-
-		var growth = 0;
-		if (this.state.isHover){
-			growth = 3
-		}
-
-		var componentStyle = {
-			stroke: this.props.color,
-			strokeWidth: this.props.stroke + growth,
-		};
-
-		var className = "wire " + this.props.wireClass;
-
-		return (
-			<line 
-				className = {className} 
-				onMouseEnter={this.onMouseEnter} 
-				onMouseLeave={this.onMouseLeave} 
-				x1 = {this.props.interfaceCoordinates[end1Comp][end1Int].left} 
-				y1 = {this.props.interfaceCoordinates[end1Comp][end1Int].top} 
-				x2 = {this.props.interfaceCoordinates[end2Comp][end2Int].left} 
-				y2 = {this.props.interfaceCoordinates[end2Comp][end2Int].top} 
-				style = {componentStyle}/>
-		);
-	}
-});
-
 var WireInProgress = React.createClass({
 	render: function() {
+
+		//console.log (this.props.interfaceCoordinates);
 		var end1Comp = this.props.thisComponent;
-		var end1Int = this.props.thisInterface;
+		var end1Int = this.props.thisInterfaceGroup;
 
 		var ifcWidth = this.props.ifcDims.width;
 		var ifcHeight = this.props.ifcDims.height;
@@ -611,8 +627,8 @@ var WireInProgress = React.createClass({
 		return (
 			<line 
 				className = "wire" 
-				x1 = {this.props.interfaceCoordinates[end1Comp][end1Int].left} 
-				y1 = {this.props.interfaceCoordinates[end1Comp][end1Int].top} 
+				x1 = {this.props.interfaceGroupCoordinates[end1Comp][end1Int].left} 
+				y1 = {this.props.interfaceGroupCoordinates[end1Comp][end1Int].top} 
 				x2 = {this.props.thisAbsX}
 				y2 = {this.props.thisAbsY}
 				style = {componentStyle}/>
@@ -620,82 +636,3 @@ var WireInProgress = React.createClass({
 	}
 });
 
-var Interface = React.createClass({
-	getInitialState: function() {
-		return {
-			isHover: false,
-		};
-	},
-
-	getDefaultProps: function() {
-		return {
-			arrow: 5,
-		};
-	},
-
-	onMouseEnter: function() {	
-		this.setState({
-			isHover: true
-    	});
-	},
-
-	onMouseLeave: function() {	
-		this.setState({
-			isHover: false
-    	});
-	},
-
-	render: function() {
-		var growthW = 0;
-		var growthH = 0;
-		if ((this.state.isHover && !this.props.isDiscreet) || this.props.isStartOfNewWire){
-			growthW = 5;
-			growthH = 9;
-		}
-
-		var thisOpacity = 1;
-		if (this.props.isDiscreet){
-			thisOpacity = 0.2
-		}
-
-		console.log (this.props.isDiscreet + ", " + thisOpacity);
-		var polygon = {	
-			width: this.props.width + growthW,
-			height: this.props.height + growthH,
-			left: this.props.left - growthW/2,
-			top: this.props.top - growthH/2 
-		};
-
-		var style = {
-			fill: this.props.color,
-			opacity: thisOpacity
-		}
-
-		var inputPointer = "";
-		var outputPointer = "";
-		if (this.props.interfaceMode == "input" || this.props.interfaceMode == "bidirectional"){
-			inputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top - this.props.arrow)
-		}
-		if (this.props.interfaceMode == "output" || this.props.interfaceMode == "bidirectional"){
-			outputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top  + polygon.height + this.props.arrow)
-		}
-
-		var points = "" + polygon.left + ", " + polygon.top; //top-left
-		points += inputPointer;
-		points += " " + (polygon.left + polygon.width) + ", " + polygon.top; //top-right
-		points += " " + (polygon.left + polygon.width) + ", " + (polygon.top + polygon.height); //bottom-right
-		points += outputPointer;
-		points += " " + polygon.left + ", " + (polygon.top + polygon.height); //bottom-left
- 
-		return (
-			<polygon 
-				className = "interface" 
-				style = {style} 
-				points = {points} 
-				onMouseEnter = {this.onMouseEnter} 
-				onMouseLeave = {this.onMouseLeave} 
-				onMouseUp = {this.props.onMouseUp.bind(null, this.props.componentID, this.props.interfaceID)} 
-				onMouseDown = {this.props.onMouseDown.bind(null, this.props.componentID, this.props.interfaceID)}/>
-  		)
-	},
-});

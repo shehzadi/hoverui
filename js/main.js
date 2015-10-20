@@ -17,11 +17,117 @@ var IOConsole = React.createClass({
   	getDefaultProps: function() {
     	return {
     		componentInProgress: {
-    			width: 120,
-    			height: 55
+    			width: 130,
+    			height: 65
     		}
     	};
 	},
+
+	handleNewWireDrop: function(component1, interfaceGroup1, component2, interfaceGroup2) {
+		console.log(interfaceGroup1);
+		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
+    	var newProjectWiresObject = {};
+    	if (selectedProject.topology.wires){
+    		newProjectWiresObject = _.cloneDeep(selectedProject.topology.wires);
+    	}
+    	var group1InterfaceArray = [];
+    	var group2InterfaceArray = [];
+
+    	var group1InterfaceObject = selectedProject.view[component1].groups[interfaceGroup1];
+    	group1InterfaceArray = Object.keys(group1InterfaceObject);
+
+    	var group2InterfaceObject = selectedProject.view[component2].groups[interfaceGroup2];
+    	group2InterfaceArray = Object.keys(group2InterfaceObject);
+
+    	console.log(group2InterfaceArray);
+    	console.log(group1InterfaceArray);
+
+    	_.forEach(group1InterfaceArray, function(thisInterfaceID, index) {
+ 			var newWireID = "wire-" + (_.size(newProjectWiresObject) + 1);
+    		var newWire = {
+	    		"endpoint-1" : {
+	    			"component" : component1,
+	    			"ifc" : thisInterfaceID
+	    		},
+	    		"endpoint-2" : {
+	    			"component" : component2,
+	    			"ifc" : group2InterfaceArray[index]
+	    		},
+    		}
+    		newProjectWiresObject[newWireID] = newWire;
+		});
+
+		this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("wires").set(newProjectWiresObject);
+
+    },
+
+	handleNewComponentDrop: function(moduleID, posX, posY){
+     	var newProjectViewObject = {};
+     	if (this.state.projectsObject[this.state.selectedProjectID].view){
+     		newProjectViewObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].view);
+     	}
+
+    	var newProjectComponentsObject = {};
+    	if (this.state.projectsObject[this.state.selectedProjectID].topology.components){
+    		newProjectComponentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].topology.components);
+    	}
+    	var newComponentID = "component-" + (_.size(newProjectComponentsObject) + 1);
+
+    	var moduleInterfaces = this.state.modulesObject[moduleID].interfaces;
+
+    	var newInterfaceGroupsObject = {};
+    	var groupN = 1;
+    	for (thisInterface in moduleInterfaces){
+    		var thisInterfaceDetails = moduleInterfaces[thisInterface]; //mode & protocol
+
+    		//check for existing group with these details - return group ID or false
+    		var existingGroup = false;
+    		for (group in newInterfaceGroupsObject){
+    			var existingGroup = false;
+    			var existingGroupMemberID = Object.keys(newInterfaceGroupsObject[group])[0];
+    			var existingGroupMemberDetails = moduleInterfaces[existingGroupMemberID];
+    			console.log(existingGroupMemberDetails);
+    			if (_.isEqual(thisInterfaceDetails, existingGroupMemberDetails)){
+    				existingGroup = group;
+    				break
+    			}
+    		}
+
+    		
+    		if (existingGroup == false) {
+    			var interfaceGroup = {};
+    			interfaceGroup[thisInterface] = true;
+    			newInterfaceGroupsObject["group-" + groupN] = interfaceGroup;
+    			groupN += 1
+    		}
+
+    		else {
+    			newInterfaceGroupsObject[existingGroup][thisInterface] = true;
+    			console.log(newInterfaceGroupsObject[existingGroup][thisInterface])
+    		}  		
+    	}
+
+    	var newViewData = {
+    		"x": posX,
+    		"y": posY,
+    		"groups": newInterfaceGroupsObject
+    	};
+
+    	newProjectViewObject[newComponentID] = newViewData;
+    	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("view").set(newProjectViewObject)
+
+    	newProjectComponentsObject[newComponentID] = moduleID;
+    	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("components").set(newProjectComponentsObject)
+	},
+
+	handleComponentDrop: function(dropComponent, deltaX, deltaY) {
+    	var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
+
+    	newProjectObject.view[dropComponent].x += deltaX;
+    	newProjectObject.view[dropComponent].y += deltaY;
+
+		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
+    },
 
 	createNewProject: function(projectTemplate) {
 		var newProjectsObject = _.cloneDeep(this.state.projectsObject);	
@@ -122,48 +228,6 @@ var IOConsole = React.createClass({
     	});
 	},
 
-	handleNewComponentDrop: function(moduleID, posX, posY){
-     	var newProjectViewObject = {};
-     	if (this.state.projectsObject[this.state.selectedProjectID].view){
-     		newProjectViewObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].view);
-     	}
-
-    	var newProjectComponentsObject = {};
-    	if (this.state.projectsObject[this.state.selectedProjectID].topology.components){
-    		newProjectComponentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].topology.components);
-    	}
-    	var newComponentID = "component-" + (_.size(newProjectComponentsObject) + 1);
-    	var newViewData = {
-    		"x": posX,
-    		"y": posY
-    	};
-    	newProjectViewObject[newComponentID] = newViewData;
-    	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("view").set(newProjectViewObject)
-
-    	newProjectComponentsObject[newComponentID] = moduleID;
-    	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("components").set(newProjectComponentsObject)
-	},
-
-	handleWireDrop: function(component1, interface1, component2, interface2) {
-    	var newProjectWiresObject = {};
-    	if (this.state.projectsObject[this.state.selectedProjectID].topology.wires){
-    		newProjectWiresObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].topology.wires);
-    	}
-    	var newWireID = "wire-" + (_.size(newProjectWiresObject) + 1);
-    	var newWire = {
-    		"endpoint-1" : {
-    			"component" : component1,
-    			"ifc" : interface1
-    		},
-    		"endpoint-2" : {
-    			"component" : component2,
-    			"ifc" : interface2
-    		},
-    	}
-    	newProjectWiresObject[newWireID] = newWire;
-    	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("wires").set(newProjectWiresObject)
-    },
-
 	onMouseMove: function(event) { //captured on document
 		var cursorX = event.pageX;
 		var cursorY = event.pageY;
@@ -204,15 +268,6 @@ var IOConsole = React.createClass({
         }  
     },
 
-    handleComponentDrop: function(dropComponent, deltaX, deltaY) {
-    	var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
-
-    	newProjectObject.view[dropComponent].x += deltaX;
-    	newProjectObject.view[dropComponent].y += deltaY;
-
-		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
-    },
-
 	render: function() {
 		var componentInProgress;
 		if (this.state.dragging){
@@ -251,7 +306,7 @@ var IOConsole = React.createClass({
 							ref = "workspace" 
 							className = "ui-module workspace pattern" 
 							handleComponentDrop = {this.handleComponentDrop} 
-							handleWireDrop = {this.handleWireDrop} 
+							handleWireDrop = {this.handleNewWireDrop} 
 							protocols = {this.state.protocolsObject} 
 							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]} 
 							modules = {this.state.modulesObject}/>
@@ -459,6 +514,7 @@ var Tools = React.createClass({
 				<button>Save Version&hellip;</button>
 				<button>Duplicate&hellip;</button>
 				<button>JSON&hellip;</button>
+				<button>Save as Module&hellip;</button>
 				<button onClick = {this.handleDeleteProjectClick}>Delete Project</button>
 				<div className="buttons">
 					<button>Deploy to IO Visor&hellip;</button>

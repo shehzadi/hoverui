@@ -172,11 +172,14 @@ $pattern-line-color: lighten($workspace-color, 3%);
 		}
 	}
 
-	svg {
-		pointer-events: none
+	svg, text {
+		pointer-events: none;
+		font-size: 10px;
+		fill: grey;
+		text-anchor: middle
 	}
 
-	svg *{
+	polygon {
 		pointer-events: fill
 	}
 
