@@ -80,6 +80,7 @@
 /* Element styling */
 .componentInProgress {
   position: absolute;
+  padding: 5px;
   background-color: rgba(230, 230, 230, 0.6);
   outline: 1px dashed rgba(128, 128, 128, 0.6);
   font-size: 12px;
@@ -101,7 +102,6 @@
 
 .workspace .component {
   padding: 5px;
-  display: block;
   position: absolute;
   background-color: rgba(255, 255, 255, 0.6);
   outline: 1px solid rgba(153, 153, 153, 0.6);

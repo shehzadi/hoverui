@@ -134,6 +134,7 @@ $pattern-line-color: lighten($workspace-color, 3%);
 
 .componentInProgress {
 	position: absolute;
+	padding: 5px;
 	background-color: darken($topoItem-color, 10%);
 	outline: 1px dashed darken($topoItem-color, 50%);
 	font-size: 12px;
@@ -153,7 +154,6 @@ $pattern-line-color: lighten($workspace-color, 3%);
 .workspace {
 	.component {
 		padding: 5px;
-		display: block;
 		position: absolute;
 		background-color: $topoItem-color;
 		outline: 1px solid darken($topoItem-color, 40%);

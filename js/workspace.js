@@ -436,20 +436,6 @@ var Workspace = React.createClass({
 				}
 			};
 
-			console.log(localGroupArray);
-			console.log(endpoints["endpoint-1"]);
-			console.log(_.includes(localGroupArray, endpoints["endpoint-1"]));
-			//hello
-
-			//if (localGroupArray.indexOf(endpoints["endpoint-1"].interfaceGroup) > -1){ //wire already exists
-			//	break
-			//}
-
-			//if (_.isEqual(thisInterfaceDetails, existingGroupMemberDetails)){
-    		//	existingGroup = group;
-    		//	break
-    		//}
-
     		var isWireExists = false;
     		_.forEach(localGroupArray, function(thisEndpoint) {
     			if (_.isEqual(thisEndpoint, endpoints["endpoint-1"])){
@@ -522,7 +508,7 @@ var Attachment = React.createClass({
 				className="attachment" 
 				style={containerStyle}
 				onMouseDown={this.props.onMouseDown.bind(null, this.props.attachmentID, null)}>
-				Attachment
+				Host Interface
   			</div>
 		);
 	}
