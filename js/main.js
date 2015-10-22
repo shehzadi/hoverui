@@ -24,7 +24,10 @@ var IOConsole = React.createClass({
 	},
 
 	handleNewWireDrop: function(component1, interfaceGroup1, component2, interfaceGroup2) {
+		console.log(component1);
 		console.log(interfaceGroup1);
+		console.log(component2);
+		console.log(interfaceGroup2);
 		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
     	var newProjectWiresObject = {};
     	if (selectedProject.topology.wires){
@@ -39,8 +42,8 @@ var IOConsole = React.createClass({
     	var group2InterfaceObject = selectedProject.view[component2].groups[interfaceGroup2];
     	group2InterfaceArray = Object.keys(group2InterfaceObject);
 
-    	console.log(group2InterfaceArray);
-    	console.log(group1InterfaceArray);
+    	//console.log(group2InterfaceArray);
+    	//console.log(group1InterfaceArray);
 
     	_.forEach(group1InterfaceArray, function(thisInterfaceID, index) {
  			var newWireID = "wire-" + (_.size(newProjectWiresObject) + 1);

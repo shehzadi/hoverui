@@ -101,7 +101,7 @@
 }
 
 .workspace .component {
-  padding: 5px;
+  padding: 7px;
   position: absolute;
   background-color: rgba(255, 255, 255, 0.6);
   outline: 1px solid rgba(153, 153, 153, 0.6);
@@ -133,14 +133,15 @@
   pointer-events: fill;
 }
 
-.workspace .attachment {
+.workspace .hostInterface {
   position: absolute;
   background-color: rgba(140, 140, 140, 0.8);
   outline: 1px solid rgba(0, 0, 0, 0.35);
   font-size: 11px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: rgba(0, 0, 0, 0.8);
-  padding-top: 2px;
 }
 
 .workspace .interface {

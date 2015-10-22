@@ -21,8 +21,8 @@ var Workspace = React.createClass({
   	getDefaultProps: function() {
     	return {
     		component: {
-    			width: 130,
-    			height: 65
+    			width: 135,
+    			height: 72
     		},
     		ifc: {
     			width: 20,
@@ -32,18 +32,27 @@ var Workspace = React.createClass({
     		wire: {
     			width: 2
     		},
-    		attachment: {
+    		hostInterface: {
     			width: 90,
-    			height: 24
+    			height: 44
     		},
     		attachmentInterface: {
-    			width: 45,
-    			height: 10
+    			width: 26,
+    			height: 1,
+    			apex: 7
     		}	
     	};
 	},
 
-	onMouseDown: function(componentID, interfaceIDObject, interfaceGroupID) {			
+	getHSL: function(hue, isDarker){
+		var lightness = "55%";
+		if (isDarker){
+			lightness = "45%"
+		}
+		return "hsl(" + hue + ", 70%," + lightness + ")"
+	},
+
+	onMouseDown: function(componentID, interfaceGroupID, interfaceIDObject) {			
 		if (event.button == 0){	
 			event.stopPropagation();
 			this.addDocumentEvents();
@@ -53,14 +62,26 @@ var Workspace = React.createClass({
 			var workspaceOriginY = workspaceBox.top;
 
 			//console.log(interfaceIDObject);
+			console.log (interfaceGroupID);
 
 
 
-			if (interfaceIDObject){ //mouse down on interface
-				var refInterfaceID = Object.keys(interfaceIDObject)[0];
-				this.thisWireInProgressProtocol = this.getProtocol(componentID, refInterfaceID);
-				this.thisWireInProgressStartMode = this.getMode(componentID, refInterfaceID);
-				this.thisWireInProgressN = Object.keys(interfaceIDObject).length;
+			if (interfaceGroupID){ //mouse down on interface
+				if (interfaceIDObject){ //mouse down on component interface
+					console.log ("INterface");
+					var refInterfaceID = Object.keys(interfaceIDObject)[0];
+					this.thisWireInProgressN = Object.keys(interfaceIDObject).length;
+					this.thisWireInProgressProtocol = this.getProtocol(componentID, refInterfaceID);
+					this.thisWireInProgressStartMode = this.getMode(componentID, refInterfaceID);	
+				}
+				else {//mouse down on attachment interface
+					console.log ("Attachment INterface");
+					this.thisWireInProgressN = 1;
+					this.thisWireInProgressProtocol = this.props.selectedProject.topology.host_interfaces[componentID].protocol;
+					this.thisWireInProgressStartMode = this.props.selectedProject.topology.host_interfaces[componentID].mode;
+				}
+	//hello			
+				
 			}
 
 			else {
@@ -85,15 +106,15 @@ var Workspace = React.createClass({
 		//var sourceProtocol = this.getProtocol(this.state.componentID, Object.keys(this.state.interfaceIDObject)[0]);
 		//var dropProtocol = this.getProtocol(componentID, Object.keys(interfaceIDObject)[0]);
 		if (!isDiscreet) {
-			console.log("Create new wire");
+			//console.log("Create new wire");
 			this.props.handleWireDrop(componentID, interfaceGroupID, this.state.componentID, this.state.interfaceGroupID);
 		}		
 	},
 
 	getProtocol: function(componentID, interfaceID) {
 		var thisProtocol = "";
-		if (componentID.indexOf('att') == 0){ //is an attachment wire
-			thisProtocol = this.props.selectedProject.topology.attachments[componentID]
+		if (componentID.indexOf('host') == 0){ //is an attachment wire
+			thisProtocol = this.props.selectedProject.topology.host_interfaces[componentID].protocol
 		}
 		else {
 			var thisRefModule = this.props.selectedProject.topology.components[componentID];
@@ -104,8 +125,15 @@ var Workspace = React.createClass({
 
 	getMode: function(componentID, interfaceID) {
 		var thisMode = "";
-		var thisRefModule = this.props.selectedProject.topology.components[componentID];
-		thisMode = this.props.modules[thisRefModule].interfaces[interfaceID].mode;
+
+		if (componentID.indexOf('host') == 0){ //is an attachment wire
+			thisMode = this.props.selectedProject.topology.host_interfaces[componentID].mode
+		}
+
+		else {
+			var thisRefModule = this.props.selectedProject.topology.components[componentID];
+			thisMode = this.props.modules[thisRefModule].interfaces[interfaceID].mode;
+		}
 		return thisMode
 	},
 
@@ -121,7 +149,7 @@ var Workspace = React.createClass({
 				dragging: true,
 			});
 
-			if (this.state.interfaceIDObject){ //dragging from interface
+			if (this.state.interfaceGroupID){ //dragging from interface
 				this.setState({
 					isWireInProgress: this.thisWireInProgressProtocol
 				});
@@ -156,6 +184,7 @@ var Workspace = React.createClass({
     	if (!this.state.mouseOver){
     		this.setState({
     			componentID: null,
+    			interfaceGroupID: null,
     			interfaceIDObject: null
     		});
     	};
@@ -189,10 +218,14 @@ var Workspace = React.createClass({
 			var componentsObject = {};
 			var wiresObject = {};
 			var attachmentsObject = {};
+			var hostInterfacesObject = {};
 			if (selectedProjectObject.topology){
 				componentsObject = selectedProjectObject.topology.components;
     			wiresObject = selectedProjectObject.topology.wires;
     			attachmentsObject = selectedProjectObject.topology.attachments;
+    			if (selectedProjectObject.topology.host_interfaces){
+    				hostInterfacesObject = selectedProjectObject.topology.host_interfaces;
+    			}
     		}
 		}
 
@@ -244,15 +277,13 @@ var Workspace = React.createClass({
 				var thisGroupID = group;
 			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
 				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
-				//hello
+
 				var referenceInterface = Object.keys(thisInterfaceGroup)[0];
 
 				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
 				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
 
 				var thisKey = "" + componentID + thisGroupID;
-
-				//console.log ("ref interface key: " + thisKey);
 
 				var leftDatum = (0.5 * this.props.component.width) - (0.5 * ((nInterfaceGroups * (this.props.ifc.width + this.props.ifc.margin)) - this.props.ifc.margin));
 				var thisLeft = componentX + leftDatum + ((groupIndex) * (this.props.ifc.width + this.props.ifc.margin));
@@ -289,6 +320,9 @@ var Workspace = React.createClass({
 					left: thisLeft + (this.props.ifc.width / 2)
 				};
 
+				var thisFillColor = this.getHSL(this.props.protocols[interfaceGroupProtocol].hue);
+				var thisBorderColor = this.getHSL(this.props.protocols[interfaceGroupProtocol].hue, true);
+
 				ifcs.push(
 					<InterfaceGroup 
 						isDiscreet = {isDiscreet} 
@@ -297,7 +331,8 @@ var Workspace = React.createClass({
 						onMouseDown = {this.onMouseDown} 
 						onMouseUp = {this.onInterfaceMouseUp} 
 						interfaceMode = {interfaceGroupMode} 
-						color = {this.props.protocols[interfaceGroupProtocol].color} 
+						color = {thisFillColor} 
+						border = {thisBorderColor} 
 						width = {this.props.ifc.width} 
 						height = {this.props.ifc.height} 
 						left = {thisLeft} 
@@ -306,9 +341,6 @@ var Workspace = React.createClass({
 						interfaceIDObject = {thisInterfaceGroup} 
 						componentID = {componentID}/>				
 				);
-
-				
-				//console.log (this.interfaceGroupCoordinates);
 
 				if (thisTop > svgExtents.height){
 					svgExtents.height = thisTop + this.props.ifc.height
@@ -331,42 +363,44 @@ var Workspace = React.createClass({
 		};
 
 		
-		var attachments = [];
+		var hostInterfacesArray = [];
 		var attachmentInterfaces = [];
-		for (var attachment in attachmentsObject) {
-			var thisProtocol = attachmentsObject[attachment];
+		for (var hostInterface in hostInterfacesObject) {
+			var thisProtocol = hostInterfacesObject[hostInterface].protocol;
+			var thisMode = hostInterfacesObject[hostInterface].mode;
+			var thisViewData = selectedProjectObject.view[hostInterface];
 
-			var thisViewData = selectedProjectObject.view[attachment];
+			var hostInterfaceX = thisViewData.x;
+			var hostInterfaceY = thisViewData.y;
 
-			var attachmentX = thisViewData.x;
-			var attachmentY = thisViewData.y;
-
-			if (attachment == this.state.dragComponentID){
-				attachmentX = attachmentX + this.state.cursorX - this.state.startX;
-				attachmentY = attachmentY + this.state.cursorY - this.state.startY;
+			if (hostInterface == this.state.dragComponentID){
+				hostInterfaceX = hostInterfaceX + this.state.cursorX - this.state.startX;
+				hostInterfaceY = hostInterfaceY + this.state.cursorY - this.state.startY;
 			};
 
-			attachments.push(
-				<Attachment
-					key = {attachment} 
+
+
+			hostInterfacesArray.push(
+				<HostInterface
+					key = {hostInterface} 
 					protocol = {thisProtocol} 
+					mode = {thisMode} 
 					onMouseDown = {this.onMouseDown} 
 					onMouseUp = {this.onInterfaceMouseUp} 
-					color = {this.props.protocols[thisProtocol].color} 
-					width = {this.props.attachment.width} 
-					height = {this.props.attachment.height} 		
-					posX = {attachmentX} 
-					posY = {attachmentY} 
+					width = {this.props.hostInterface.width} 
+					height = {this.props.hostInterface.height} 		
+					posX = {hostInterfaceX} 
+					posY = {hostInterfaceY} 
 					ifcWidth = {this.props.attachmentInterface.width} 
 					ifcHeight = {this.props.attachmentInterface.height} 
-					attachmentID = {attachment}/>
+					attachmentID = {hostInterface}/>
 			);
 
-			var ifcX = attachmentX + (this.props.attachment.width - this.props.attachmentInterface.width) / 2;
-			var ifcY = attachmentY + this.props.attachment.height - (this.props.attachmentInterface.height / 2) - 1;
+			var ifcX = hostInterfaceX + (this.props.hostInterface.width - this.props.attachmentInterface.width) / 2;
+			var ifcY = hostInterfaceY + this.props.hostInterface.height - (this.props.attachmentInterface.height / 2) - 1;
 
-			this.interfaceGroupCoordinates[attachment] = {
-				"interface-1": {
+			this.interfaceGroupCoordinates[hostInterface] = {
+				"group-1": {
 					top: ifcY + (this.props.attachmentInterface.height / 2),
 					left: ifcX +(this.props.attachmentInterface.width / 2)
 				}
@@ -381,19 +415,25 @@ var Workspace = React.createClass({
 				}
 			}
 
+			var thisFillColor = this.getHSL(this.props.protocols[thisProtocol].hue);
+			var thisBorderColor = this.getHSL(this.props.protocols[thisProtocol].hue, true);
+
 			attachmentInterfaces.push(
 				<AttachmentInterface 
-					key = {attachment + "interface-1"} 
-					isDiscreet = {isDiscreet}
+					key = {hostInterface + "interface-1"} 
+					isDiscreet = {isDiscreet} 
+					mode = {thisMode} 
 					onMouseDown = {this.onMouseDown} 
 					onMouseUp = {this.onInterfaceMouseUp} 
-					color = {this.props.protocols[thisProtocol].color} 
+					color = {thisFillColor} 
+					border = {thisBorderColor} 
 					width = {this.props.attachmentInterface.width} 
 					height = {this.props.attachmentInterface.height} 
 					left = {ifcX} 
 					top = {ifcY} 
+					apex = {this.props.attachmentInterface.apex} 
 					interfaceID = "interface-1" 
-					componentID = {attachment}/>				
+					componentID = {hostInterface}/>				
 			);
 
 			if (ifcY > svgExtents.height){
@@ -443,6 +483,8 @@ var Workspace = React.createClass({
     			}
     		});
 
+    		thisStrokeColor = this.getHSL(this.props.protocols[thisProtocol].hue, true);
+
 			if (!isWireExists) {
 				localGroupArray.push(endpoints["endpoint-1"]);
 				localGroupArray.push(endpoints["endpoint-2"]);
@@ -450,7 +492,7 @@ var Workspace = React.createClass({
 					<WireGroup
 						key = {wire} 
 						wireClass = {wireClass} 
-						color = {this.props.protocols[thisProtocol].color} 
+						color = {thisStrokeColor} 
 						stroke = {this.props.wire.width} 
 						interfaceGroupCoordinates = {this.interfaceGroupCoordinates} 
 						endpoints = {endpoints}/>
@@ -459,18 +501,27 @@ var Workspace = React.createClass({
 
 		};
 
-		if (this.state.interfaceIDObject && this.state.dragging) {
-			var referenceInterface = Object.keys(this.state.interfaceIDObject)[0];
-			var thisProtocol = this.getProtocol(this.state.componentID, referenceInterface);
+		if (this.state.interfaceGroupID && this.state.dragging) {
+
+			//console.log(this.state.componentID);
+			if (this.state.interfaceIDObject){
+				var referenceInterface = Object.keys(this.state.interfaceIDObject)[0];
+				var thisProtocol = this.getProtocol(this.state.componentID, referenceInterface);
+			}
+			else { // host interface
+				var thisProtocol = this.props.selectedProject.topology.host_interfaces[this.state.componentID].protocol
+			}
+//hello
+			var thisStrokeColor = this.getHSL(this.props.protocols[thisProtocol].hue, true);
 
 			var wireInProgress = <WireInProgress
-				color = {this.props.protocols[thisProtocol].color} 
+				color = {thisStrokeColor} 
 				thisInterfaceGroup = {this.state.interfaceGroupID} 
 				thisComponent = {this.state.componentID} 
 				interfaceGroupCoordinates = {this.interfaceGroupCoordinates} 
 				thisAbsX = {this.state.cursorX} 
 				thisAbsY = {this.state.cursorY} 
-				stroke = {this.props.wire.width} 
+				stroke = {this.props.wire.width + 1} 
 				ifcDims = {this.props.ifc}/>
 		}
 
@@ -484,17 +535,24 @@ var Workspace = React.createClass({
 					{wireInProgress}
 				</svg>
 				{components}
+				{hostInterfacesArray}
 				<svg className="ifcContainer ui-module" width={svgExtents.width} height={svgExtents.height}>
 					{ifcs}
+					{attachmentInterfaces}
 				</svg>
-				{attachments}
-				{attachmentInterfaces}	
+				
+					
 			</div>
 		);
 	},
 });
 
-var Attachment = React.createClass({
+var HostInterface = React.createClass({
+
+	onMouseDown: function() {
+		this.props.onMouseDown(this.props.attachmentID)
+	},
+
 	render: function() {
 		var containerStyle = {
 			width: this.props.width,
@@ -505,9 +563,9 @@ var Attachment = React.createClass({
 
 		return (
 			<div 
-				className="attachment" 
+				className="hostInterface" 
 				style={containerStyle}
-				onMouseDown={this.props.onMouseDown.bind(null, this.props.attachmentID, null)}>
+				onMouseDown={this.onMouseDown}>
 				Host Interface
   			</div>
 		);
@@ -533,12 +591,20 @@ var AttachmentInterface = React.createClass({
     	});
 	},
 
+	onMouseDown: function() {	
+		this.props.onMouseDown(this.props.componentID, "group-1")
+	},
+
+	onMouseUp: function() {	
+		this.props.onMouseUp(this.props.componentID, "group-1")
+	},
+
 	render: function() {
 		var growthW = 0;
 		var growthH = 0;
 		if (this.state.isHover && !this.props.isDiscreet){
 			growthW = 4;
-			growthH = 2;
+			growthH = 8;
 		}
 
 		var thisOpacity = 1;
@@ -546,22 +612,43 @@ var AttachmentInterface = React.createClass({
 			thisOpacity = 0.2
 		}
 		var interfaceStyle = {
-			backgroundColor: this.props.color,
-			opacity: thisOpacity,
+			fill: this.props.color,
+			stroke: this.props.border,
+			opacity: thisOpacity
+		};
+
+		var polygon = {	
 			width: this.props.width + growthW,
 			height: this.props.height + growthH,
 			left: this.props.left - growthW/2,
-			top: this.props.top - growthH/2 
+			top: this.props.top - growthH/2 + 1
 		};
 
+		var inputPointer = "";
+		var outputPointer = "";
+		if (this.props.mode == "input" || this.props.mode == "bidirectional"){
+			inputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top - this.props.apex);
+		}
+		if (this.props.mode == "output" || this.props.mode == "bidirectional"){
+			outputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top  + polygon.height + this.props.apex)
+		}
+
+		var points = "" + polygon.left + ", " + polygon.top; //top-left
+		points += inputPointer;
+		points += " " + (polygon.left + polygon.width) + ", " + polygon.top; //top-right
+		points += " " + (polygon.left + polygon.width) + ", " + (polygon.top + polygon.height); //bottom-right
+		points += outputPointer;
+		points += " " + polygon.left + ", " + (polygon.top + polygon.height); //bottom-left
+
 		return (
-			<div 
-				className="attachmentInterface" 
-				style={interfaceStyle} 
+			<polygon 
+				className = "attachmentInterface" 
+				style = {interfaceStyle} 
+				points = {points} 
 				onMouseEnter={this.onMouseEnter} 
 				onMouseLeave={this.onMouseLeave} 
-				onMouseUp={this.props.onMouseUp.bind(null, this.props.componentID, "interface-1")} 
-				onMouseDown={this.props.onMouseDown.bind(null, this.props.componentID, "interface-1")}/>
+				onMouseUp={this.onMouseUp} 
+				onMouseDown={this.onMouseDown}/>
   		)
 	},
 });

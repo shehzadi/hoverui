@@ -153,7 +153,7 @@ $pattern-line-color: lighten($workspace-color, 3%);
 
 .workspace {
 	.component {
-		padding: 5px;
+		padding: 7px;
 		position: absolute;
 		background-color: $topoItem-color;
 		outline: 1px solid darken($topoItem-color, 40%);
@@ -183,14 +183,15 @@ $pattern-line-color: lighten($workspace-color, 3%);
 		pointer-events: fill
 	}
 
-	.attachment {
+	.hostInterface {
 		position: absolute;
 		background-color: hsla(0, 0%, 55%, 0.8);
 		outline: 1px solid hsla(0, 0%, 0%, 0.35);
 		font-size: 11px;
-		text-align: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		color: hsla(0, 0%, 0%, 0.8);
-		padding-top: 2px;
 	}
 
 	.interface {

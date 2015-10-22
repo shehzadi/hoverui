@@ -28,7 +28,7 @@ var InterfaceGroup = React.createClass({
 	},
 
 	onMouseDown: function() {	
-		this.props.onMouseDown(this.props.componentID, this.props.interfaceIDObject, this.props.interfaceGroupID)
+		this.props.onMouseDown(this.props.componentID, this.props.interfaceGroupID, this.props.interfaceIDObject)
 	},
 
 	render: function() {
@@ -53,6 +53,7 @@ var InterfaceGroup = React.createClass({
 
 		var style = {
 			fill: this.props.color,
+			stroke: this.props.border,
 			opacity: thisOpacity
 		}
 
