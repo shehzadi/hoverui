@@ -80,7 +80,7 @@
 /* Element styling */
 .componentInProgress {
   position: absolute;
-  padding: 5px;
+  padding: 7px;
   background-color: rgba(230, 230, 230, 0.6);
   outline: 1px dashed rgba(128, 128, 128, 0.6);
   font-size: 12px;

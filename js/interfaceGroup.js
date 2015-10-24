@@ -24,7 +24,7 @@ var InterfaceGroup = React.createClass({
 	},
 
 	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.componentID, this.props.interfaceGroupID, this.props.isDiscreet)
+		this.props.onMouseUp(this.props.componentID, this.props.interfaceGroupID, this.props.isInvalid)
 	},
 
 	onMouseDown: function() {	
@@ -34,13 +34,13 @@ var InterfaceGroup = React.createClass({
 	render: function() {
 		var growthW = 0;
 		var growthH = 0;
-		if ((this.state.isHover && !this.props.isDiscreet) || this.props.isStartOfNewWire){
+		if ((this.state.isHover && !this.props.isInvalid) || this.props.isStartOfNewWire){
 			growthW = 5;
 			growthH = 9;
 		}
 
 		var thisOpacity = 1;
-		if (this.props.isDiscreet){
+		if (this.props.isInvalid){
 			thisOpacity = 0.2
 		}
 
@@ -55,6 +55,10 @@ var InterfaceGroup = React.createClass({
 			fill: this.props.color,
 			stroke: this.props.border,
 			opacity: thisOpacity
+		}
+
+		var textStyle = {
+			fill: this.props.border
 		}
 
 		var nInterfaceGroups = Object.keys(this.props.interfaceIDObject).length;
@@ -96,7 +100,10 @@ var InterfaceGroup = React.createClass({
 					onMouseLeave = {this.onMouseLeave} 
 					onMouseUp = {this.onMouseUp} 
 					onMouseDown = {this.onMouseDown}/>
-				<text x={textX} y={textY}>
+				<text 
+					x={textX} 
+					y={textY}
+					style = {textStyle}>
 					{text}
 				</text>
 			</g>

@@ -50,8 +50,8 @@ $pattern-line-color: lighten($workspace-color, 3%);
 .pattern {
 	background-image: linear-gradient($pattern-line-color 1px, transparent 1px),
 						linear-gradient(90deg, $pattern-line-color 1px, transparent 1px);
-	background-size:$pattern-pitch $pattern-pitch, $pattern-pitch $pattern-pitch;
-	background-position:0 0, 0 0
+	background-size: $pattern-pitch $pattern-pitch, $pattern-pitch $pattern-pitch;
+	background-position: 0 0, 0 0
 }
 
 /* Mixins */
@@ -134,7 +134,7 @@ $pattern-line-color: lighten($workspace-color, 3%);
 
 .componentInProgress {
 	position: absolute;
-	padding: 5px;
+	padding: 7px;
 	background-color: darken($topoItem-color, 10%);
 	outline: 1px dashed darken($topoItem-color, 50%);
 	font-size: 12px;

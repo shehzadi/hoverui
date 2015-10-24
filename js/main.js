@@ -17,30 +17,34 @@ var IOConsole = React.createClass({
   	getDefaultProps: function() {
     	return {
     		componentInProgress: {
-    			width: 130,
-    			height: 65
+    			width: 135,
+    			height: 72
     		}
     	};
 	},
 
 	handleNewWireDrop: function(component1, interfaceGroup1, component2, interfaceGroup2) {
-		console.log(component1);
-		console.log(interfaceGroup1);
-		console.log(component2);
-		console.log(interfaceGroup2);
+		//console.log(component1);
+		//console.log(interfaceGroup1);
+		//console.log(component2);
+		//console.log(interfaceGroup2);
 		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
     	var newProjectWiresObject = {};
     	if (selectedProject.topology.wires){
     		newProjectWiresObject = _.cloneDeep(selectedProject.topology.wires);
     	}
-    	var group1InterfaceArray = [];
-    	var group2InterfaceArray = [];
+//hello
+		var group1InterfaceArray = ["interface-1"]; // for attachment wire
+    	if (component1.indexOf('host') != 0){ // is NOT an attachment wire  		
+    		var group1InterfaceObject = selectedProject.view[component1].groups[interfaceGroup1];
+    		group1InterfaceArray = Object.keys(group1InterfaceObject);
+    	}
 
-    	var group1InterfaceObject = selectedProject.view[component1].groups[interfaceGroup1];
-    	group1InterfaceArray = Object.keys(group1InterfaceObject);
-
-    	var group2InterfaceObject = selectedProject.view[component2].groups[interfaceGroup2];
-    	group2InterfaceArray = Object.keys(group2InterfaceObject);
+    	var group2InterfaceArray = ["interface-1"]; // for attachment wire
+    	if (component2.indexOf('host') != 0){ // is NOT an attachment wire	
+	    	var group2InterfaceObject = selectedProject.view[component2].groups[interfaceGroup2];
+	    	group2InterfaceArray = Object.keys(group2InterfaceObject);
+	    }
 
     	//console.log(group2InterfaceArray);
     	//console.log(group1InterfaceArray);
@@ -384,20 +388,34 @@ var ProjectSection = React.createClass({
     			version: "0.0.1",
     			description: null,
     			topology: {
-    				attachments: {
-    					"attachment-1": "protocol-4",
-    					"attachment-2": "protocol-4"
+    				host_interfaces: {
+    					"host_interface-1": {
+    						mode: "output",
+    						protocol: "protocol-1"
+    					},
+    					"host_interface-2": {
+    						mode: "input",
+    						protocol: "protocol-2"
+    					},
+    					"host_interface-3": {
+    						mode: "bidirectional",
+    						protocol: "protocol-3"
+    					}
     				},
     				components: null,
     				wires: null
     			},
     			view: {
-    				"attachment-1": {
+    				"host_interface-1": {
     					x: 20,
     					y: 15
     				},
-    				"attachment-2": {
-    					x: 125,
+    				"host_interface-2": {
+    					x: 130,
+    					y: 15
+    				},
+    				"host_interface-3": {
+    					x: 240,
     					y: 15
     				}
     			},

@@ -21,9 +21,11 @@ var WireGroup = React.createClass({
 
 		var end1Comp = this.props.endpoints["endpoint-1"].component;
 		var end1Group = this.props.endpoints["endpoint-1"].interfaceGroup;
+		//console.log ("end1Comp: " + end1Comp + ", end1Group: " + end1Group);
 		
 		var end2Comp = this.props.endpoints["endpoint-2"].component;
 		var end2Group = this.props.endpoints["endpoint-2"].interfaceGroup;
+		//console.log ("end2Comp: " + end2Comp + ", end2Group: " + end2Group);
 
 		var growth = 0;
 		if (this.state.isHover){

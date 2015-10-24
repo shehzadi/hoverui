@@ -101,11 +101,11 @@ var Workspace = React.createClass({
 		}
 	},
 
-	onInterfaceMouseUp: function(componentID, interfaceGroupID, isDiscreet) {
+	onInterfaceMouseUp: function(componentID, interfaceGroupID, isInvalid) {
 		event.stopPropagation();
 		//var sourceProtocol = this.getProtocol(this.state.componentID, Object.keys(this.state.interfaceIDObject)[0]);
 		//var dropProtocol = this.getProtocol(componentID, Object.keys(interfaceIDObject)[0]);
-		if (!isDiscreet) {
+		if (!isInvalid) {
 			//console.log("Create new wire");
 			this.props.handleWireDrop(componentID, interfaceGroupID, this.state.componentID, this.state.interfaceGroupID);
 		}		
@@ -238,6 +238,17 @@ var Workspace = React.createClass({
 		var components = [];
 		var ifcs = [];
 
+		function isExistingWire(thisEndpoint, wiresObject){
+			for (var wire in wiresObject) {
+				var endpoint1 = wiresObject[wire]["endpoint-1"];
+				var endpoint2 = wiresObject[wire]["endpoint-2"];
+
+				if (_.isEqual(thisRefEndpoint, endpoint1) || _.isEqual(thisRefEndpoint, endpoint2)){
+					return true;
+				}
+			}
+		};
+
 		for (var componentID in componentsObject) {
 			var componentModuleID = componentsObject[componentID];
 			var componentModuleObject = this.props.modules[componentModuleID];
@@ -289,28 +300,35 @@ var Workspace = React.createClass({
 				var thisLeft = componentX + leftDatum + ((groupIndex) * (this.props.ifc.width + this.props.ifc.margin));
 				var thisTop = componentY + this.props.component.height - (this.props.ifc.height / 2) + 1;
 
-				var isDiscreet = false;
+				var isInvalid = false;
 				var isStartOfNewWire = false;
 
-				if (this.state.isWireInProgress){ // test for mode, protocol and number of interfaces	
-					if (interfaceGroupMode == this.thisWireInProgressStartMode) { //differing mode
-						isDiscreet = true;
-					}
+				if (this.state.isWireInProgress){ //test for mode, protocol and number of interfaces	
+					isInvalid = true;
 
-					if (interfaceGroupMode == "bidirectional") {
-						isDiscreet = false;
-					}
-
-					if (interfaceGroupProtocol != this.thisWireInProgressProtocol) { //differing protocols
-						isDiscreet = true;
+					if ((interfaceGroupMode != this.thisWireInProgressStartMode || interfaceGroupMode == "bidirectional")
+						&& (interfaceGroupProtocol == this.thisWireInProgressProtocol)
+						&& (this.thisWireInProgressN == nInterfacesInGroup)) {
+						isInvalid = false;
 					}
 
 					if (componentID == this.state.componentID) { //other interfaces on self
-						isDiscreet = true;
+						isInvalid = true;
 					}
 
+					// test for existing wire
+					var thisRefEndpoint = {
+						"component": componentID,
+						"ifc": referenceInterface
+					};
+
+					if (isExistingWire(thisRefEndpoint, wiresObject)){
+						isInvalid = true;
+					}
+
+					//test for self
 					if (componentID == this.state.componentID && thisGroupID == this.state.interfaceGroupID) { //source interface
-						isDiscreet = false;
+						isInvalid = false;
 						isStartOfNewWire = true
 					}
 				}
@@ -325,7 +343,7 @@ var Workspace = React.createClass({
 
 				ifcs.push(
 					<InterfaceGroup 
-						isDiscreet = {isDiscreet} 
+						isInvalid = {isInvalid} 
 						isStartOfNewWire = {isStartOfNewWire} 
 						key = {thisKey} 
 						onMouseDown = {this.onMouseDown} 
@@ -400,18 +418,45 @@ var Workspace = React.createClass({
 			var ifcY = hostInterfaceY + this.props.hostInterface.height - (this.props.attachmentInterface.height / 2) - 1;
 
 			this.interfaceGroupCoordinates[hostInterface] = {
-				"group-1": {
+				"interface-1": {
 					top: ifcY + (this.props.attachmentInterface.height / 2),
 					left: ifcX +(this.props.attachmentInterface.width / 2)
 				}
 			};
 
-			var isDiscreet = false;
-
+			var isInvalid = false;
+			var isStartOfNewWire = false;
 			if (this.state.isWireInProgress){
-				isDiscreet = true;
-				if (thisProtocol == this.state.isWireInProgress) {
-					isDiscreet = false;
+				isInvalid = true;
+				if ((thisMode != this.thisWireInProgressStartMode || thisMode == "bidirectional")
+						&& (thisProtocol == this.thisWireInProgressProtocol)
+						&& (this.thisWireInProgressN == 1)) {
+					isInvalid = false;
+				}
+
+
+
+
+
+
+				var thisRefEndpoint = {
+					"component": hostInterface,
+					"ifc": "interface-1"
+				};
+
+				if (isExistingWire(thisRefEndpoint, wiresObject)){
+					isInvalid = true;
+				}
+
+
+
+
+
+
+
+				if (hostInterface == this.state.componentID) { //source interface
+					isInvalid = false;
+					isStartOfNewWire = true;
 				}
 			}
 
@@ -421,7 +466,8 @@ var Workspace = React.createClass({
 			attachmentInterfaces.push(
 				<AttachmentInterface 
 					key = {hostInterface + "interface-1"} 
-					isDiscreet = {isDiscreet} 
+					isInvalid = {isInvalid} 
+					isStartOfNewWire = {isStartOfNewWire} 
 					mode = {thisMode} 
 					onMouseDown = {this.onMouseDown} 
 					onMouseUp = {this.onInterfaceMouseUp} 
@@ -456,12 +502,17 @@ var Workspace = React.createClass({
 			};
 
 			var convertToGroup = function(componentID, interfaceID){
-				var thisGroupData = selectedProjectObject.view[componentID].groups;
-				for (var group in thisGroupData) {
-					var interfaceArray = Object.keys(thisGroupData[group]);
-					if (interfaceArray.indexOf(interfaceID) > -1){
-						return group
-					}		
+				if (componentID.indexOf('host') == 0){ //is an attachment wire
+					return "interface-1"
+				}
+				else {
+					var thisGroupData = selectedProjectObject.view[componentID].groups;
+					for (var group in thisGroupData) {
+						var interfaceArray = Object.keys(thisGroupData[group]);
+						if (interfaceArray.indexOf(interfaceID) > -1){
+							return group
+						}		
+					}
 				}		
 			};
 
@@ -498,12 +549,9 @@ var Workspace = React.createClass({
 						endpoints = {endpoints}/>
 				);
 			}
-
 		};
 
 		if (this.state.interfaceGroupID && this.state.dragging) {
-
-			//console.log(this.state.componentID);
 			if (this.state.interfaceIDObject){
 				var referenceInterface = Object.keys(this.state.interfaceIDObject)[0];
 				var thisProtocol = this.getProtocol(this.state.componentID, referenceInterface);
@@ -511,7 +559,7 @@ var Workspace = React.createClass({
 			else { // host interface
 				var thisProtocol = this.props.selectedProject.topology.host_interfaces[this.state.componentID].protocol
 			}
-//hello
+
 			var thisStrokeColor = this.getHSL(this.props.protocols[thisProtocol].hue, true);
 
 			var wireInProgress = <WireInProgress
@@ -592,23 +640,23 @@ var AttachmentInterface = React.createClass({
 	},
 
 	onMouseDown: function() {	
-		this.props.onMouseDown(this.props.componentID, "group-1")
+		this.props.onMouseDown(this.props.componentID, "interface-1")
 	},
 
 	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.componentID, "group-1")
+		this.props.onMouseUp(this.props.componentID, "interface-1")
 	},
 
 	render: function() {
 		var growthW = 0;
 		var growthH = 0;
-		if (this.state.isHover && !this.props.isDiscreet){
+		if ((this.state.isHover && !this.props.isInvalid) || this.props.isStartOfNewWire){
 			growthW = 4;
 			growthH = 8;
 		}
 
 		var thisOpacity = 1;
-		if (this.props.isDiscreet){
+		if (this.props.isInvalid){
 			thisOpacity = 0.2
 		}
 		var interfaceStyle = {
