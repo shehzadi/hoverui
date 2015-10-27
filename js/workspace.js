@@ -62,24 +62,36 @@ var Workspace = React.createClass({
 			var workspaceOriginY = workspaceBox.top;
 
 			//console.log(interfaceIDObject);
-			console.log (interfaceGroupID);
 
 
 
 			if (interfaceGroupID){ //mouse down on interface
+				var refInterfaceID = Object.keys(interfaceIDObject)[0];
+				var thisRefEndpoint = {
+						"component": componentID,
+						"ifc": refInterfaceID
+					};
+				var wiresObject = this.props.selectedProject.topology.wires;
 				if (interfaceIDObject){ //mouse down on component interface
-					console.log ("INterface");
-					var refInterfaceID = Object.keys(interfaceIDObject)[0];
 					this.thisWireInProgressN = Object.keys(interfaceIDObject).length;
 					this.thisWireInProgressProtocol = this.getProtocol(componentID, refInterfaceID);
 					this.thisWireInProgressStartMode = this.getMode(componentID, refInterfaceID);	
 				}
 				else {//mouse down on attachment interface
-					console.log ("Attachment INterface");
 					this.thisWireInProgressN = 1;
 					this.thisWireInProgressProtocol = this.props.selectedProject.topology.host_interfaces[componentID].protocol;
 					this.thisWireInProgressStartMode = this.props.selectedProject.topology.host_interfaces[componentID].mode;
-				}				
+				}
+
+				console.log (thisRefEndpoint);
+				console.log (wiresObject);
+
+				if (isExistingWire(thisRefEndpoint, wiresObject)) {// interface with existing wire
+					console.log ("Existing Wire")
+				}
+				else {
+					console.log ("Not Existing Wire")
+				}		
 			}
 
 			else {
@@ -236,16 +248,6 @@ var Workspace = React.createClass({
 		var components = [];
 		var ifcs = [];
 
-		function isExistingWire(thisEndpoint, wiresObject){
-			for (var wire in wiresObject) {
-				var endpoint1 = wiresObject[wire]["endpoint-1"];
-				var endpoint2 = wiresObject[wire]["endpoint-2"];
-
-				if (_.isEqual(thisRefEndpoint, endpoint1) || _.isEqual(thisRefEndpoint, endpoint2)){
-					return true;
-				}
-			}
-		};
 
 		for (var componentID in componentsObject) {
 			var componentModuleID = componentsObject[componentID];
@@ -326,7 +328,7 @@ var Workspace = React.createClass({
 
 					//test for self
 					if (componentID == this.state.componentID && thisGroupID == this.state.interfaceGroupID) { //source interface
-						isInvalid = false;
+						isInvalid = true;
 						isStartOfNewWire = true
 					}
 				}

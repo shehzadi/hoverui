@@ -40,7 +40,7 @@ var InterfaceGroup = React.createClass({
 		}
 
 		var thisOpacity = 1;
-		if (this.props.isInvalid){
+		if (this.props.isInvalid && !this.props.isStartOfNewWire){
 			thisOpacity = 0.2
 		}
 
