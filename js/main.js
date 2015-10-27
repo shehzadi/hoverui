@@ -50,7 +50,7 @@ var IOConsole = React.createClass({
     	//console.log(group1InterfaceArray);
 
     	_.forEach(group1InterfaceArray, function(thisInterfaceID, index) {
- 			var newWireID = "wire-" + (_.size(newProjectWiresObject) + 1);
+ 			var newWireID = "wire-" + ioid();
     		var newWire = {
 	    		"endpoint-1" : {
 	    			"component" : component1,
@@ -78,7 +78,7 @@ var IOConsole = React.createClass({
     	if (this.state.projectsObject[this.state.selectedProjectID].topology.components){
     		newProjectComponentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].topology.components);
     	}
-    	var newComponentID = "component-" + (_.size(newProjectComponentsObject) + 1);
+    	var newComponentID = "component-" + ioid();
 
     	var moduleInterfaces = this.state.modulesObject[moduleID].interfaces;
 
@@ -104,7 +104,7 @@ var IOConsole = React.createClass({
     		if (existingGroup == false) {
     			var interfaceGroup = {};
     			interfaceGroup[thisInterface] = true;
-    			newInterfaceGroupsObject["group-" + groupN] = interfaceGroup;
+    			newInterfaceGroupsObject["group-" + ioid()] = interfaceGroup;
     			groupN += 1
     		}
 
@@ -139,7 +139,7 @@ var IOConsole = React.createClass({
 	createNewProject: function(projectTemplate) {
 		var newProjectsObject = _.cloneDeep(this.state.projectsObject);	
 
-        var newProjectID = "project-" + (_.size(this.state.projectsObject) + 1);
+        var newProjectID = "project-" + guid();
 
         newProjectsObject[newProjectID] = projectTemplate;
         this.firebaseProjectsRef.set(newProjectsObject);

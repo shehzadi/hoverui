@@ -79,9 +79,7 @@ var Workspace = React.createClass({
 					this.thisWireInProgressN = 1;
 					this.thisWireInProgressProtocol = this.props.selectedProject.topology.host_interfaces[componentID].protocol;
 					this.thisWireInProgressStartMode = this.props.selectedProject.topology.host_interfaces[componentID].mode;
-				}
-	//hello			
-				
+				}				
 			}
 
 			else {
