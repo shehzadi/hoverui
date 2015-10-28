@@ -19,12 +19,9 @@ function isExistingWire(thisEndpoint, wiresObject){
 	for (var wire in wiresObject) {
 		var endpoint1 = wiresObject[wire]["endpoint-1"];
 		var endpoint2 = wiresObject[wire]["endpoint-2"];
-
+		
 		if (_.isEqual(thisEndpoint, endpoint1) || _.isEqual(thisEndpoint, endpoint2)){
 			return true;
-		}
-		else {
-			return false
 		}
 	}
 };

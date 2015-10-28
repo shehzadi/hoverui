@@ -7,6 +7,7 @@ var Workspace = React.createClass({
 			interfaceGroupID: null,
 			componentID: null,
 			mouseDown: false,
+			startFromExistingWire: false,
 			dragging: false,
 			workspaceOriginX: 0,
 			workspaceOriginY: 0,
@@ -60,38 +61,37 @@ var Workspace = React.createClass({
 			var workspaceBox = React.findDOMNode(this).getBoundingClientRect();
 			var workspaceOriginX = workspaceBox.left;
 			var workspaceOriginY = workspaceBox.top;
-
-			//console.log(interfaceIDObject);
-
-
+			var startFromExistingWire = false;
 
 			if (interfaceGroupID){ //mouse down on interface
-				var refInterfaceID = Object.keys(interfaceIDObject)[0];
-				var thisRefEndpoint = {
+				
+				var wiresObject = this.props.selectedProject.topology.wires;
+
+				if (interfaceIDObject){ //mouse down on component interface
+
+					var refInterfaceID = Object.keys(interfaceIDObject)[0];
+					var thisRefEndpoint = {
 						"component": componentID,
 						"ifc": refInterfaceID
 					};
-				var wiresObject = this.props.selectedProject.topology.wires;
-				if (interfaceIDObject){ //mouse down on component interface
+
 					this.thisWireInProgressN = Object.keys(interfaceIDObject).length;
 					this.thisWireInProgressProtocol = this.getProtocol(componentID, refInterfaceID);
-					this.thisWireInProgressStartMode = this.getMode(componentID, refInterfaceID);	
+					this.thisWireInProgressStartMode = this.getMode(componentID, refInterfaceID);
+
+					if (isExistingWire(thisRefEndpoint, wiresObject)) {// interface with existing wire
+						console.log ("Existing Wire");
+						startFromExistingWire = true
+					}
+					else {
+						console.log ("Not Existing Wire")
+					}
 				}
 				else {//mouse down on attachment interface
 					this.thisWireInProgressN = 1;
 					this.thisWireInProgressProtocol = this.props.selectedProject.topology.host_interfaces[componentID].protocol;
 					this.thisWireInProgressStartMode = this.props.selectedProject.topology.host_interfaces[componentID].mode;
-				}
-
-				console.log (thisRefEndpoint);
-				console.log (wiresObject);
-
-				if (isExistingWire(thisRefEndpoint, wiresObject)) {// interface with existing wire
-					console.log ("Existing Wire")
-				}
-				else {
-					console.log ("Not Existing Wire")
-				}		
+				}						
 			}
 
 			else {
@@ -100,6 +100,7 @@ var Workspace = React.createClass({
     		
     		this.setState({
     			mouseDown: true,
+    			startFromExistingWire: startFromExistingWire,
     			componentID: componentID,
     			interfaceIDObject: interfaceIDObject,
     			interfaceGroupID: interfaceGroupID,
@@ -113,10 +114,8 @@ var Workspace = React.createClass({
 
 	onInterfaceMouseUp: function(componentID, interfaceGroupID, isInvalid) {
 		event.stopPropagation();
-		//var sourceProtocol = this.getProtocol(this.state.componentID, Object.keys(this.state.interfaceIDObject)[0]);
-		//var dropProtocol = this.getProtocol(componentID, Object.keys(interfaceIDObject)[0]);
-		if (!isInvalid) {
-			//console.log("Create new wire");
+		if (!isInvalid && this.state.isWireInProgress) {
+			console.log("Create new wire");
 			this.props.handleWireDrop(componentID, interfaceGroupID, this.state.componentID, this.state.interfaceGroupID);
 		}		
 	},
@@ -160,6 +159,15 @@ var Workspace = React.createClass({
 			});
 
 			if (this.state.interfaceGroupID){ //dragging from interface
+			
+				if (this.state.startFromExistingWire == true){
+					console.log ("Delete this wire");
+					console.log("Convert wire to wireinprogress");
+
+					// get details of far end
+					// set state as if wire was created from far end
+				}
+
 				this.setState({
 					isWireInProgress: this.thisWireInProgressProtocol
 				});
@@ -205,7 +213,8 @@ var Workspace = React.createClass({
 			}
 
 			this.setState({
-				dragging: false, 
+				dragging: false,
+				startFromExistingWire: false,
 				isWireInProgress: false,
 				dragComponentID: null
 			});				
@@ -312,7 +321,7 @@ var Workspace = React.createClass({
 						isInvalid = false;
 					}
 
-					if (componentID == this.state.componentID) { //other interfaces on self
+					if (componentID == this.state.componentID) { //other interfaces on same component
 						isInvalid = true;
 					}
 
@@ -321,6 +330,7 @@ var Workspace = React.createClass({
 						"component": componentID,
 						"ifc": referenceInterface
 					};
+
 
 					if (isExistingWire(thisRefEndpoint, wiresObject)){
 						isInvalid = true;
@@ -455,7 +465,7 @@ var Workspace = React.createClass({
 
 
 				if (hostInterface == this.state.componentID) { //source interface
-					isInvalid = false;
+					isInvalid = true;
 					isStartOfNewWire = true;
 				}
 			}
@@ -552,7 +562,7 @@ var Workspace = React.createClass({
 		};
 
 		if (this.state.interfaceGroupID && this.state.dragging) {
-			if (this.state.interfaceIDObject){
+			if (this.state.interfaceIDObject){ // component interface
 				var referenceInterface = Object.keys(this.state.interfaceIDObject)[0];
 				var thisProtocol = this.getProtocol(this.state.componentID, referenceInterface);
 			}
