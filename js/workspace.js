@@ -80,11 +80,11 @@ var Workspace = React.createClass({
 					this.thisWireInProgressStartMode = this.getMode(componentID, refInterfaceID);
 
 					if (isExistingWire(thisRefEndpoint, wiresObject)) {// interface with existing wire
-						console.log ("Existing Wire");
-						startFromExistingWire = true
+						//console.log ("Existing Wire");
+						startFromExistingWire = thisRefEndpoint
 					}
 					else {
-						console.log ("Not Existing Wire")
+						//console.log ("Not Existing Wire")
 					}
 				}
 				else {//mouse down on attachment interface
@@ -110,14 +110,6 @@ var Workspace = React.createClass({
     			startY: event.pageY - workspaceOriginY
     		});
 		}
-	},
-
-	onInterfaceMouseUp: function(componentID, interfaceGroupID, isInvalid) {
-		event.stopPropagation();
-		if (!isInvalid && this.state.isWireInProgress) {
-			console.log("Create new wire");
-			this.props.handleWireDrop(componentID, interfaceGroupID, this.state.componentID, this.state.interfaceGroupID);
-		}		
 	},
 
 	getProtocol: function(componentID, interfaceID) {
@@ -160,12 +152,38 @@ var Workspace = React.createClass({
 
 			if (this.state.interfaceGroupID){ //dragging from interface
 			
-				if (this.state.startFromExistingWire == true){
-					console.log ("Delete this wire");
-					console.log("Convert wire to wireinprogress");
+				if (this.state.startFromExistingWire){ //drag starts from existing wire so update
+					//console.log ("Delete this wire");
+					//console.log("Convert wire to wireinprogress");
+
+					//this.props.handleWireUpdate();
+
+					var thisComponentID = this.state.componentID;
+					var thisInterfaceGroupID = this.state.interfaceGroupID;
+					var selectedProject = this.props.selectedProject;
+
+					var otherEnd = getOtherWireGroupEndpoint(thisComponentID, thisInterfaceGroupID, selectedProject);
+					var otherEndInterfaceGroup = convertToGroup(otherEnd.component, otherEnd.ifc, selectedProject.view);
+					var otherEndRefInterface = Object.keys(selectedProject.view[otherEnd.component].groups[otherEndInterfaceGroup])[0];
+
+					//console.log(otherEnd);
+					//console.log(selectedProject.view[otherEnd.component]);
+
+					this.setState({
+						componentID: otherEnd.component,
+						interfaceGroupID: otherEndInterfaceGroup,
+						interfaceIDObject: selectedProject.view[otherEnd.component].groups[otherEndInterfaceGroup]
+					});
+
+
+
+					this.thisWireInProgressStartMode = this.getMode(otherEnd.component, otherEndRefInterface);
+
 
 					// get details of far end
 					// set state as if wire was created from far end
+
+					// set existing wireGroup to pendingDeletion
 				}
 
 				this.setState({
@@ -187,7 +205,41 @@ var Workspace = React.createClass({
 		}
 	},
 
-	onMouseUp: function(event) {	
+	onInterfaceMouseUp: function(componentID, interfaceGroupID, isInvalid) {
+		//console.log(event);
+		event.stopPropagation();
+
+		// figure if dropping on original interface
+		var originalInterfaceID = this.state.startFromExistingWire.ifc;
+		var selectedProjectView = this.props.selectedProject.view;
+		var originalInterfaceGroupID = convertToGroup(componentID, originalInterfaceID, selectedProjectView);
+
+		var originalEndpoint = {
+			component: this.state.startFromExistingWire.component,
+			ifcGroup: originalInterfaceGroupID
+		};
+		var mouseUpEndpoint = {
+			component: componentID,
+			ifcGroup: interfaceGroupID
+		};
+		
+
+		if (_.isEqual(originalEndpoint, mouseUpEndpoint)){
+			this.setState({
+				startFromExistingWire: false
+			});	
+		}
+
+		else if (!isInvalid && this.state.isWireInProgress) {
+			console.log("Create new wires");
+			this.props.handleWireDrop(componentID, interfaceGroupID, this.state.componentID, this.state.interfaceGroupID);
+		};
+
+			
+	},
+
+	onMouseUp: function(event) {
+		//console.log(event);	
 		var finalX = event.pageX - this.state.workspaceOriginX;
 		var finalY = event.pageY - this.state.workspaceOriginY;
 		var deltaX = finalX - this.state.startX;
@@ -195,21 +247,14 @@ var Workspace = React.createClass({
 
 		this.removeDocumentEvents();
 
-		this.setState({
-    		mouseDown: false
-    	});
-
-    	if (!this.state.mouseOver){
-    		this.setState({
-    			componentID: null,
-    			interfaceGroupID: null,
-    			interfaceIDObject: null
-    		});
-    	};
-
+	
 		if (this.state.dragging == true){
-			if (this.state.dragComponentID){
+			if (this.state.dragComponentID){ //dropping component
 				this.props.handleComponentDrop(this.state.dragComponentID, deltaX, deltaY);
+			}
+
+			if (this.state.startFromExistingWire){ //dropping an existing wire (not on original interface)
+				this.props.deleteWires(this.state.startFromExistingWire)
 			}
 
 			this.setState({
@@ -218,7 +263,14 @@ var Workspace = React.createClass({
 				isWireInProgress: false,
 				dragComponentID: null
 			});				
-		};			
+		};
+
+		this.setState({
+    		mouseDown: false,
+    		componentID: null,
+    		interfaceGroupID: null,
+    		interfaceIDObject: null
+    	});		
 	},
 
 	addDocumentEvents: function() {
@@ -341,6 +393,10 @@ var Workspace = React.createClass({
 						isInvalid = true;
 						isStartOfNewWire = true
 					}
+
+					else if (_.isEqual(this.state.startFromExistingWire, thisRefEndpoint)){
+						isInvalid = false;
+					}
 				}
 
 				this.interfaceGroupCoordinates[componentID][thisGroupID] = {
@@ -455,6 +511,7 @@ var Workspace = React.createClass({
 				};
 
 				if (isExistingWire(thisRefEndpoint, wiresObject)){
+					console.log("existing?");
 					isInvalid = true;
 				}
 
@@ -503,6 +560,15 @@ var Workspace = React.createClass({
 
 		var wires = [];
 		var localGroupArray = [];
+
+		this.existingWireEndpoint = false;
+		if (this.state.startFromExistingWire && this.state.dragging){
+			this.existingWireEndpoint = {
+				component: this.state.startFromExistingWire.component,
+				interfaceGroup: convertToGroup(this.state.startFromExistingWire.component, this.state.startFromExistingWire.ifc, selectedProjectObject.view)
+			};
+		};
+
 		for (var wire in wiresObject) {
 			var thisWire = wiresObject[wire];
 			var thisProtocol = this.getProtocol(thisWire["endpoint-1"].component, thisWire["endpoint-1"].ifc);
@@ -511,29 +577,14 @@ var Workspace = React.createClass({
 				wireClass = "discreet"
 			};
 
-			var convertToGroup = function(componentID, interfaceID){
-				if (componentID.indexOf('host') == 0){ //is an attachment wire
-					return "interface-1"
-				}
-				else {
-					var thisGroupData = selectedProjectObject.view[componentID].groups;
-					for (var group in thisGroupData) {
-						var interfaceArray = Object.keys(thisGroupData[group]);
-						if (interfaceArray.indexOf(interfaceID) > -1){
-							return group
-						}		
-					}
-				}		
-			};
-
 			var endpoints = {
 				"endpoint-1": {
 					"component": thisWire["endpoint-1"].component,
-					"interfaceGroup": convertToGroup(thisWire["endpoint-1"].component, thisWire["endpoint-1"].ifc)
+					"interfaceGroup": convertToGroup(thisWire["endpoint-1"].component, thisWire["endpoint-1"].ifc, selectedProjectObject.view)
 				},
 				"endpoint-2": {
 					"component": thisWire["endpoint-2"].component,
-					"interfaceGroup": convertToGroup(thisWire["endpoint-2"].component, thisWire["endpoint-2"].ifc)
+					"interfaceGroup": convertToGroup(thisWire["endpoint-2"].component, thisWire["endpoint-2"].ifc, selectedProjectObject.view)
 				}
 			};
 
@@ -556,7 +607,8 @@ var Workspace = React.createClass({
 						color = {thisStrokeColor} 
 						stroke = {this.props.wire.width} 
 						interfaceGroupCoordinates = {this.interfaceGroupCoordinates} 
-						endpoints = {endpoints}/>
+						endpoints = {endpoints} 
+						existingWireEndpoint = {this.existingWireEndpoint}/>
 				);
 			}
 		};
@@ -666,7 +718,7 @@ var AttachmentInterface = React.createClass({
 		}
 
 		var thisOpacity = 1;
-		if (this.props.isInvalid){
+		if (this.props.isInvalid && !this.props.isStartOfNewWire){
 			thisOpacity = 0.2
 		}
 		var interfaceStyle = {

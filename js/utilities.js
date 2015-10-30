@@ -8,9 +8,7 @@ function ioid() {
 }
 
 function randomStringOf4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-      .toString(16)
-      .substring(1);
+    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 }
 
 
@@ -24,4 +22,40 @@ function isExistingWire(thisEndpoint, wiresObject){
 			return true;
 		}
 	}
+}
+
+function convertToGroup(componentID, interfaceID, selectedProjectView){
+	if (componentID.indexOf('host') == 0){ //is an attachment wire
+		return "interface-1"
+	}
+	else {
+		var thisGroupData = selectedProjectView[componentID].groups;
+		for (var group in thisGroupData) {
+			var interfaceArray = Object.keys(thisGroupData[group]);
+			if (interfaceArray.indexOf(interfaceID) > -1){
+				return group
+			}		
+		}
+	}		
 };
+
+function getOtherWireGroupEndpoint(componentID, interfaceGroupID, selectedProject){
+	var refInterfaceID = Object.keys(selectedProject.view[componentID].groups[interfaceGroupID])[0];
+	var refInterface = {
+		component: componentID,
+		ifc: refInterfaceID
+	};
+	var wiresObject = selectedProject.topology.wires;
+	for (var wire in wiresObject){
+		var endpoint1 = wiresObject[wire]["endpoint-1"];
+		var endpoint2 = wiresObject[wire]["endpoint-2"];
+
+		if (_.isEqual(refInterface, endpoint1)){
+			return endpoint2;
+		}
+
+		if (_.isEqual(refInterface, endpoint2)){
+			return endpoint1;
+		}
+	}
+}

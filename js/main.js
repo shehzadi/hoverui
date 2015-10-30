@@ -23,17 +23,40 @@ var IOConsole = React.createClass({
     	};
 	},
 
+   	deleteWires: function(refEndPoint) {
+   		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
+
+   		var updatedProjectWiresObject = _.cloneDeep(selectedProject.topology.wires);
+
+   		var refGroupID = convertToGroup(refEndPoint.component, refEndPoint.ifc, selectedProject.view);
+
+   		var refGroupObject = selectedProject.view[refEndPoint.component].groups[refGroupID];
+   		for (var thisIfc in refGroupObject){
+   			var thisEndpoint = {
+   				component: refEndPoint.component,
+   				ifc: thisIfc
+   			}
+   			for (thisWire in updatedProjectWiresObject){
+   				var endpoint1 = updatedProjectWiresObject[thisWire]["endpoint-1"];
+   				var endpoint2 = updatedProjectWiresObject[thisWire]["endpoint-2"];
+   				//console.log(endpoint2);
+   				if (_.isEqual(endpoint1, thisEndpoint) || _.isEqual(endpoint2, thisEndpoint)) {
+   					delete updatedProjectWiresObject[thisWire]
+   				}
+   			}
+   		}
+
+		this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("wires").set(updatedProjectWiresObject);
+    },
+
 	handleNewWireDrop: function(component1, interfaceGroup1, component2, interfaceGroup2) {
-		//console.log(component1);
-		//console.log(interfaceGroup1);
-		//console.log(component2);
-		//console.log(interfaceGroup2);
+
 		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
     	var newProjectWiresObject = {};
     	if (selectedProject.topology.wires){
     		newProjectWiresObject = _.cloneDeep(selectedProject.topology.wires);
     	}
-//hello
+
 		var group1InterfaceArray = ["interface-1"]; // for attachment wire
     	if (component1.indexOf('host') != 0){ // is NOT an attachment wire  		
     		var group1InterfaceObject = selectedProject.view[component1].groups[interfaceGroup1];
@@ -45,9 +68,6 @@ var IOConsole = React.createClass({
 	    	var group2InterfaceObject = selectedProject.view[component2].groups[interfaceGroup2];
 	    	group2InterfaceArray = Object.keys(group2InterfaceObject);
 	    }
-
-    	//console.log(group2InterfaceArray);
-    	//console.log(group1InterfaceArray);
 
     	_.forEach(group1InterfaceArray, function(thisInterfaceID, index) {
  			var newWireID = "wire-" + ioid();
@@ -314,6 +334,7 @@ var IOConsole = React.createClass({
 							className = "ui-module workspace pattern" 
 							handleComponentDrop = {this.handleComponentDrop} 
 							handleWireDrop = {this.handleNewWireDrop} 
+							deleteWires = {this.deleteWires} 
 							protocols = {this.state.protocolsObject} 
 							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]} 
 							modules = {this.state.modulesObject}/>

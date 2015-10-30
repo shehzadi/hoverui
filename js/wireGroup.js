@@ -27,6 +27,14 @@ var WireGroup = React.createClass({
 		var end2Group = this.props.endpoints["endpoint-2"].interfaceGroup;
 		//console.log ("end2Comp: " + end2Comp + ", end2Group: " + end2Group);
 
+		console.log(this.props.existingWireEndpoint);
+
+		var svgVisibility = "visible";
+
+		if (_.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-1"]) || _.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-2"])){
+			svgVisibility = "hidden";
+		}
+
 		var growth = 0;
 		if (this.state.isHover){
 			growth = 3
@@ -35,9 +43,11 @@ var WireGroup = React.createClass({
 		var componentStyle = {
 			stroke: this.props.color,
 			strokeWidth: this.props.stroke + growth,
+			visibility: svgVisibility
 		};
 
 		var className = "wire " + this.props.wireClass;
+
 
 		return (
 			<line 
