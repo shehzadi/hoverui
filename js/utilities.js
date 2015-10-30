@@ -11,7 +11,13 @@ function randomStringOf4() {
     return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 }
 
-
+function getHSL(hue, isDarker){
+	var lightness = "55%";
+	if (isDarker){
+		lightness = "45%"
+	}
+	return "hsl(" + hue + ", 70%," + lightness + ")"
+}
 
 function isExistingWire(thisEndpoint, wiresObject){
 	for (var wire in wiresObject) {

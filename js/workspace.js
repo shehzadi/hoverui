@@ -45,13 +45,6 @@ var Workspace = React.createClass({
     	};
 	},
 
-	getHSL: function(hue, isDarker){
-		var lightness = "55%";
-		if (isDarker){
-			lightness = "45%"
-		}
-		return "hsl(" + hue + ", 70%," + lightness + ")"
-	},
 
 	onMouseDown: function(componentID, interfaceGroupID, interfaceIDObject) {			
 		if (event.button == 0){	
@@ -206,7 +199,6 @@ var Workspace = React.createClass({
 	},
 
 	onInterfaceMouseUp: function(componentID, interfaceGroupID, isInvalid) {
-		//console.log(event);
 		event.stopPropagation();
 
 		// figure if dropping on original interface
@@ -223,7 +215,6 @@ var Workspace = React.createClass({
 			ifcGroup: interfaceGroupID
 		};
 		
-
 		if (_.isEqual(originalEndpoint, mouseUpEndpoint)){
 			this.setState({
 				startFromExistingWire: false
@@ -233,13 +224,11 @@ var Workspace = React.createClass({
 		else if (!isInvalid && this.state.isWireInProgress) {
 			console.log("Create new wires");
 			this.props.handleWireDrop(componentID, interfaceGroupID, this.state.componentID, this.state.interfaceGroupID);
-		};
-
-			
+		};		
 	},
 
 	onMouseUp: function(event) {
-		//console.log(event);	
+
 		var finalX = event.pageX - this.state.workspaceOriginX;
 		var finalY = event.pageY - this.state.workspaceOriginY;
 		var deltaX = finalX - this.state.startX;
@@ -247,7 +236,6 @@ var Workspace = React.createClass({
 
 		this.removeDocumentEvents();
 
-	
 		if (this.state.dragging == true){
 			if (this.state.dragComponentID){ //dropping component
 				this.props.handleComponentDrop(this.state.dragComponentID, deltaX, deltaY);
@@ -308,7 +296,6 @@ var Workspace = React.createClass({
 
 		var components = [];
 		var ifcs = [];
-
 
 		for (var componentID in componentsObject) {
 			var componentModuleID = componentsObject[componentID];
@@ -383,7 +370,6 @@ var Workspace = React.createClass({
 						"ifc": referenceInterface
 					};
 
-
 					if (isExistingWire(thisRefEndpoint, wiresObject)){
 						isInvalid = true;
 					}
@@ -404,8 +390,8 @@ var Workspace = React.createClass({
 					left: thisLeft + (this.props.ifc.width / 2)
 				};
 
-				var thisFillColor = this.getHSL(this.props.protocols[interfaceGroupProtocol].hue);
-				var thisBorderColor = this.getHSL(this.props.protocols[interfaceGroupProtocol].hue, true);
+				var thisFillColor = getHSL(this.props.protocols[interfaceGroupProtocol].hue);
+				var thisBorderColor = getHSL(this.props.protocols[interfaceGroupProtocol].hue, true);
 
 				ifcs.push(
 					<InterfaceGroup 
@@ -448,7 +434,7 @@ var Workspace = React.createClass({
 
 		
 		var hostInterfacesArray = [];
-		var attachmentInterfaces = [];
+		var hostPorts = [];
 		for (var hostInterface in hostInterfacesObject) {
 			var thisProtocol = hostInterfacesObject[hostInterface].protocol;
 			var thisMode = hostInterfacesObject[hostInterface].mode;
@@ -527,11 +513,11 @@ var Workspace = React.createClass({
 				}
 			}
 
-			var thisFillColor = this.getHSL(this.props.protocols[thisProtocol].hue);
-			var thisBorderColor = this.getHSL(this.props.protocols[thisProtocol].hue, true);
+			var thisFillColor = getHSL(this.props.protocols[thisProtocol].hue);
+			var thisBorderColor = getHSL(this.props.protocols[thisProtocol].hue, true);
 
-			attachmentInterfaces.push(
-				<AttachmentInterface 
+			hostPorts.push(
+				<HostPort 
 					key = {hostInterface + "interface-1"} 
 					isInvalid = {isInvalid} 
 					isStartOfNewWire = {isStartOfNewWire} 
@@ -595,7 +581,7 @@ var Workspace = React.createClass({
     			}
     		});
 
-    		thisStrokeColor = this.getHSL(this.props.protocols[thisProtocol].hue, true);
+    		thisStrokeColor = getHSL(this.props.protocols[thisProtocol].hue, true);
 
 			if (!isWireExists) {
 				localGroupArray.push(endpoints["endpoint-1"]);
@@ -622,7 +608,7 @@ var Workspace = React.createClass({
 				var thisProtocol = this.props.selectedProject.topology.host_interfaces[this.state.componentID].protocol
 			}
 
-			var thisStrokeColor = this.getHSL(this.props.protocols[thisProtocol].hue, true);
+			var thisStrokeColor = getHSL(this.props.protocols[thisProtocol].hue, true);
 
 			var wireInProgress = <WireInProgress
 				color = {thisStrokeColor} 
@@ -648,7 +634,7 @@ var Workspace = React.createClass({
 				{hostInterfacesArray}
 				<svg className="ifcContainer ui-module" width={svgExtents.width} height={svgExtents.height}>
 					{ifcs}
-					{attachmentInterfaces}
+					{hostPorts}
 				</svg>
 				
 					
@@ -682,86 +668,7 @@ var HostInterface = React.createClass({
 	}
 });
 
-var AttachmentInterface = React.createClass({
-	getInitialState: function() {
-		return {
-			isHover: false,
-		};
-	},
 
-	onMouseEnter: function() {	
-		this.setState({
-			isHover: true
-    	});
-	},
-
-	onMouseLeave: function() {	
-		this.setState({
-			isHover: false
-    	});
-	},
-
-	onMouseDown: function() {	
-		this.props.onMouseDown(this.props.componentID, "interface-1")
-	},
-
-	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.componentID, "interface-1")
-	},
-
-	render: function() {
-		var growthW = 0;
-		var growthH = 0;
-		if ((this.state.isHover && !this.props.isInvalid) || this.props.isStartOfNewWire){
-			growthW = 4;
-			growthH = 8;
-		}
-
-		var thisOpacity = 1;
-		if (this.props.isInvalid && !this.props.isStartOfNewWire){
-			thisOpacity = 0.2
-		}
-		var interfaceStyle = {
-			fill: this.props.color,
-			stroke: this.props.border,
-			opacity: thisOpacity
-		};
-
-		var polygon = {	
-			width: this.props.width + growthW,
-			height: this.props.height + growthH,
-			left: this.props.left - growthW/2,
-			top: this.props.top - growthH/2 + 1
-		};
-
-		var inputPointer = "";
-		var outputPointer = "";
-		if (this.props.mode == "input" || this.props.mode == "bidirectional"){
-			inputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top - this.props.apex);
-		}
-		if (this.props.mode == "output" || this.props.mode == "bidirectional"){
-			outputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top  + polygon.height + this.props.apex)
-		}
-
-		var points = "" + polygon.left + ", " + polygon.top; //top-left
-		points += inputPointer;
-		points += " " + (polygon.left + polygon.width) + ", " + polygon.top; //top-right
-		points += " " + (polygon.left + polygon.width) + ", " + (polygon.top + polygon.height); //bottom-right
-		points += outputPointer;
-		points += " " + polygon.left + ", " + (polygon.top + polygon.height); //bottom-left
-
-		return (
-			<polygon 
-				className = "attachmentInterface" 
-				style = {interfaceStyle} 
-				points = {points} 
-				onMouseEnter={this.onMouseEnter} 
-				onMouseLeave={this.onMouseLeave} 
-				onMouseUp={this.onMouseUp} 
-				onMouseDown={this.onMouseDown}/>
-  		)
-	},
-});
 
 var Component = React.createClass({
 	handleMouseDown: function(){
