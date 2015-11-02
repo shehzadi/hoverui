@@ -24,13 +24,24 @@ var IOConsole = React.createClass({
 	},
 
    	deleteWires: function(refEndPoint) {
+
    		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
 
    		var updatedProjectWiresObject = _.cloneDeep(selectedProject.topology.wires);
 
    		var refGroupID = convertToGroup(refEndPoint.component, refEndPoint.ifc, selectedProject.view);
 
-   		var refGroupObject = selectedProject.view[refEndPoint.component].groups[refGroupID];
+   		var refGroupObject;
+
+   		if (refEndPoint.component.indexOf('host') == 0){ //is an attachment wire
+			refGroupObject = {"interface-1": true}
+		}
+
+		else {
+   			refGroupObject = selectedProject.view[refEndPoint.component].groups[refGroupID];
+		}
+
+   		console.log(refGroupObject);
    		for (var thisIfc in refGroupObject){
    			var thisEndpoint = {
    				component: refEndPoint.component,
@@ -50,7 +61,6 @@ var IOConsole = React.createClass({
     },
 
 	handleNewWireDrop: function(component1, interfaceGroup1, component2, interfaceGroup2) {
-
 		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
     	var newProjectWiresObject = {};
     	if (selectedProject.topology.wires){

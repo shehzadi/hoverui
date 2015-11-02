@@ -23,12 +23,12 @@ var InterfaceGroup = React.createClass({
     	});
 	},
 
-	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.componentID, this.props.interfaceGroupID, this.props.isInvalid)
-	},
-
 	onMouseDown: function() {	
 		this.props.onMouseDown(this.props.componentID, this.props.interfaceGroupID, this.props.interfaceIDObject)
+	},
+
+	onMouseUp: function() {	
+		this.props.onMouseUp(this.props.componentID, this.props.interfaceGroupID, this.props.isInvalid)
 	},
 
 	render: function() {

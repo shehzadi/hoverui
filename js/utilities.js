@@ -46,11 +46,22 @@ function convertToGroup(componentID, interfaceID, selectedProjectView){
 };
 
 function getOtherWireGroupEndpoint(componentID, interfaceGroupID, selectedProject){
-	var refInterfaceID = Object.keys(selectedProject.view[componentID].groups[interfaceGroupID])[0];
-	var refInterface = {
-		component: componentID,
-		ifc: refInterfaceID
-	};
+
+	if (componentID.indexOf('host') == 0){ //is an attachment wire
+		var refInterface = {
+			component: componentID,
+			ifc: "interface-1"
+		};
+	}
+
+	else {
+		var refInterfaceID = Object.keys(selectedProject.view[componentID].groups[interfaceGroupID])[0];
+		var refInterface = {
+			component: componentID,
+			ifc: refInterfaceID
+		};
+	}
+	
 	var wiresObject = selectedProject.topology.wires;
 	for (var wire in wiresObject){
 		var endpoint1 = wiresObject[wire]["endpoint-1"];

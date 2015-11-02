@@ -22,7 +22,7 @@ var HostPort = React.createClass({
 	},
 
 	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.componentID, "interface-1")
+		this.props.onMouseUp(this.props.componentID, "interface-1", this.props.isInvalid)
 	},
 
 	render: function() {

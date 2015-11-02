@@ -76,21 +76,31 @@ var Workspace = React.createClass({
 						//console.log ("Existing Wire");
 						startFromExistingWire = thisRefEndpoint
 					}
-					else {
-						//console.log ("Not Existing Wire")
-					}
 				}
 				else {//mouse down on attachment interface
+					console.log("attachment Interface: " + interfaceGroupID);
+					console.log(wiresObject);
+
+					var thisRefEndpoint = {
+						"component": componentID,
+						"ifc": "interface-1"
+					};
+
 					this.thisWireInProgressN = 1;
 					this.thisWireInProgressProtocol = this.props.selectedProject.topology.host_interfaces[componentID].protocol;
 					this.thisWireInProgressStartMode = this.props.selectedProject.topology.host_interfaces[componentID].mode;
+
+					if (isExistingWire(thisRefEndpoint, wiresObject)) {// interface with existing wire
+						//console.log ("Existing Wire");
+						startFromExistingWire = thisRefEndpoint
+					}
 				}						
 			}
 
 			else {
 				interfaceIDObject = null
 			}
-    		
+    		console.log(startFromExistingWire);
     		this.setState({
     			mouseDown: true,
     			startFromExistingWire: startFromExistingWire,
@@ -156,16 +166,34 @@ var Workspace = React.createClass({
 					var selectedProject = this.props.selectedProject;
 
 					var otherEnd = getOtherWireGroupEndpoint(thisComponentID, thisInterfaceGroupID, selectedProject);
-					var otherEndInterfaceGroup = convertToGroup(otherEnd.component, otherEnd.ifc, selectedProject.view);
-					var otherEndRefInterface = Object.keys(selectedProject.view[otherEnd.component].groups[otherEndInterfaceGroup])[0];
+					console.log(otherEnd);
 
+					
+
+					var otherEndInterfaceGroup = convertToGroup(otherEnd.component, otherEnd.ifc, selectedProject.view);
+
+					var otherEndRefInterface;
+					if (otherEnd.component.indexOf('host') == 0){ //is an attachment wire
+						otherEndRefInterface = "interface-1"
+					}
+					else {
+						otherEndRefInterface = Object.keys(selectedProject.view[otherEnd.component].groups[otherEndInterfaceGroup])[0];
+					}
 					//console.log(otherEnd);
 					//console.log(selectedProject.view[otherEnd.component]);
+
+					var interfaceIDObject;
+					if (otherEnd.component.indexOf('host') == 0){ //is an attachment wire
+						interfaceIDObject = null
+					}
+					else {
+						interfaceIDObject = selectedProject.view[otherEnd.component].groups[otherEndInterfaceGroup]
+					}
 
 					this.setState({
 						componentID: otherEnd.component,
 						interfaceGroupID: otherEndInterfaceGroup,
-						interfaceIDObject: selectedProject.view[otherEnd.component].groups[otherEndInterfaceGroup]
+						interfaceIDObject: interfaceIDObject
 					});
 
 
@@ -497,11 +525,8 @@ var Workspace = React.createClass({
 				};
 
 				if (isExistingWire(thisRefEndpoint, wiresObject)){
-					console.log("existing?");
 					isInvalid = true;
 				}
-
-
 
 
 
@@ -510,6 +535,9 @@ var Workspace = React.createClass({
 				if (hostInterface == this.state.componentID) { //source interface
 					isInvalid = true;
 					isStartOfNewWire = true;
+				}
+				else if (_.isEqual(this.state.startFromExistingWire, thisRefEndpoint)){
+					isInvalid = false;
 				}
 			}
 
