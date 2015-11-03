@@ -122,6 +122,11 @@
   opacity: 0.6;
 }
 
+.workspace .component.pendingDeletion {
+  background-color: rgba(230, 230, 230, 0.6);
+  outline: 1px dashed rgba(128, 128, 128, 0.6);
+}
+
 .workspace svg, .workspace text {
   pointer-events: none;
   font-size: 10px;

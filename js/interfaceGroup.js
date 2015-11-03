@@ -44,6 +44,10 @@ var InterfaceGroup = React.createClass({
 			thisOpacity = 0.2
 		}
 
+		if (this.props.isPendingDeletion == this.props.componentID){
+			thisOpacity = 0
+		}
+
 		var polygon = {	
 			width: this.props.width + growthW,
 			height: this.props.height + growthH,
@@ -58,7 +62,8 @@ var InterfaceGroup = React.createClass({
 		}
 
 		var textStyle = {
-			fill: this.props.border
+			fill: this.props.border,
+			opacity: thisOpacity
 		}
 
 		var nInterfaceGroups = Object.keys(this.props.interfaceIDObject).length;

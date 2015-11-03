@@ -172,6 +172,11 @@ $pattern-line-color: lighten($workspace-color, 3%);
 		}
 	}
 
+	.component.pendingDeletion {
+		background-color: darken($topoItem-color, 10%);
+		outline: 1px dashed darken($topoItem-color, 50%);
+	}
+
 	svg, text {
 		pointer-events: none;
 		font-size: 10px;

@@ -123,7 +123,6 @@ var IOConsole = React.createClass({
     			var existingGroup = false;
     			var existingGroupMemberID = Object.keys(newInterfaceGroupsObject[group])[0];
     			var existingGroupMemberDetails = moduleInterfaces[existingGroupMemberID];
-    			console.log(existingGroupMemberDetails);
     			if (_.isEqual(thisInterfaceDetails, existingGroupMemberDetails)){
     				existingGroup = group;
     				break
@@ -140,7 +139,6 @@ var IOConsole = React.createClass({
 
     		else {
     			newInterfaceGroupsObject[existingGroup][thisInterface] = true;
-    			console.log(newInterfaceGroupsObject[existingGroup][thisInterface])
     		}  		
     	}
 
@@ -163,7 +161,35 @@ var IOConsole = React.createClass({
     	newProjectObject.view[dropComponent].x += deltaX;
     	newProjectObject.view[dropComponent].y += deltaY;
 
-		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
+    	if (newProjectObject.view[dropComponent].x <= 0 || newProjectObject.view[dropComponent].y <= 0){
+    		this.deleteComponent(dropComponent)
+    	}
+
+    	else {
+    		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
+    	}
+
+		
+    },
+
+   	deleteComponent: function(componentID) {
+   		console.log("deleting");
+   		var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
+   		newProjectObject.view[componentID] = null;
+   		newProjectObject.topology.components[componentID] = null;
+
+   		//find wires and delete them
+   		if (newProjectObject.topology.wires){
+	   		for (var wire in newProjectObject.topology.wires){
+	   			var wireObject = newProjectObject.topology.wires[wire];
+	   			console.log(wire);
+	   			if (wireObject["endpoint-1"].component == componentID || wireObject["endpoint-2"].component == componentID){
+	   				newProjectObject.topology.wires[wire] = null
+	   			}
+	   		}
+   		}
+
+   		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
     },
 
 	createNewProject: function(projectTemplate) {

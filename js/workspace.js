@@ -15,7 +15,7 @@ var Workspace = React.createClass({
 			startY: 0,
 			cursorX: 0,
 			cursorY: 0,
-			isWireInProgress: false,
+			isWireInProgress: false
 		};
 	},
 
@@ -100,7 +100,6 @@ var Workspace = React.createClass({
 			else {
 				interfaceIDObject = null
 			}
-    		console.log(startFromExistingWire);
     		this.setState({
     			mouseDown: true,
     			startFromExistingWire: startFromExistingWire,
@@ -324,6 +323,7 @@ var Workspace = React.createClass({
 
 		var components = [];
 		var ifcs = [];
+		this.isPendingDeletion = false;
 
 		for (var componentID in componentsObject) {
 			var componentModuleID = componentsObject[componentID];
@@ -338,9 +338,16 @@ var Workspace = React.createClass({
 				componentX = componentX + this.state.cursorX - this.state.startX;
 				componentY = componentY + this.state.cursorY - this.state.startY;
 			}
+
+			
+			if (componentX <= 0 || componentY <= 0) {
+				this.isPendingDeletion = componentID
+			}
+			
   			components.push(
   				<Component
 					key = {componentID} 
+					isPendingDeletion = {this.isPendingDeletion} 
 					onMouseDown = {this.onMouseDown} 
 					width = {this.props.component.width} 
 					height = {this.props.component.height} 
@@ -425,6 +432,7 @@ var Workspace = React.createClass({
 					<InterfaceGroup 
 						isInvalid = {isInvalid} 
 						isStartOfNewWire = {isStartOfNewWire} 
+						isPendingDeletion = {this.isPendingDeletion} 
 						key = {thisKey} 
 						onMouseDown = {this.onMouseDown} 
 						onMouseUp = {this.onInterfaceMouseUp} 
@@ -474,6 +482,8 @@ var Workspace = React.createClass({
 			if (hostInterface == this.state.dragComponentID){
 				hostInterfaceX = hostInterfaceX + this.state.cursorX - this.state.startX;
 				hostInterfaceY = hostInterfaceY + this.state.cursorY - this.state.startY;
+				if (hostInterfaceX <= 1){hostInterfaceX = 2}
+				if (hostInterfaceY <= 1){hostInterfaceY = 2}
 			};
 
 
@@ -617,6 +627,7 @@ var Workspace = React.createClass({
 				wires.push(
 					<WireGroup
 						key = {wire} 
+						isPendingDeletion = {this.isPendingDeletion} 
 						wireClass = {wireClass} 
 						color = {thisStrokeColor} 
 						stroke = {this.props.wire.width} 
@@ -678,6 +689,7 @@ var HostInterface = React.createClass({
 	},
 
 	render: function() {
+
 		var containerStyle = {
 			width: this.props.width,
 			height: this.props.height,
@@ -711,11 +723,16 @@ var Component = React.createClass({
 			left: this.props.thisComponentX
 		};
 
+		var classString = "component";
+		if (this.props.isPendingDeletion == this.props.thisComponentID){
+			classString += " pendingDeletion"
+		}
+
 		return (
 			<div 
-				className="component" 
-				onMouseDown={this.handleMouseDown}  
-				style={componentStyle}>
+				className = {classString} 
+				onMouseDown = {this.handleMouseDown}  
+				style = {componentStyle}>
   				<div className="componentName">
   					{this.props.thisModule.name}
   				</div>

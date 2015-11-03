@@ -25,19 +25,25 @@ var WireGroup = React.createClass({
 		var end2Comp = this.props.endpoints["endpoint-2"].component;
 		var end2Group = this.props.endpoints["endpoint-2"].interfaceGroup;
 
-		var svgVisibility = "visible";
-
-		if (_.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-1"]) || _.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-2"])){
-			svgVisibility = "hidden";
-		}
-
 		var growth = 0;
 		if (this.state.isHover){
 			growth = 3
 		};
 
+		var dashArray = "";
+		if (this.props.isPendingDeletion == end1Comp || this.props.isPendingDeletion == end2Comp) {
+			dashArray = "3,3";
+			growth = -1
+		}
+
+		var svgVisibility = "visible";
+		if (_.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-1"]) || _.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-2"])){
+			svgVisibility = "hidden";
+		}
+
 		var componentStyle = {
 			stroke: this.props.color,
+			strokeDasharray: dashArray, 
 			strokeWidth: this.props.stroke + growth,
 			visibility: svgVisibility
 		};
