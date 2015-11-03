@@ -31,24 +31,28 @@ var WireGroup = React.createClass({
 		};
 
 		var dashArray = "";
-		if (this.props.isPendingDeletion == end1Comp || this.props.isPendingDeletion == end2Comp) {
+		var className = "wire";
+		if ((this.props.isPendingDeletion == end1Comp || this.props.isPendingDeletion == end2Comp) 
+			|| (_.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-1"]) || _.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-2"]))) {
 			dashArray = "3,3";
-			growth = -1
+			growth = -1;
+		}
+		else {
+			className = "wire " + this.props.wireClass;
 		}
 
-		var svgVisibility = "visible";
-		if (_.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-1"]) || _.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-2"])){
-			svgVisibility = "hidden";
-		}
+		//var svgVisibility = "visible";
+		//if (_.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-1"]) || _.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-2"])){
+		//	svgVisibility = "hidden";
+		//}
 
 		var componentStyle = {
 			stroke: this.props.color,
 			strokeDasharray: dashArray, 
-			strokeWidth: this.props.stroke + growth,
-			visibility: svgVisibility
+			strokeWidth: this.props.stroke + growth
+			//visibility: svgVisibility
 		};
 
-		var className = "wire " + this.props.wireClass;
 
 
 		return (
