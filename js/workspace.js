@@ -155,20 +155,13 @@ var Workspace = React.createClass({
 			if (this.state.interfaceGroupID){ //dragging from interface
 			
 				if (this.state.startFromExistingWire){ //drag starts from existing wire so update
-					//console.log ("Delete this wire");
-					//console.log("Convert wire to wireinprogress");
-
-					//this.props.handleWireUpdate();
 
 					var thisComponentID = this.state.componentID;
 					var thisInterfaceGroupID = this.state.interfaceGroupID;
 					var selectedProject = this.props.selectedProject;
 
 					var otherEnd = getOtherWireGroupEndpoint(thisComponentID, thisInterfaceGroupID, selectedProject);
-					console.log(otherEnd);
-
-					
-
+		
 					var otherEndInterfaceGroup = convertToGroup(otherEnd.component, otherEnd.ifc, selectedProject.view);
 
 					var otherEndRefInterface;
@@ -178,8 +171,6 @@ var Workspace = React.createClass({
 					else {
 						otherEndRefInterface = Object.keys(selectedProject.view[otherEnd.component].groups[otherEndInterfaceGroup])[0];
 					}
-					//console.log(otherEnd);
-					//console.log(selectedProject.view[otherEnd.component]);
 
 					var interfaceIDObject;
 					if (otherEnd.component.indexOf('host') == 0){ //is an attachment wire
@@ -195,15 +186,8 @@ var Workspace = React.createClass({
 						interfaceIDObject: interfaceIDObject
 					});
 
-
-
 					this.thisWireInProgressStartMode = this.getMode(otherEnd.component, otherEndRefInterface);
 
-
-					// get details of far end
-					// set state as if wire was created from far end
-
-					// set existing wireGroup to pendingDeletion
 				}
 
 				this.setState({
@@ -334,13 +318,13 @@ var Workspace = React.createClass({
 			var componentX = componentViewData.x;
 			var componentY = componentViewData.y;
 
-			if (componentID == this.state.dragComponentID){
+			if (componentID == this.state.dragComponentID){ //component is being dragged
 				componentX = componentX + this.state.cursorX - this.state.startX;
 				componentY = componentY + this.state.cursorY - this.state.startY;
 			}
 
 			
-			if (componentX <= 0 || componentY <= 0) {
+			if (componentX <= 0 || componentY <= 0) { //component is outside of canvas, e.g. during drag operation
 				this.isPendingDeletion = componentID
 			}
 			
