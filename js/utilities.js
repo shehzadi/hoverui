@@ -76,3 +76,35 @@ function getOtherWireGroupEndpoint(componentID, interfaceGroupID, selectedProjec
 		}
 	}
 }
+
+function defineSvgSize(interfaceGroupCoordinates, cursorX, cursorY){
+	var svgExtents = {
+		width: 0,
+		height: 0
+	}
+
+	var leftArray = [];
+	var topArray = [];
+
+	for(var component in interfaceGroupCoordinates) {
+		var thisComponent = interfaceGroupCoordinates[component];
+		
+		for(var group in thisComponent) {
+			var thisGroup = thisComponent[group];
+			leftArray.push(thisGroup.left);
+			topArray.push(thisGroup.top);
+		}
+	}
+
+	leftArray.push(cursorX);
+	topArray.push(cursorY);
+
+	svgExtents.width = Math.max.apply(Math, leftArray);
+	svgExtents.height = Math.max.apply(Math, topArray);
+
+	// Add a bit extra
+	svgExtents.width += 30;
+	svgExtents.height += 30;
+
+	return svgExtents
+}

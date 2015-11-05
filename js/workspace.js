@@ -300,10 +300,7 @@ var Workspace = React.createClass({
 		}
 
 		this.interfaceGroupCoordinates = {};
-		var svgExtents = {
-			width: 0,
-			height: 0
-		}
+		
 
 		var components = [];
 		var ifcs = [];
@@ -432,22 +429,6 @@ var Workspace = React.createClass({
 						componentID = {componentID}/>				
 				);
 
-				if (thisTop > svgExtents.height){
-					svgExtents.height = thisTop + this.props.ifc.height
-				}
-
-				if (thisLeft > svgExtents.width){
-					svgExtents.width = thisLeft + this.props.ifc.width;
-				}
-
-				if (this.state.cursorY > svgExtents.height){
-					svgExtents.height = this.state.cursorY
-				}
-
-				if (this.state.cursorX > svgExtents.width){
-					svgExtents.width = this.state.cursorX
-				}
-
 				groupIndex += 1;
 			};
 		};
@@ -557,13 +538,6 @@ var Workspace = React.createClass({
 					componentID = {hostInterface}/>				
 			);
 
-			if (ifcY > svgExtents.height){
-				svgExtents.height = ifcY + this.props.attachmentInterface.height
-			}
-
-			if (ifcX > svgExtents.width){
-				svgExtents.width = ifcX + this.props.attachmentInterface.width;
-			}
 		};
 
 		var wires = [];
@@ -644,23 +618,21 @@ var Workspace = React.createClass({
 				ifcDims = {this.props.ifc}/>
 		}
 
-		svgExtents.width += 30;
-		svgExtents.height += 30;
+		//figure out size of svg container
+		this.svgExtents = defineSvgSize(this.interfaceGroupCoordinates, this.state.cursorX, this.state.cursorY)
 
 		return (
 			<div className="ui-module workspace pattern">		
-				<svg className="wireContainer ui-module" width={svgExtents.width} height={svgExtents.height}>
+				<svg className="wireContainer ui-module" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{wires}
 					{wireInProgress}
 				</svg>
 				{components}
 				{hostInterfacesArray}
-				<svg className="ifcContainer ui-module" width={svgExtents.width} height={svgExtents.height}>
+				<svg className="ifcContainer ui-module" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{ifcs}
 					{hostPorts}
-				</svg>
-				
-					
+				</svg>		
 			</div>
 		);
 	},
