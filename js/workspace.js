@@ -78,9 +78,6 @@ var Workspace = React.createClass({
 					}
 				}
 				else {//mouse down on attachment interface
-					console.log("attachment Interface: " + interfaceGroupID);
-					console.log(wiresObject);
-
 					var thisRefEndpoint = {
 						"component": componentID,
 						"ifc": "interface-1"
@@ -233,7 +230,6 @@ var Workspace = React.createClass({
 		}
 
 		else if (!isInvalid && this.state.isWireInProgress) {
-			console.log("Create new wires");
 			this.props.handleWireDrop(componentID, interfaceGroupID, this.state.componentID, this.state.interfaceGroupID);
 		};		
 	},
@@ -299,14 +295,16 @@ var Workspace = React.createClass({
     		}
 		}
 
-		this.interfaceGroupCoordinates = {};
+		this.componentData = {};
 		
-
 		var components = [];
 		var ifcs = [];
 		this.isPendingDeletion = false;
 
 		for (var componentID in componentsObject) {
+
+			this.componentData[componentID] = {};
+
 			var componentModuleID = componentsObject[componentID];
 			var componentModuleObject = this.props.modules[componentModuleID];
 
@@ -324,6 +322,11 @@ var Workspace = React.createClass({
 			if (componentX <= 0 || componentY <= 0) { //component is outside of canvas, e.g. during drag operation
 				this.isPendingDeletion = componentID
 			}
+
+			this.componentData[componentID] = {
+				left: componentX,
+				top: componentY
+			};
 			
   			components.push(
   				<Component
@@ -339,12 +342,16 @@ var Workspace = React.createClass({
 					protocols = {this.props.protocols}/>
   			);
 
-  			// Interfaces
-  			this.interfaceGroupCoordinates[componentID] = {};
 
+
+
+
+  			// Interfaces
+  			
 	  		var interfacesObject = componentModuleObject.interfaces;
 	  		var interfaceGroups = componentViewData.groups;
-	  		var nInterfaceGroups = Object.keys(interfaceGroups).length
+	  		var nInterfaceGroups = Object.keys(interfaceGroups).length;
+	  		this.componentData[componentID]["interfaceGroups"] = {};
 
 			//loop through internal interface groups
 			var groupIndex = 0;
@@ -401,7 +408,7 @@ var Workspace = React.createClass({
 					}
 				}
 
-				this.interfaceGroupCoordinates[componentID][thisGroupID] = {
+				this.componentData[componentID]["interfaceGroups"][thisGroupID] = {
 					top: thisTop + (this.props.ifc.height / 2),
 					left: thisLeft + (this.props.ifc.width / 2)
 				};
@@ -472,7 +479,9 @@ var Workspace = React.createClass({
 			var ifcX = hostInterfaceX + (this.props.hostInterface.width - this.props.attachmentInterface.width) / 2;
 			var ifcY = hostInterfaceY + this.props.hostInterface.height - (this.props.attachmentInterface.height / 2) - 1;
 
-			this.interfaceGroupCoordinates[hostInterface] = {
+			this.componentData[hostInterface] = {};
+			this.componentData[hostInterface]["interfaceGroups"] = {};
+			this.componentData[hostInterface].interfaceGroups = {
 				"interface-1": {
 					top: ifcY + (this.props.attachmentInterface.height / 2),
 					left: ifcX +(this.props.attachmentInterface.width / 2)
@@ -589,7 +598,7 @@ var Workspace = React.createClass({
 						wireClass = {wireClass} 
 						color = {thisStrokeColor} 
 						stroke = {this.props.wire.width} 
-						interfaceGroupCoordinates = {this.interfaceGroupCoordinates} 
+						componentData = {this.componentData} 
 						endpoints = {endpoints} 
 						existingWireEndpoint = {this.existingWireEndpoint}/>
 				);
@@ -611,7 +620,7 @@ var Workspace = React.createClass({
 				color = {thisStrokeColor} 
 				thisInterfaceGroup = {this.state.interfaceGroupID} 
 				thisComponent = {this.state.componentID} 
-				interfaceGroupCoordinates = {this.interfaceGroupCoordinates} 
+				componentData = {this.componentData} 
 				thisAbsX = {this.state.cursorX} 
 				thisAbsY = {this.state.cursorY} 
 				stroke = {this.props.wire.width + 1} 
@@ -619,7 +628,7 @@ var Workspace = React.createClass({
 		}
 
 		//figure out size of svg container
-		this.svgExtents = defineSvgSize(this.interfaceGroupCoordinates, this.state.cursorX, this.state.cursorY)
+		this.svgExtents = defineSvgSize(this.componentData, this.state.cursorX, this.state.cursorY)
 
 		return (
 			<div className="ui-module workspace pattern">		
@@ -718,8 +727,8 @@ var WireInProgress = React.createClass({
 		return (
 			<line 
 				className = "wire" 
-				x1 = {this.props.interfaceGroupCoordinates[end1Comp][end1Int].left} 
-				y1 = {this.props.interfaceGroupCoordinates[end1Comp][end1Int].top} 
+				x1 = {this.props.componentData[end1Comp].interfaceGroups[end1Int].left} 
+				y1 = {this.props.componentData[end1Comp].interfaceGroups[end1Int].top} 
 				x2 = {this.props.thisAbsX}
 				y2 = {this.props.thisAbsY}
 				style = {componentStyle}/>

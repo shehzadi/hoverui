@@ -41,7 +41,6 @@ var IOConsole = React.createClass({
    			refGroupObject = selectedProject.view[refEndPoint.component].groups[refGroupID];
 		}
 
-   		console.log(refGroupObject);
    		for (var thisIfc in refGroupObject){
    			var thisEndpoint = {
    				component: refEndPoint.component,
@@ -173,7 +172,6 @@ var IOConsole = React.createClass({
     },
 
    	deleteComponent: function(componentID) {
-   		console.log("deleting");
    		var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
    		newProjectObject.view[componentID] = null;
    		newProjectObject.topology.components[componentID] = null;
@@ -182,7 +180,6 @@ var IOConsole = React.createClass({
    		if (newProjectObject.topology.wires){
 	   		for (var wire in newProjectObject.topology.wires){
 	   			var wireObject = newProjectObject.topology.wires[wire];
-	   			console.log(wire);
 	   			if (wireObject["endpoint-1"].component == componentID || wireObject["endpoint-2"].component == componentID){
 	   				newProjectObject.topology.wires[wire] = null
 	   			}

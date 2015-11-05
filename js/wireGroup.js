@@ -53,17 +53,15 @@ var WireGroup = React.createClass({
 			//visibility: svgVisibility
 		};
 
-
-
 		return (
 			<line 
 				className = {className} 
 				onMouseEnter={this.onMouseEnter} 
 				onMouseLeave={this.onMouseLeave} 
-				x1 = {this.props.interfaceGroupCoordinates[end1Comp][end1Group].left} 
-				y1 = {this.props.interfaceGroupCoordinates[end1Comp][end1Group].top} 
-				x2 = {this.props.interfaceGroupCoordinates[end2Comp][end2Group].left} 
-				y2 = {this.props.interfaceGroupCoordinates[end2Comp][end2Group].top} 
+				x1 = {this.props.componentData[end1Comp].interfaceGroups[end1Group].left} 
+				y1 = {this.props.componentData[end1Comp].interfaceGroups[end1Group].top} 
+				x2 = {this.props.componentData[end2Comp].interfaceGroups[end2Group].left} 
+				y2 = {this.props.componentData[end2Comp].interfaceGroups[end2Group].top} 
 				style = {componentStyle}/>
 		);
 	}

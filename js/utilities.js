@@ -87,10 +87,11 @@ function defineSvgSize(interfaceGroupCoordinates, cursorX, cursorY){
 	var topArray = [];
 
 	for(var component in interfaceGroupCoordinates) {
-		var thisComponent = interfaceGroupCoordinates[component];
+		var thisComponentInterfaceGroups = interfaceGroupCoordinates[component].interfaceGroups;
 		
-		for(var group in thisComponent) {
-			var thisGroup = thisComponent[group];
+		
+		for(var group in thisComponentInterfaceGroups) {
+			var thisGroup = thisComponentInterfaceGroups[group];
 			leftArray.push(thisGroup.left);
 			topArray.push(thisGroup.top);
 		}
