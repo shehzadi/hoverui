@@ -295,12 +295,11 @@ var Workspace = React.createClass({
     		}
 		}
 
-		this.componentData = {};
-		
-		var components = [];
-		var ifcs = [];
 		this.isPendingDeletion = false;
 
+		this.componentData = {};
+
+		var components = [];
 		for (var componentID in componentsObject) {
 
 			this.componentData[componentID] = {};
@@ -341,21 +340,40 @@ var Workspace = React.createClass({
 					thisComponentID = {componentID}
 					protocols = {this.props.protocols}/>
   			);
+		};
 
 
 
 
 
-  			// Interfaces
+
+
+
+
+
+
+
+		//interfaces
+		var ifcs = [];
+		for (var componentID in componentsObject) {
+  			var componentModuleID = componentsObject[componentID];
+			var componentModuleObject = this.props.modules[componentModuleID];
+
+			var componentViewData = selectedProjectObject.view[componentID];
   			
 	  		var interfacesObject = componentModuleObject.interfaces;
 	  		var interfaceGroups = componentViewData.groups;
 	  		var nInterfaceGroups = Object.keys(interfaceGroups).length;
 	  		this.componentData[componentID]["interfaceGroups"] = {};
 
+	  		var thisComponentX = this.componentData[componentID].left;
+	  		var thisComponentY = this.componentData[componentID].top;
+
 			//loop through internal interface groups
 			var groupIndex = 0;
 			for (var group in interfaceGroups) {
+				
+
 				var thisGroupID = group;
 			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
 				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
@@ -368,8 +386,8 @@ var Workspace = React.createClass({
 				var thisKey = "" + componentID + thisGroupID;
 
 				var leftDatum = (0.5 * this.props.component.width) - (0.5 * ((nInterfaceGroups * (this.props.ifc.width + this.props.ifc.margin)) - this.props.ifc.margin));
-				var thisLeft = componentX + leftDatum + ((groupIndex) * (this.props.ifc.width + this.props.ifc.margin));
-				var thisTop = componentY + this.props.component.height - (this.props.ifc.height / 2) + 1;
+				var thisLeft = thisComponentX + leftDatum + ((groupIndex) * (this.props.ifc.width + this.props.ifc.margin));
+				var thisTop = thisComponentY + this.props.component.height - (this.props.ifc.height / 2) + 1;
 
 				var isInvalid = false;
 				var isStartOfNewWire = false;
@@ -439,6 +457,18 @@ var Workspace = React.createClass({
 				groupIndex += 1;
 			};
 		};
+
+
+
+
+
+
+
+
+
+
+
+
 
 		
 		var hostInterfacesArray = [];
@@ -591,6 +621,7 @@ var Workspace = React.createClass({
 			if (!isWireExists) {
 				localGroupArray.push(endpoints["endpoint-1"]);
 				localGroupArray.push(endpoints["endpoint-2"]);
+				//console.log(endpoints);
 				wires.push(
 					<WireGroup
 						key = {wire} 
