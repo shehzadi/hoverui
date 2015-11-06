@@ -42,7 +42,6 @@ var IOConsole = React.createClass({
    			refGroupObject = selectedProject.view[refEndPoint.component].groups[refGroupID];
 		}
 
-   		console.log(refGroupObject);
    		for (var thisIfc in refGroupObject){
    			var thisEndpoint = {
    				component: refEndPoint.component,
@@ -162,19 +161,32 @@ var IOConsole = React.createClass({
     	newProjectObject.view[dropComponent].x += deltaX;
     	newProjectObject.view[dropComponent].y += deltaY;
 
-    	if (newProjectObject.view[dropComponent].x <= 0 || newProjectObject.view[dropComponent].y <= 0){
-    		this.deleteComponent(dropComponent)
-    	}
+    	if (dropComponent.indexOf('host') == 0){
+    		if (newProjectObject.view[dropComponent].x <= 0){
+				newProjectObject.view[dropComponent].x = 2
+	    	}
+	    	if (newProjectObject.view[dropComponent].y <= 0){
+				newProjectObject.view[dropComponent].y = 2	
+	    	}
 
-    	else {
     		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
     	}
+    	
+	    else {
+
+	    	if (newProjectObject.view[dropComponent].x <= 0 || newProjectObject.view[dropComponent].y <= 0){
+				this.deleteComponent(dropComponent)	
+	    	}
+
+	    	else {
+	    		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
+	    	}
+	    }
 
 		
     },
 
    	deleteComponent: function(componentID) {
-   		console.log("deleting");
    		var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
    		newProjectObject.view[componentID] = null;
    		newProjectObject.topology.components[componentID] = null;
@@ -183,7 +195,6 @@ var IOConsole = React.createClass({
    		if (newProjectObject.topology.wires){
 	   		for (var wire in newProjectObject.topology.wires){
 	   			var wireObject = newProjectObject.topology.wires[wire];
-	   			console.log(wire);
 	   			if (wireObject["endpoint-1"].component == componentID || wireObject["endpoint-2"].component == componentID){
 	   				newProjectObject.topology.wires[wire] = null
 	   			}
@@ -370,6 +381,7 @@ var IOConsole = React.createClass({
 							modules = {this.state.modulesObject} 
 							categories = {this.state.categoriesObject} 
 							selectedProjectID = {this.state.selectedProjectID}/>
+
 				</div>
 				<div id="main">
 					<div id="header">
