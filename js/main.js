@@ -3,6 +3,7 @@ var IOConsole = React.createClass({
     	return {
     		projectsObject: {},
     		modulesObject: {},
+    		categoriesObject: {},
     		protocolsObject: {},
     		mouseDown: false,
     		dragging: false,
@@ -238,6 +239,15 @@ var IOConsole = React.createClass({
 			});
 		}.bind(this));
 
+		this.firebaseCategoriesRef = new Firebase("https://boiling-torch-3324.firebaseio.com/categories");
+		this.firebaseCategoriesRef.on("value", function(dataSnapshot) {
+			var rootCategoriesObject = dataSnapshot.val();
+
+			this.setState({
+				categoriesObject: rootCategoriesObject
+			});
+		}.bind(this));
+
 		this.protocolsRef = new Firebase("https://boiling-torch-3324.firebaseio.com/protocols");
 		this.protocolsRef.on("value", function(dataSnapshot) {
 			var rootProtocolsObject = dataSnapshot.val();
@@ -346,6 +356,8 @@ var IOConsole = React.createClass({
 				thisY = {this.state.cursorY}/>
 		}
 
+		//console.log(this.state.categoriesObject);
+
 		return (
 			<div id="IOConsole">
 				<div id="navigation">
@@ -355,7 +367,8 @@ var IOConsole = React.createClass({
 							createNewProject = {this.createNewProject} 
 							onModuleMouseDown = {this.onModuleMouseDown} 
 							projects = {this.state.projectsObject}
-							modules = {this.state.modulesObject}
+							modules = {this.state.modulesObject} 
+							categories = {this.state.categoriesObject} 
 							selectedProjectID = {this.state.selectedProjectID}/>
 				</div>
 				<div id="main">
@@ -421,6 +434,7 @@ var Home = React.createClass({
 
 var PrimaryNav = React.createClass({
 	render: function() {	
+		console.log(this.props.categories);
 		return (
 			<div className="primaryNav">
 				<ProjectSection 
@@ -430,7 +444,8 @@ var PrimaryNav = React.createClass({
 					selectedProjectID = {this.props.selectedProjectID}/>
 
 				<ModuleSection 
-					modules = {this.props.modules}
+					modules = {this.props.modules} 
+					categories = {this.props.categories}
 					onModuleMouseDown = {this.props.onModuleMouseDown} />
 			</div>
 		);
@@ -530,26 +545,58 @@ var ProjectSection = React.createClass({
 var ModuleSection = React.createClass({
 	render: function() {	
 
-		var moduleItems = []
+		var categoryItems = []
 
-		for (var moduleItem in this.props.modules) {
-			var thisModuleItem = this.props.modules[moduleItem];
-      		moduleItems.push(
-      			<ModuleItem
-      				key = {moduleItem} 
-      				onMouseDown = {this.props.onModuleMouseDown} 
-      				moduleID = {moduleItem} 
-      				moduleItem = {thisModuleItem}/>
+		for (var category in this.props.categories) {
+			var moduleList = this.props.categories[category].modules;
+      		categoryItems.push(
+      			<Category
+      				key = {category} 
+      				category = {category} 
+      				moduleList = {moduleList}
+      				onModuleMouseDown = {this.props.onModuleMouseDown}
+      				modules = {this.props.modules}/>
       		);
     	};
+    	//console.log(categoryItems);
 
     	return (
 			<section className="ioModules">
 				<h1>IO Modules</h1>
-				{moduleItems}
+				{categoryItems}
 			</section>
 		);
 	},
+});
+
+var Category = React.createClass({
+	render: function() {
+		var moduleItems = []
+
+		for (var moduleID in this.props.modules) {
+			var thisModuleItem = this.props.modules[moduleID];
+
+      		moduleItems.push(
+      			<ModuleItem
+      				key = {moduleID} 
+      				onMouseDown = {this.props.onModuleMouseDown} 
+      				moduleID = {moduleID} 
+      				moduleItem = {thisModuleItem}/>
+      		);
+    	};
+
+    	//console.log(moduleItems);
+
+		return (
+			<div 
+				className="categorySection">
+  				<h2>
+  					<span className="category">{this.props.category}</span>
+  				</h2>
+  				{moduleItems}
+      		</div>
+		);
+	}
 });
 
 var ModuleItem = React.createClass({
