@@ -47,12 +47,12 @@ var InterfaceGroup = React.createClass({
 		if (this.props.isPendingDeletion == this.props.componentID){
 			thisOpacity = 0
 		}
-
+//this.componentData[componentID]["interfaceGroups"][thisGroupID].top
 		var polygon = {	
 			width: this.props.width + growthW,
 			height: this.props.height + growthH,
-			left: this.props.left - growthW/2,
-			top: this.props.top - growthH/2 
+			left: this.props.componentData[this.props.componentID]["interfaceGroups"][this.props.interfaceGroupID].left - (this.props.width/2) - growthW/2,
+			top: this.props.componentData[this.props.componentID]["interfaceGroups"][this.props.interfaceGroupID].top - (this.props.height/2) - growthH/2 
 		};
 
 		var style = {

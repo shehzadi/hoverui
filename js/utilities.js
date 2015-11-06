@@ -46,6 +46,7 @@ function convertToGroup(componentID, interfaceID, selectedProjectView){
 };
 
 function getOtherWireGroupEndpoint(componentID, interfaceGroupID, selectedProject){
+	var returnValue = false;
 
 	if (componentID.indexOf('host') == 0){ //is an attachment wire
 		var refInterface = {
@@ -68,13 +69,23 @@ function getOtherWireGroupEndpoint(componentID, interfaceGroupID, selectedProjec
 		var endpoint2 = wiresObject[wire]["endpoint-2"];
 
 		if (_.isEqual(refInterface, endpoint1)){
-			return endpoint2;
+			returnValue = {
+				component: endpoint2.component,
+				interfaceGroup: convertToGroup(endpoint2.component, endpoint2.ifc, selectedProject.view)
+			};
+			break;
 		}
 
 		if (_.isEqual(refInterface, endpoint2)){
-			return endpoint1;
+			returnValue = {
+				component: endpoint1.component,
+				interfaceGroup: convertToGroup(endpoint1.component, endpoint1.ifc, selectedProject.view)
+			};
+			break;
 		}
 	}
+
+	return returnValue
 }
 
 function defineSvgSize(interfaceGroupCoordinates, cursorX, cursorY){

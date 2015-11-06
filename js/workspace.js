@@ -48,6 +48,7 @@ var Workspace = React.createClass({
 
 	onMouseDown: function(componentID, interfaceGroupID, interfaceIDObject) {			
 		if (event.button == 0){	
+			console.log(interfaceIDObject);
 			event.stopPropagation();
 			this.addDocumentEvents();
 
@@ -112,6 +113,7 @@ var Workspace = React.createClass({
 	},
 
 	getProtocol: function(componentID, interfaceID) {
+		//console.log(interfaceID);
 		var thisProtocol = "";
 		if (componentID.indexOf('host') == 0){ //is an attachment wire
 			thisProtocol = this.props.selectedProject.topology.host_interfaces[componentID].protocol
@@ -150,6 +152,7 @@ var Workspace = React.createClass({
 			});
 
 			if (this.state.interfaceGroupID){ //dragging from interface
+				
 			
 				if (this.state.startFromExistingWire){ //drag starts from existing wire so update
 
@@ -159,14 +162,15 @@ var Workspace = React.createClass({
 
 					var otherEnd = getOtherWireGroupEndpoint(thisComponentID, thisInterfaceGroupID, selectedProject);
 		
-					var otherEndInterfaceGroup = convertToGroup(otherEnd.component, otherEnd.ifc, selectedProject.view);
 
 					var otherEndRefInterface;
 					if (otherEnd.component.indexOf('host') == 0){ //is an attachment wire
 						otherEndRefInterface = "interface-1"
 					}
 					else {
-						otherEndRefInterface = Object.keys(selectedProject.view[otherEnd.component].groups[otherEndInterfaceGroup])[0];
+						console.log(otherEnd);
+						console.log(selectedProject);
+						otherEndRefInterface = Object.keys(selectedProject.view[otherEnd.component].groups[otherEnd.interfaceGroup])[0];
 					}
 
 					var interfaceIDObject;
@@ -174,12 +178,12 @@ var Workspace = React.createClass({
 						interfaceIDObject = null
 					}
 					else {
-						interfaceIDObject = selectedProject.view[otherEnd.component].groups[otherEndInterfaceGroup]
+						interfaceIDObject = selectedProject.view[otherEnd.component].groups[otherEnd.interfaceGroup]
 					}
 
 					this.setState({
 						componentID: otherEnd.component,
-						interfaceGroupID: otherEndInterfaceGroup,
+						interfaceGroupID: otherEnd.interfaceGroup,
 						interfaceIDObject: interfaceIDObject
 					});
 
@@ -283,12 +287,11 @@ var Workspace = React.createClass({
 		if (selectedProjectObject){
 			var componentsObject = {};
 			var wiresObject = {};
-			var attachmentsObject = {};
 			var hostInterfacesObject = {};
 			if (selectedProjectObject.topology){
 				componentsObject = selectedProjectObject.topology.components;
     			wiresObject = selectedProjectObject.topology.wires;
-    			attachmentsObject = selectedProjectObject.topology.attachments;
+    			//console.log(wiresObject);
     			if (selectedProjectObject.topology.host_interfaces){
     				hostInterfacesObject = selectedProjectObject.topology.host_interfaces;
     			}
@@ -337,140 +340,11 @@ var Workspace = React.createClass({
 					thisModule = {componentModuleObject} 
 					thisComponentX = {componentX} 
 					thisComponentY = {componentY} 
-					thisComponentID = {componentID}
-					protocols = {this.props.protocols}/>
+					thisComponentID = {componentID}/>
   			);
 		};
 
 
-
-
-
-
-
-
-
-
-
-
-		//interfaces
-		var ifcs = [];
-		for (var componentID in componentsObject) {
-  			var componentModuleID = componentsObject[componentID];
-			var componentModuleObject = this.props.modules[componentModuleID];
-
-			var componentViewData = selectedProjectObject.view[componentID];
-  			
-	  		var interfacesObject = componentModuleObject.interfaces;
-	  		var interfaceGroups = componentViewData.groups;
-	  		var nInterfaceGroups = Object.keys(interfaceGroups).length;
-	  		this.componentData[componentID]["interfaceGroups"] = {};
-
-	  		var thisComponentX = this.componentData[componentID].left;
-	  		var thisComponentY = this.componentData[componentID].top;
-
-			//loop through internal interface groups
-			var groupIndex = 0;
-			for (var group in interfaceGroups) {
-				
-
-				var thisGroupID = group;
-			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
-				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
-
-				var referenceInterface = Object.keys(thisInterfaceGroup)[0];
-
-				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
-				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
-
-				var thisKey = "" + componentID + thisGroupID;
-
-				var leftDatum = (0.5 * this.props.component.width) - (0.5 * ((nInterfaceGroups * (this.props.ifc.width + this.props.ifc.margin)) - this.props.ifc.margin));
-				var thisLeft = thisComponentX + leftDatum + ((groupIndex) * (this.props.ifc.width + this.props.ifc.margin));
-				var thisTop = thisComponentY + this.props.component.height - (this.props.ifc.height / 2) + 1;
-
-				var isInvalid = false;
-				var isStartOfNewWire = false;
-
-				if (this.state.isWireInProgress){ //test for mode, protocol and number of interfaces	
-					isInvalid = true;
-
-					if ((interfaceGroupMode != this.thisWireInProgressStartMode || interfaceGroupMode == "bidirectional")
-						&& (interfaceGroupProtocol == this.thisWireInProgressProtocol)
-						&& (this.thisWireInProgressN == nInterfacesInGroup)) {
-						isInvalid = false;
-					}
-
-					if (componentID == this.state.componentID) { //other interfaces on same component
-						isInvalid = true;
-					}
-
-					// test for existing wire
-					var thisRefEndpoint = {
-						"component": componentID,
-						"ifc": referenceInterface
-					};
-
-					if (isExistingWire(thisRefEndpoint, wiresObject)){
-						isInvalid = true;
-					}
-
-					//test for self
-					if (componentID == this.state.componentID && thisGroupID == this.state.interfaceGroupID) { //source interface
-						isInvalid = true;
-						isStartOfNewWire = true
-					}
-
-					else if (_.isEqual(this.state.startFromExistingWire, thisRefEndpoint)){
-						isInvalid = false;
-					}
-				}
-
-				this.componentData[componentID]["interfaceGroups"][thisGroupID] = {
-					top: thisTop + (this.props.ifc.height / 2),
-					left: thisLeft + (this.props.ifc.width / 2)
-				};
-
-				var thisFillColor = getHSL(this.props.protocols[interfaceGroupProtocol].hue);
-				var thisBorderColor = getHSL(this.props.protocols[interfaceGroupProtocol].hue, true);
-
-				ifcs.push(
-					<InterfaceGroup 
-						isInvalid = {isInvalid} 
-						isStartOfNewWire = {isStartOfNewWire} 
-						isPendingDeletion = {this.isPendingDeletion} 
-						key = {thisKey} 
-						onMouseDown = {this.onMouseDown} 
-						onMouseUp = {this.onInterfaceMouseUp} 
-						interfaceMode = {interfaceGroupMode} 
-						color = {thisFillColor} 
-						border = {thisBorderColor} 
-						width = {this.props.ifc.width} 
-						height = {this.props.ifc.height} 
-						left = {thisLeft} 
-						top = {thisTop} 
-						interfaceGroupID = {thisGroupID} 
-						interfaceIDObject = {thisInterfaceGroup} 
-						componentID = {componentID}/>				
-				);
-
-				groupIndex += 1;
-			};
-		};
-
-
-
-
-
-
-
-
-
-
-
-
-
-		
 		var hostInterfacesArray = [];
 		var hostPorts = [];
 		for (var hostInterface in hostInterfacesObject) {
@@ -484,8 +358,8 @@ var Workspace = React.createClass({
 			if (hostInterface == this.state.dragComponentID){
 				hostInterfaceX = hostInterfaceX + this.state.cursorX - this.state.startX;
 				hostInterfaceY = hostInterfaceY + this.state.cursorY - this.state.startY;
-				if (hostInterfaceX <= 1){hostInterfaceX = 2}
-				if (hostInterfaceY <= 1){hostInterfaceY = 2}
+				if (hostInterfaceX <= -3){hostInterfaceX = -3}
+				if (hostInterfaceY <= -3){hostInterfaceY = -3}
 			};
 
 
@@ -579,6 +453,167 @@ var Workspace = React.createClass({
 
 		};
 
+
+
+
+
+
+
+
+
+		//interfaces
+		var ifcs = [];
+		for (var componentID in componentsObject) {
+  			var componentModuleID = componentsObject[componentID];
+			var componentModuleObject = this.props.modules[componentModuleID];
+
+			var componentViewData = selectedProjectObject.view[componentID];
+  			
+	  		var interfacesObject = componentModuleObject.interfaces;
+	  		var interfaceGroups = componentViewData.groups;
+	  		var nInterfaceGroups = Object.keys(interfaceGroups).length;
+	  		this.componentData[componentID]["interfaceGroups"] = {};
+
+	  		var thisComponentX = this.componentData[componentID].left;
+	  		var thisComponentY = this.componentData[componentID].top;
+
+			//loop through internal interface groups and get coordinates of other end components
+			
+			for (var groupID in interfaceGroups) {
+				var otherEndOfWire = getOtherWireGroupEndpoint(componentID, groupID, selectedProjectObject);
+				var vectorToOtherEndComponent = {};
+				console.log(otherEndOfWire);
+
+				if (otherEndOfWire){
+					var verticalDist = this.componentData[componentID].top - this.componentData[otherEndOfWire.component].top;
+					var horizontalDist = this.componentData[componentID].left - this.componentData[otherEndOfWire.component].left;
+
+					vectorToOtherEndComponent = {
+						x: horizontalDist,
+						y: verticalDist
+					}
+				}
+
+				this.componentData[componentID]["interfaceGroups"][groupID] = {
+					top: null,
+					left: null,
+					wireTo: otherEndOfWire,
+					vector: vectorToOtherEndComponent
+				};
+				//this.componentData[componentID]["interfaceGroups"][thisGroupID].wireTo = otherEndOfWire
+				
+			};
+
+			var groupIndex = 0;
+			for (var group in interfaceGroups) {
+
+				//console.log(this.componentData);
+				
+				var thisGroupID = group;
+			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
+				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
+
+				var referenceInterface = Object.keys(thisInterfaceGroup)[0];
+
+				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
+				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
+
+				
+
+
+				var leftDatum = (0.5 * this.props.component.width) - (0.5 * ((nInterfaceGroups * (this.props.ifc.width + this.props.ifc.margin)) - this.props.ifc.margin));
+				var thisLeft = thisComponentX + leftDatum + ((groupIndex) * (this.props.ifc.width + this.props.ifc.margin));
+				var thisTop = thisComponentY + this.props.component.height - (this.props.ifc.height / 2) + 1;
+
+				var isInvalid = false;
+				var isStartOfNewWire = false;
+
+				if (this.state.isWireInProgress){ //test for mode, protocol and number of interfaces	
+					isInvalid = true;
+
+					if ((interfaceGroupMode != this.thisWireInProgressStartMode || interfaceGroupMode == "bidirectional")
+						&& (interfaceGroupProtocol == this.thisWireInProgressProtocol)
+						&& (this.thisWireInProgressN == nInterfacesInGroup)) {
+						isInvalid = false;
+					}
+
+					if (componentID == this.state.componentID) { //other interfaces on same component
+						isInvalid = true;
+					}
+
+					// test for existing wire
+					var thisRefEndpoint = {
+						"component": componentID,
+						"ifc": referenceInterface
+					};
+
+					if (isExistingWire(thisRefEndpoint, wiresObject)){
+						isInvalid = true;
+					}
+
+					//test for self
+					if (componentID == this.state.componentID && thisGroupID == this.state.interfaceGroupID) { //source interface
+						isInvalid = true;
+						isStartOfNewWire = true
+					}
+
+					else if (_.isEqual(this.state.startFromExistingWire, thisRefEndpoint)){
+						isInvalid = false;
+					}
+				}
+
+				this.componentData[componentID]["interfaceGroups"][thisGroupID] = {
+					top: thisTop + (this.props.ifc.height / 2),
+					left: thisLeft + (this.props.ifc.width / 2),
+					wireTo: this.componentData[componentID]["interfaceGroups"][thisGroupID].wireTo,
+					vector: this.componentData[componentID]["interfaceGroups"][thisGroupID].vector
+				};
+
+				var thisFillColor = getHSL(this.props.protocols[interfaceGroupProtocol].hue);
+				var thisBorderColor = getHSL(this.props.protocols[interfaceGroupProtocol].hue, true);
+
+				var thisKey = "" + componentID + thisGroupID;
+
+				ifcs.push(
+					<InterfaceGroup 
+						isInvalid = {isInvalid} 
+						isStartOfNewWire = {isStartOfNewWire} 
+						isPendingDeletion = {this.isPendingDeletion} 
+						key = {thisKey} 
+						onMouseDown = {this.onMouseDown} 
+						onMouseUp = {this.onInterfaceMouseUp} 
+						interfaceMode = {interfaceGroupMode} 
+						color = {thisFillColor} 
+						border = {thisBorderColor} 
+						width = {this.props.ifc.width} 
+						height = {this.props.ifc.height} 
+						componentData = {this.componentData} 
+						componentHeight = {this.props.component.height} 
+						componentWidth = {this.props.component.width} 
+						interfaceGroupID = {thisGroupID} 
+						interfaceIDObject = {thisInterfaceGroup} 
+						componentID = {componentID}/>				
+				);
+
+				groupIndex += 1;
+			};
+		};
+
+
+
+
+
+
+
+
+
+
+
+
+
+		
+
+
 		var wires = [];
 		var localGroupArray = [];
 
@@ -592,6 +627,7 @@ var Workspace = React.createClass({
 
 		for (var wire in wiresObject) {
 			var thisWire = wiresObject[wire];
+			//console.log(wiresObject);
 			var thisProtocol = this.getProtocol(thisWire["endpoint-1"].component, thisWire["endpoint-1"].ifc);
 			var wireClass = "";
 			if (this.state.isWireInProgress){
@@ -743,7 +779,7 @@ var Component = React.createClass({
 var WireInProgress = React.createClass({
 	render: function() {
 
-		//console.log (this.props.interfaceCoordinates);
+
 		var end1Comp = this.props.thisComponent;
 		var end1Int = this.props.thisInterfaceGroup;
 
@@ -754,6 +790,11 @@ var WireInProgress = React.createClass({
 			stroke: this.props.color,
 			strokeWidth: this.props.stroke,
 		};
+
+
+		//console.log (this.props.componentData);
+		//console.log (end1Comp);
+		//console.log (end1Int);
 
 		return (
 			<line 

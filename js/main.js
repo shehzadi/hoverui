@@ -362,12 +362,12 @@ var IOConsole = React.createClass({
 				<div id="navigation">
 					<Home />
 					<PrimaryNav 
-							onProjectClick = {this.handleProjectClick} 
-							createNewProject = {this.createNewProject} 
-							onModuleMouseDown = {this.onModuleMouseDown} 
-							projects = {this.state.projectsObject}
-							modules = {this.state.modulesObject}
-							selectedProjectID = {this.state.selectedProjectID}/>
+						onProjectClick = {this.handleProjectClick} 
+						createNewProject = {this.createNewProject} 
+						onModuleMouseDown = {this.onModuleMouseDown} 
+						projects = {this.state.projectsObject}
+						modules = {this.state.modulesObject}
+						selectedProjectID = {this.state.selectedProjectID}/>
 				</div>
 				<div id="main">
 					<div id="header">
