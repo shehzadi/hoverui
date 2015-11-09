@@ -10,7 +10,7 @@ $nav-section-text-color: hsl(0, 0%, 30%);
 $button-color: hsl(0, 0%, 60%);
 
 
-$app-min-width : 400px;
+$app-min-width : 800px;
 $app-min-height : 300px;
 
 $home-height: 40px;
@@ -42,7 +42,9 @@ $pattern-line-color: lighten($workspace-color, 3%);
 	-moz-user-select: none;
 	-webkit-user-select: none;
 	-ms-user-select: none;
-	box-sizing: border-box
+	box-sizing: border-box;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
 }
 
 /* Patterns */
@@ -51,6 +53,7 @@ $pattern-line-color: lighten($workspace-color, 3%);
 						linear-gradient(90deg, $pattern-line-color 1px, transparent 1px);
 	background-size: $pattern-pitch $pattern-pitch, $pattern-pitch $pattern-pitch;
 	background-position: 0 0, 0 0;
+	background-repeat: repeat;
 }
 
 /* Mixins */
@@ -107,8 +110,8 @@ $pattern-line-color: lighten($workspace-color, 3%);
 	@include flexbox;
 	@include columnar-flexbox;
 	background-color: $primary-nav-color;
-	min-width: 175px;
-	max-width: 260px;
+	min-width: 200px;
+	max-width: 300px;
 	flex: 1;
 }
 
@@ -131,7 +134,7 @@ $pattern-line-color: lighten($workspace-color, 3%);
 }
 
 #main {
-	flex: 3;
+	flex: 4;
 	position: relative;
 	background-color: $workspace-color;
 	box-shadow: 0 0 40px 0 hsla(0, 0%, 0%, 0.2), 0 0 4px 0 hsla(0, 0%, 0%, 0.2);
@@ -247,46 +250,35 @@ $pattern-line-color: lighten($workspace-color, 3%);
 
 
 
-#navigation:hover {
-	.add {
-		display: inline-block;
-		vertical-align: baseline;
-		border-radius: 3px;
-		border: 1px solid hsla(0, 0%, 0%, 0.2);
-		padding: 0px 8px;
-		font-size: 11px;
-		margin-left: 8px;
-		color: hsl(0, 0%, 30%);
+#navigation {
+	.app-actions {
+		background-image: url("../img/hamburger.svg");
+		background-size: 12px;
+		margin-right: 4px
+
+	}
+	.add, .app-actions {
+		display: block;
+		vertical-align: center;
+		height: 24px;
+		width: 26px;
+		font-size: 16px;
+		color: hsla(0, 0%, 100%, 0.7);
+		background-color: transparent;
+	}
+	.add:hover, .app-actions:hover {
 		background-color: hsla(0, 0%, 100%, 0.2);
 	}
-	.add:hover {
-		border: 1px solid hsla(0, 0%, 0%, 0.27);
-		background-color: hsla(0, 0%, 100%, 0.27);
-	}
 }
-
-
-
 
 .home {
 	border-bottom: 1px solid darken($primary-brand-color, 6%);
 	background-color: $primary-brand-color;
-	padding: 0 $default-padding;
+	padding: 0 8px 0 $default-padding;
 	@include flexbox;
 	flex: 0 0 $home-height;
 	@include flex-align(center);
 
-
-	&:hover {
-        background-color: darken($primary-brand-color, 5%);
-        cursor: pointer;
-        .app-actions {
-			display: block;
-		}
-		* {
-			cursor: pointer;
-		}
-    }
 
 	h1 {
 		color: white;
@@ -298,12 +290,6 @@ $pattern-line-color: lighten($workspace-color, 3%);
 		height: 14px;
 		width: 14px;
 		margin-right: 6px;
-	}
-
-	.app-actions {
-		width: 16px;
-		height: 16px;
-		display: none;
 	}
 }
 
@@ -387,6 +373,7 @@ $pattern-line-color: lighten($workspace-color, 3%);
 			text-transform: capitalize;
 			font-style: italic;
 			color: hsl(0, 0%,40%);
+			margin-top: 1px
 		}
 
 		h3 {

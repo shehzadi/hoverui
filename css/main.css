@@ -17,6 +17,8 @@
   -webkit-user-select: none;
   -ms-user-select: none;
   box-sizing: border-box;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
 }
 
 /* Patterns */
@@ -24,6 +26,7 @@
   background-image: linear-gradient(#c7c7c7 1px, transparent 1px), linear-gradient(90deg, #c7c7c7 1px, transparent 1px);
   background-size: 8px 8px, 8px 8px;
   background-position: 0 0, 0 0;
+  background-repeat: repeat;
 }
 
 /* Mixins */
@@ -39,7 +42,7 @@
 #IOConsole {
   display: flex;
   background-color: grey;
-  min-width: 400px;
+  min-width: 800px;
   min-height: 300px;
   width: 100vw;
   height: 100vh;
@@ -49,8 +52,8 @@
   display: flex;
   flex-direction: column;
   background-color: #999999;
-  min-width: 175px;
-  max-width: 260px;
+  min-width: 200px;
+  max-width: 300px;
   flex: 1;
 }
 
@@ -73,7 +76,7 @@
 }
 
 #main {
-  flex: 3;
+  flex: 4;
   position: relative;
   background-color: #bfbfbf;
   box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.2), 0 0 4px 0 rgba(0, 0, 0, 0.2);
@@ -189,43 +192,33 @@
   margin: 0 8px 0 5px;
 }
 
-#navigation:hover .add {
-  display: inline-block;
-  vertical-align: baseline;
-  border-radius: 3px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  padding: 0px 8px;
-  font-size: 11px;
-  margin-left: 8px;
-  color: #4d4d4d;
-  background-color: rgba(255, 255, 255, 0.2);
+#navigation .app-actions {
+  background-image: url("../img/hamburger.svg");
+  background-size: 12px;
+  margin-right: 4px;
 }
 
-#navigation:hover .add:hover {
-  border: 1px solid rgba(0, 0, 0, 0.27);
-  background-color: rgba(255, 255, 255, 0.27);
+#navigation .add, #navigation .app-actions {
+  display: block;
+  vertical-align: center;
+  height: 24px;
+  width: 26px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  background-color: transparent;
+}
+
+#navigation .add:hover, #navigation .app-actions:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .home {
   border-bottom: 1px solid #b30f35;
   background-color: #d0113d;
-  padding: 0 15px;
+  padding: 0 8px 0 15px;
   display: flex;
   flex: 0 0 40px;
   align-items: center;
-}
-
-.home:hover {
-  background-color: #b80f36;
-  cursor: pointer;
-}
-
-.home:hover .app-actions {
-  display: block;
-}
-
-.home:hover * {
-  cursor: pointer;
 }
 
 .home h1 {
@@ -238,12 +231,6 @@
   height: 14px;
   width: 14px;
   margin-right: 6px;
-}
-
-.home .app-actions {
-  width: 16px;
-  height: 16px;
-  display: none;
 }
 
 .primaryNav {
@@ -323,6 +310,7 @@
   text-transform: capitalize;
   font-style: italic;
   color: #666666;
+  margin-top: 1px;
 }
 
 .ioModules h3 {

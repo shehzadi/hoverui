@@ -205,6 +205,7 @@ var IOConsole = React.createClass({
     },
 
 	createNewProject: function(projectTemplate) {
+		console.log("create New");
 		var newProjectsObject = _.cloneDeep(this.state.projectsObject);	
 
         var newProjectID = "project-" + guid();
@@ -372,15 +373,15 @@ var IOConsole = React.createClass({
 		return (
 			<div id="IOConsole">
 				<div id="navigation">
-					<Home />
+					<Home 
+						createNewProject = {this.createNewProject} />
 					<PrimaryNav 
-							onProjectClick = {this.handleProjectClick} 
-							createNewProject = {this.createNewProject} 
-							onModuleMouseDown = {this.onModuleMouseDown} 
-							projects = {this.state.projectsObject}
-							modules = {this.state.modulesObject} 
-							categories = {this.state.categoriesObject} 
-							selectedProjectID = {this.state.selectedProjectID}/>
+						onProjectClick = {this.handleProjectClick} 
+						onModuleMouseDown = {this.onModuleMouseDown} 
+						projects = {this.state.projectsObject}
+						modules = {this.state.modulesObject} 
+						categories = {this.state.categoriesObject} 
+						selectedProjectID = {this.state.selectedProjectID}/>
 
 				</div>
 				<div id="main">
@@ -433,37 +434,6 @@ var ComponentInProgress = React.createClass({
 });
 
 var Home = React.createClass({
-	render: function() {	
-		return (
-			<div className="home">
-				<img className="logo" src="img/logo.png"/>
-				<h1>IO Visor Console</h1>
-				<img className="app-actions" src="img/hamburger.svg"/>
-			</div>
-		);
-	},
-});
-
-var PrimaryNav = React.createClass({
-	render: function() {	
-		return (
-			<div className="primaryNav">
-				<ProjectSection 
-					createNewProject = {this.props.createNewProject} 
-					onProjectClick = {this.props.onProjectClick} 
-					projects = {this.props.projects} 
-					selectedProjectID = {this.props.selectedProjectID}/>
-
-				<ModuleSection 
-					modules = {this.props.modules} 
-					categories = {this.props.categories}
-					onModuleMouseDown = {this.props.onModuleMouseDown} />
-			</div>
-		);
-	},
-});
-
-var ProjectSection = React.createClass({
 	getDefaultProps: function() {
     	return {
     		projectTemplate: {
@@ -513,8 +483,40 @@ var ProjectSection = React.createClass({
 		this.props.createNewProject(this.props.projectTemplate)
 	},
 
-	render: function() {
+	render: function() {	
+		return (
+			<div className="home">
+				<img className="logo" src="img/logo.png"/>
+				<h1>IO Visor Console</h1>
+				<button 
+						onClick = {this.handleNewProjectClick} 
+						className="add">+</button>
+				<button className="app-actions"></button>
+			</div>
+		);
+	},
+});
 
+var PrimaryNav = React.createClass({
+	render: function() {	
+		return (
+			<div className="primaryNav">
+				<ProjectSection 
+					onProjectClick = {this.props.onProjectClick} 
+					projects = {this.props.projects} 
+					selectedProjectID = {this.props.selectedProjectID}/>
+
+				<ModuleSection 
+					modules = {this.props.modules} 
+					categories = {this.props.categories}
+					onModuleMouseDown = {this.props.onModuleMouseDown} />
+			</div>
+		);
+	},
+});
+
+var ProjectSection = React.createClass({
+	render: function() {
 		var projectsObject = this.props.projects;
 		if (projectsObject){
 			var projectsCode = [];
@@ -544,9 +546,6 @@ var ProjectSection = React.createClass({
 			<section 
 				className="projects">
 				<h1>Projects
-					<button 
-						onClick = {this.handleNewProjectClick} 
-						className="add">+</button>
 				</h1>
 				<div>{projectsCode}</div>
 			</section>
