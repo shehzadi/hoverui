@@ -541,7 +541,8 @@ var ProjectSection = React.createClass({
 		}
 		
 		return (
-			<section className="projects">
+			<section 
+				className="projects">
 				<h1>Projects
 					<button 
 						onClick = {this.handleNewProjectClick} 
@@ -554,6 +555,21 @@ var ProjectSection = React.createClass({
 });
 
 var ModuleSection = React.createClass({
+
+	getInitialState: function() {
+    	return {
+    		isAtTop: true
+    	};
+  	},
+
+	handleSectionScroll: function() {
+		var sectionElement = this.refs.ioModules.getDOMNode();
+		this.setState({
+			isAtTop: sectionElement.scrollTop == 0
+		});
+
+	},
+
 	render: function() {	
 
 		var categoryItems = []
@@ -570,9 +586,16 @@ var ModuleSection = React.createClass({
       		);
     	};
     	//console.log(categoryItems);
+    	var classString = "ioModules";
+    	if (this.state.isAtTop == false){
+    		classString += " scrolled"
+    	}
 
     	return (
-			<section className="ioModules">
+			<section
+				ref = "ioModules" 
+				className = {classString} 
+				onScroll = {this.handleSectionScroll}>
 				<h1>IO Modules</h1>
 				{categoryItems}
 			</section>
@@ -648,8 +671,8 @@ var Tools = React.createClass({
 				<span>{project}</span>
 				<span className="version">{version}</span>
 				<button>Save Version&hellip;</button>
-				<button>Duplicate&hellip;</button>
-				<button>JSON&hellip;</button>
+				<button>Duplicate</button>
+				<button>Export JSON</button>
 				<button>Save as Module&hellip;</button>
 				<button onClick = {this.handleDeleteProjectClick}>Delete Project</button>
 				<div className="buttons">

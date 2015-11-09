@@ -74,7 +74,7 @@ var InterfaceGroup = React.createClass({
 			text = "" + nInterfaceGroups
 		}
 		var textX = polygon.left + (polygon.width / 2);
-		var textY = polygon.top - 3;
+		var textY = polygon.top - 4;
 
 		var inputPointer = "";
 		var outputPointer = "";
