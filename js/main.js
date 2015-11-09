@@ -165,8 +165,8 @@ var IOConsole = React.createClass({
     		if (newProjectObject.view[dropComponent].x <= 0){
 				newProjectObject.view[dropComponent].x = 2
 	    	}
-	    	if (newProjectObject.view[dropComponent].y <= 0){
-				newProjectObject.view[dropComponent].y = 2	
+	    	if (newProjectObject.view[dropComponent].y <= headerHeight){
+				newProjectObject.view[dropComponent].y = headerHeight + 2	
 	    	}
 
     		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
@@ -174,7 +174,7 @@ var IOConsole = React.createClass({
     	
 	    else {
 
-	    	if (newProjectObject.view[dropComponent].x <= 0 || newProjectObject.view[dropComponent].y <= 0){
+	    	if (newProjectObject.view[dropComponent].x <= 0 || newProjectObject.view[dropComponent].y <= headerHeight){
 				this.deleteComponent(dropComponent)	
 	    	}
 
@@ -302,7 +302,7 @@ var IOConsole = React.createClass({
 		var newComponentX = event.pageX - workspaceOriginX - (this.props.componentInProgress.width / 2);
 		var newComponentY = event.pageY - workspaceOriginY - (this.props.componentInProgress.height / 2);
 
-		if (newComponentX > 0 && newComponentY >0){
+		if (newComponentX > 0 && newComponentY > headerHeight){
 			this.handleNewComponentDrop(this.state.mouseDown, newComponentX, newComponentY)
 		}
 
@@ -392,7 +392,7 @@ var IOConsole = React.createClass({
 					<div id="workspace">
 						<Workspace 
 							ref = "workspace" 
-							className = "ui-module workspace pattern" 
+							className = "ui-module workspace" 
 							handleComponentDrop = {this.handleComponentDrop} 
 							handleWireDrop = {this.handleNewWireDrop} 
 							deleteWires = {this.deleteWires} 
@@ -446,7 +446,6 @@ var Home = React.createClass({
 
 var PrimaryNav = React.createClass({
 	render: function() {	
-		console.log(this.props.categories);
 		return (
 			<div className="primaryNav">
 				<ProjectSection 
@@ -492,15 +491,15 @@ var ProjectSection = React.createClass({
     			view: {
     				"host_interface-1": {
     					x: 20,
-    					y: 15
+    					y: headerHeight + 15
     				},
     				"host_interface-2": {
     					x: 130,
-    					y: 15
+    					y: headerHeight + 15
     				},
     				"host_interface-3": {
     					x: 240,
-    					y: 15
+    					y: headerHeight + 15
     				}
     			},
     			users: {
@@ -585,7 +584,7 @@ var Category = React.createClass({
 	render: function() {
 		var moduleItems = []
 
-		for (var moduleID in this.props.modules) {
+		for (var moduleID in this.props.moduleList) {
 			var thisModuleItem = this.props.modules[moduleID];
 
       		moduleItems.push(
@@ -617,10 +616,10 @@ var ModuleItem = React.createClass({
 			<div 
 				className="moduleItem"
 				onMouseDown = {this.props.onMouseDown.bind(null, this.props.moduleID)} >
-  				<h2>
+  				<h3>
   					<span className="name">{this.props.moduleItem.name}</span>
   					<span className="version">{this.props.moduleItem.version}</span>
-  				</h2>
+  				</h3>
   				<div className="moduleDescription">{this.props.moduleItem.description}</div>
       		</div>
 		);

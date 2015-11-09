@@ -48,7 +48,6 @@ var Workspace = React.createClass({
 
 	onMouseDown: function(componentID, interfaceGroupID, interfaceIDObject) {			
 		if (event.button == 0){	
-			console.log(interfaceIDObject);
 			event.stopPropagation();
 			this.addDocumentEvents();
 
@@ -168,8 +167,6 @@ var Workspace = React.createClass({
 						otherEndRefInterface = "interface-1"
 					}
 					else {
-						console.log(otherEnd);
-						console.log(selectedProject);
 						otherEndRefInterface = Object.keys(selectedProject.view[otherEnd.component].groups[otherEnd.interfaceGroup])[0];
 					}
 
@@ -321,7 +318,7 @@ var Workspace = React.createClass({
 			}
 
 			
-			if (componentX <= 0 || componentY <= 0) { //component is outside of canvas, e.g. during drag operation
+			if (componentX <= 0 || componentY <= headerHeight) { //component is outside of canvas, e.g. during drag operation
 				this.isPendingDeletion = componentID
 			}
 
@@ -358,8 +355,8 @@ var Workspace = React.createClass({
 			if (hostInterface == this.state.dragComponentID){
 				hostInterfaceX = hostInterfaceX + this.state.cursorX - this.state.startX;
 				hostInterfaceY = hostInterfaceY + this.state.cursorY - this.state.startY;
-				if (hostInterfaceX <= -3){hostInterfaceX = -3}
-				if (hostInterfaceY <= -3){hostInterfaceY = -3}
+				if (hostInterfaceX <= 0){hostInterfaceX = 0}
+				if (hostInterfaceY <= headerHeight + 1){hostInterfaceY = headerHeight + 1}
 			};
 
 
@@ -482,7 +479,6 @@ var Workspace = React.createClass({
 			for (var groupID in interfaceGroups) {
 				var otherEndOfWire = getOtherWireGroupEndpoint(componentID, groupID, selectedProjectObject);
 				var vectorToOtherEndComponent = {};
-				console.log(otherEndOfWire);
 
 				if (otherEndOfWire){
 					var verticalDist = this.componentData[componentID].top - this.componentData[otherEndOfWire.component].top;
@@ -699,13 +695,14 @@ var Workspace = React.createClass({
 
 		return (
 			<div className="ui-module workspace pattern">		
-				<svg className="wireContainer ui-module" width={this.svgExtents.width} height={this.svgExtents.height}>
+				<svg className="wireContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{wires}
 					{wireInProgress}
-				</svg>
+				</svg>	
 				{components}
 				{hostInterfacesArray}
-				<svg className="ifcContainer ui-module" width={this.svgExtents.width} height={this.svgExtents.height}>
+						
+				<svg className="ifcContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{ifcs}
 					{hostPorts}
 				</svg>		

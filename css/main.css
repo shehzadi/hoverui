@@ -22,7 +22,7 @@
 /* Patterns */
 .pattern {
   background-image: linear-gradient(#c7c7c7 1px, transparent 1px), linear-gradient(90deg, #c7c7c7 1px, transparent 1px);
-  background-size: 10px 10px, 10px 10px;
+  background-size: 8px 8px, 8px 8px;
   background-position: 0 0, 0 0;
 }
 
@@ -34,7 +34,6 @@
   bottom: 0;
   left: 0;
   right: 0;
-  overflow: scroll;
 }
 
 #IOConsole {
@@ -51,26 +50,33 @@
   flex-direction: column;
   background-color: #999999;
   min-width: 175px;
-  max-width: 250px;
+  max-width: 260px;
   flex: 1;
 }
 
 #workspace {
-  display: flex;
-  flex-direction: column;
-  background-color: #bfbfbf;
-  flex-grow: 1;
-  position: relative;
-}
-
-#main {
-  display: flex;
-  flex-direction: column;
-  flex: 3;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  position: absolute;
+  overflow: scroll;
 }
 
 #header {
-  background-color: #666666;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  height: 40px;
+}
+
+#main {
+  flex: 3;
+  position: relative;
+  background-color: #bfbfbf;
+  box-shadow: 0 0 30px 0 rgba(0, 0, 0, 0.15);
 }
 
 .secondaryNav {
@@ -80,6 +86,7 @@
 /* Element styling */
 .componentInProgress {
   position: absolute;
+  z-index: 1000;
   padding: 7px;
   background-color: rgba(230, 230, 230, 0.6);
   outline: 1px dashed rgba(128, 128, 128, 0.6);
@@ -132,6 +139,7 @@
   font-size: 10px;
   fill: grey;
   text-anchor: middle;
+  position: absolute;
 }
 
 .workspace polygon {
@@ -181,10 +189,6 @@
   margin: 0 8px 0 5px;
 }
 
-.projects .add {
-  display: none;
-}
-
 #navigation:hover .add {
   display: inline-block;
   vertical-align: baseline;
@@ -202,57 +206,12 @@
   background-color: rgba(255, 255, 255, 0.27);
 }
 
-.project, .moduleItem {
-  padding: 2px 8px;
-  margin-left: -8px;
-}
-
-.project .version, .moduleItem .version {
-  flex: 1;
-}
-
-.project h2, .moduleItem h2 {
-  display: flex;
-  font-size: 13px;
-  align-items: baseline;
-}
-
-.project .name, .moduleItem .name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.project:not(.selected):hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-}
-
-.project:not(.selected):hover * {
-  cursor: pointer;
-}
-
-.moduleItem:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  cursor: grab;
-}
-
-.moduleItem:hover * {
-  cursor: grab;
-}
-
-.moduleDescription {
-  font-size: 70%;
-  padding: 2px 20px 0 16px;
-  margin-bottom: 6px;
-  color: #616161;
-}
-
 .home {
+  border-bottom: 1px solid #b30f35;
   background-color: #d0113d;
   padding: 0 15px;
   display: flex;
-  flex: 0 0 30px;
+  flex: 0 0 40px;
   align-items: center;
 }
 
@@ -271,7 +230,7 @@
 
 .home h1 {
   color: white;
-  font-size: 11px;
+  font-size: 10px;
   flex-grow: 1;
 }
 
@@ -308,21 +267,101 @@
   margin-bottom: 12px;
 }
 
+.projects .add {
+  display: none;
+}
+
+.projects .project {
+  padding: 2px 8px;
+  margin-left: -8px;
+}
+
+.projects .project h2 {
+  display: flex;
+  font-size: 13px;
+  align-items: baseline;
+}
+
+.projects .project .version {
+  flex: 1;
+}
+
+.projects .project .name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.projects .project:not(.selected):hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.projects .project:not(.selected):hover * {
+  cursor: pointer;
+}
+
+.ioModules h2 {
+  display: flex;
+  font-size: 11px;
+  align-items: baseline;
+  text-transform: capitalize;
+  font-style: italic;
+}
+
+.ioModules h3 {
+  font-size: 13px;
+  display: flex;
+  align-items: baseline;
+}
+
+.ioModules .version {
+  flex: 1;
+}
+
+.ioModules .name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ioModules .moduleItem {
+  padding: 4px 8px;
+  margin-left: -8px;
+}
+
+.ioModules .moduleItem:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  cursor: grab;
+}
+
+.ioModules .moduleItem:hover * {
+  cursor: grab;
+}
+
+.ioModules .moduleDescription {
+  font-size: 70%;
+  padding: 2px 20px 0 16px;
+  margin-bottom: 4px;
+  color: #616161;
+}
+
 .tools {
   display: flex;
   align-items: baseline;
-  background-color: #b3b3b3;
   height: 40px;
   font-size: 13px;
   padding: 7px 15px;
+  background-color: rgba(166, 166, 166, 0.65);
+  border-bottom: 1px solid rgba(153, 153, 153, 0.7);
 }
 
 .tools button {
-  padding: 1px 7px;
+  padding: 1px 8px;
   min-width: 20px;
   margin: 2px;
-  background-color: #ababab;
-  border: 1px solid #a3a3a3;
+  background-color: #9e9e9e;
+  border: 1px solid #949494;
   border-radius: 2px;
   white-space: nowrap;
   font-size: 10px;
@@ -330,8 +369,8 @@
 }
 
 .tools button:hover {
-  background-color: #a6a6a6;
-  border: 1px solid #9e9e9e;
+  background-color: #a1a1a1;
+  border: 1px solid #999999;
 }
 
 .tools .buttons {
@@ -342,16 +381,16 @@
 }
 
 .tools .buttons button {
-  padding: 3px 10px;
+  padding: 3px 12px;
   min-width: 50px;
   margin: 3px;
-  background-color: #9e9e9e;
-  border: 1px solid #919191;
+  background-color: #999999;
+  border: 1px solid #8c8c8c;
   border-radius: 3px;
   color: #1a1a1a;
   white-space: nowrap;
 }
 
 .tools .buttons button:hover {
-  background-color: #a6a6a6;
+  background-color: #a1a1a1;
 }

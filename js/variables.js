@@ -1,0 +1,1 @@
+var headerHeight = 40;
