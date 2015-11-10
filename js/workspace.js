@@ -342,8 +342,32 @@ var Workspace = React.createClass({
 		};
 
 
-		var hostInterfacesArray = [];
-		var hostPorts = [];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		var hostComponentsArray = [];
+		var hostPortsArray = [];
 		for (var hostInterface in hostInterfacesObject) {
 			var thisProtocol = hostInterfacesObject[hostInterface].protocol;
 			var thisMode = hostInterfacesObject[hostInterface].mode;
@@ -359,9 +383,7 @@ var Workspace = React.createClass({
 				if (hostInterfaceY <= headerHeight + 1){hostInterfaceY = headerHeight + 1}
 			};
 
-
-
-			hostInterfacesArray.push(
+			hostComponentsArray.push(
 				<HostInterface
 					key = {hostInterface} 
 					protocol = {thisProtocol} 
@@ -377,15 +399,96 @@ var Workspace = React.createClass({
 					attachmentID = {hostInterface}/>
 			);
 
-			var ifcX = hostInterfaceX + (this.props.hostInterface.width - this.props.attachmentInterface.width) / 2;
-			var ifcY = hostInterfaceY + this.props.hostInterface.height - (this.props.attachmentInterface.height / 2) - 1;
+			this.componentData[hostInterface] = {
+				left: hostInterfaceX,
+				top: hostInterfaceY
+			};
 
-			this.componentData[hostInterface] = {};
+
+			// host interface ports
+			// figure out component at other end, vector, face etc.
+			var otherEndOfWire = getOtherWireGroupEndpoint(hostInterface, "interface-1", selectedProjectObject);
+			//console.log(otherEndOfWire);
+			var vectorToOtherEndComponent = null;
+			var interfaceSide = null;
+
+
+
+
+			if (otherEndOfWire){
+				var verticalDist = this.componentData[otherEndOfWire.component].top - this.componentData[hostInterface].top;
+				var horizontalDist = this.componentData[otherEndOfWire.component].left - this.componentData[hostInterface].left;
+
+				vectorToOtherEndComponent = {
+					x: horizontalDist,
+					y: verticalDist
+				}
+
+				var refMultiplier = this.props.hostInterface.height / this.props.hostInterface.width;
+
+				if ((vectorToOtherEndComponent.x * refMultiplier) <= vectorToOtherEndComponent.y){
+					if ((vectorToOtherEndComponent.x * -refMultiplier) < vectorToOtherEndComponent.y){
+						interfaceSide = "bottom";
+					}
+					else {
+						interfaceSide = "left";
+						nLeft += 1;
+						nBottom -= 1
+					}
+				}
+
+				else {
+					if ((vectorToOtherEndComponent.x * -refMultiplier) > vectorToOtherEndComponent.y){
+						interfaceSide = "top";
+						nTop += 1;
+						nBottom -= 1
+					}
+					else {
+						interfaceSide = "right";
+						nRight += 1;
+						nBottom -= 1
+					}
+				}
+				//console.log(interfaceSide);
+			}
+			else {
+				interfaceSide = "bottom"
+			}
+
+			
+			if (interfaceSide == "top"){
+				var thisLeft2 = hostInterfaceX + (this.props.hostInterface.width / 2);
+				var thisTop2 = hostInterfaceY ;
+			}
+			if (interfaceSide == "right"){
+				var thisTop2 = hostInterfaceY + ((this.props.hostInterface.height / 2));
+				var thisLeft2 = hostInterfaceX + this.props.hostInterface.width;
+			}
+			if (interfaceSide == "bottom"){
+				var thisLeft2 = hostInterfaceX + (this.props.hostInterface.width / 2);
+				var thisTop2 = hostInterfaceY + this.props.hostInterface.height;
+			}
+			if (interfaceSide == "left"){
+				var thisTop2 = hostInterfaceY + ((this.props.hostInterface.height / 2));
+				var thisLeft2 = hostInterfaceX;
+			}
+			
+
+
+
+
+
+
 			this.componentData[hostInterface]["interfaceGroups"] = {};
 			this.componentData[hostInterface].interfaceGroups = {
 				"interface-1": {
-					top: ifcY + (this.props.attachmentInterface.height / 2),
-					left: ifcX +(this.props.attachmentInterface.width / 2)
+					//top: ifcY + (this.props.attachmentInterface.height / 2),
+					//left: ifcX + (this.props.attachmentInterface.width / 2),
+					top: thisTop2,
+					left: thisLeft2,
+					face: interfaceSide,
+					wireTo: otherEndOfWire,
+					vector: vectorToOtherEndComponent
 				}
 			};
 
@@ -399,11 +502,6 @@ var Workspace = React.createClass({
 					isInvalid = false;
 				}
 
-
-
-
-
-
 				var thisRefEndpoint = {
 					"component": hostInterface,
 					"ifc": "interface-1"
@@ -412,10 +510,6 @@ var Workspace = React.createClass({
 				if (isExistingWire(thisRefEndpoint, wiresObject)){
 					isInvalid = true;
 				}
-
-
-
-
 
 				if (hostInterface == this.state.componentID) { //source interface
 					isInvalid = true;
@@ -429,7 +523,7 @@ var Workspace = React.createClass({
 			var thisFillColor = getHSL(this.props.protocols[thisProtocol].hue);
 			var thisBorderColor = getHSL(this.props.protocols[thisProtocol].hue, true);
 
-			hostPorts.push(
+			hostPortsArray.push(
 				<HostPort 
 					key = {hostInterface + "interface-1"} 
 					isInvalid = {isInvalid} 
@@ -438,17 +532,28 @@ var Workspace = React.createClass({
 					onMouseDown = {this.onMouseDown} 
 					onMouseUp = {this.onInterfaceMouseUp} 
 					color = {thisFillColor} 
+					face = {interfaceSide} 
 					border = {thisBorderColor} 
 					width = {this.props.attachmentInterface.width} 
 					height = {this.props.attachmentInterface.height} 
-					left = {ifcX} 
-					top = {ifcY} 
+					left = {thisLeft2} 
+					top = {thisTop2} 
 					apex = {this.props.attachmentInterface.apex} 
 					interfaceID = "interface-1" 
 					componentID = {hostInterface}/>				
 			);
 
 		};
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -556,7 +661,6 @@ var Workspace = React.createClass({
 				var thisFace = this.componentData[componentID]["interfaceGroups"][group].face;
 
 				//calculate location
-				console.log(thisFace);
 				if (thisFace == "top"){ //include
 					var leftDatum = (0.5 * this.props.component.width) - (0.5 * (nTop - 1) * (this.props.ifc.width + this.props.ifc.margin));
 					var thisLeft = thisComponentX + leftDatum + (topIndex * (this.props.ifc.width + this.props.ifc.margin));
@@ -664,20 +768,6 @@ var Workspace = React.createClass({
 		};
 
 
-
-
-
-
-
-
-
-
-
-
-
-		
-
-
 		var wires = [];
 		var localGroupArray = [];
 
@@ -768,11 +858,11 @@ var Workspace = React.createClass({
 					{wireInProgress}
 				</svg>	
 				{components}
-				{hostInterfacesArray}
+				{hostComponentsArray}
 						
 				<svg className="ifcContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{ifcs}
-					{hostPorts}
+					{hostPortsArray}
 				</svg>		
 			</div>
 		);

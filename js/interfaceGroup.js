@@ -143,4 +143,4 @@ var InterfaceGroup = React.createClass({
 			</g>
   		)
 	},
-});
+})

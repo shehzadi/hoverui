@@ -26,6 +26,11 @@ var HostPort = React.createClass({
 	},
 
 	render: function() {
+
+		var leftCenterPoint = this.props.left;
+		var topCenterPoint = this.props.top;
+
+
 		var growthW = 0;
 		var growthH = 0;
 		if ((this.state.isHover && !this.props.isInvalid) || this.props.isStartOfNewWire){
@@ -46,9 +51,10 @@ var HostPort = React.createClass({
 		var polygon = {	
 			width: this.props.width + growthW,
 			height: this.props.height + growthH,
-			left: this.props.left - growthW/2,
-			top: this.props.top - growthH/2 + 1
+			left: this.props.left - this.props.width/2 - growthW/2,
+			top: this.props.top - this.props.height/2 - growthH/2 + 1
 		};
+
 
 		var inputPointer = "";
 		var outputPointer = "";
@@ -66,11 +72,36 @@ var HostPort = React.createClass({
 		points += outputPointer;
 		points += " " + polygon.left + ", " + (polygon.top + polygon.height); //bottom-left
 
+
+
+		//rotation
+
+		var rotation = 0;
+
+		if (this.props.face == "right"){
+			rotation = -90
+		}
+
+		if (this.props.face == "left"){
+			rotation = 90
+		}
+
+		if (this.props.face == "top"){
+			rotation = 180;
+		}
+
+		var transformString = "rotate(" + rotation + " " + leftCenterPoint + " " + topCenterPoint + ")";
+
+
+
+
+
 		return (
 			<polygon 
 				className = "attachmentInterface" 
 				style = {interfaceStyle} 
 				points = {points} 
+				transform = {transformString} 
 				onMouseEnter={this.onMouseEnter} 
 				onMouseLeave={this.onMouseLeave} 
 				onMouseUp={this.onMouseUp} 
