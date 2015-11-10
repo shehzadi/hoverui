@@ -22,13 +22,13 @@ var Workspace = React.createClass({
   	getDefaultProps: function() {
     	return {
     		component: {
-    			width: 135,
-    			height: 72
+    			width: 145,
+    			height: 76
     		},
     		ifc: {
     			width: 20,
     			height: 1,
-    			margin: 8
+    			margin: 5
     		},
     		wire: {
     			width: 2

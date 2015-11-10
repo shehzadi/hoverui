@@ -169,7 +169,7 @@ $pattern-line-color: lighten($workspace-color, 3%);
 
 .workspace {
 	.component {
-		padding: 7px;
+		padding: 10px 14px;
 		position: absolute;
 		background-color: $topoItem-color;
 		outline: 1px solid darken($topoItem-color, 40%);
@@ -199,6 +199,11 @@ $pattern-line-color: lighten($workspace-color, 3%);
 		fill: grey;
 		text-anchor: middle;
 		position: absolute;
+	}
+
+	text {
+		text-anchor: middle;
+    	dominant-baseline: central;
 	}
 
 	polygon {

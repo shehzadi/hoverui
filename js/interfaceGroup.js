@@ -28,10 +28,16 @@ var InterfaceGroup = React.createClass({
 	},
 
 	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.componentID, this.props.interfaceGroupID, this.props.isInvalid)
+		this.props.onMouseUp(this.props.componentID, this.props.interfaceGroupID, this.props.isInvalid);
+		this.setState({
+			isHover: false
+    	});
 	},
 
 	render: function() {
+		var leftCenterPoint = this.props.componentData[this.props.componentID]["interfaceGroups"][this.props.interfaceGroupID].left;
+		var topCenterPoint = this.props.componentData[this.props.componentID]["interfaceGroups"][this.props.interfaceGroupID].top;
+		
 		var growthW = 0;
 		var growthH = 0;
 		if ((this.state.isHover && !this.props.isInvalid) || this.props.isStartOfNewWire){
@@ -51,8 +57,8 @@ var InterfaceGroup = React.createClass({
 		var polygon = {	
 			width: this.props.width + growthW,
 			height: this.props.height + growthH,
-			left: this.props.componentData[this.props.componentID]["interfaceGroups"][this.props.interfaceGroupID].left - (this.props.width/2) - growthW/2,
-			top: this.props.componentData[this.props.componentID]["interfaceGroups"][this.props.interfaceGroupID].top - (this.props.height/2) - growthH/2 
+			left: leftCenterPoint - (this.props.width/2) - growthW/2,
+			top: topCenterPoint - (this.props.height/2) - growthH/2 
 		};
 
 		var style = {
@@ -74,7 +80,7 @@ var InterfaceGroup = React.createClass({
 			text = "" + nInterfaceGroups
 		}
 		var textX = polygon.left + (polygon.width / 2);
-		var textY = polygon.top - 4;
+		var textY = polygon.top - 7;
 
 		var inputPointer = "";
 		var outputPointer = "";
@@ -93,9 +99,31 @@ var InterfaceGroup = React.createClass({
 		points += outputPointer;
 		points += " " + polygon.left + ", " + (polygon.top + polygon.height); //bottom-left
 
+		//rotation
+		var rotation = 0;
+
+		if (this.props.face == "right"){
+			rotation = -90
+		}
+
+		if (this.props.face == "left"){
+			rotation = 90
+		}
+
+		if (this.props.face == "top"){
+			rotation = 180;
+		}
+
+		var transformString = "rotate(" + rotation + " " + leftCenterPoint + " " + topCenterPoint + ")";
+		var textTransformString = "rotate(" + (-rotation) + " " + textX + " " + textY + ")";
+
+
+		//<text x="100" y="50" text-anchor="middle" dominant-baseline="central" transform="rotate(0, 100, 50)"></text>
+
  
 		return (
-			<g>
+			<g
+				transform = {transformString}>
 				<polygon 
 					className = "interface" 
 					style = {style} 
@@ -108,7 +136,8 @@ var InterfaceGroup = React.createClass({
 				<text 
 					x={textX} 
 					y={textY}
-					style = {textStyle}>
+					style = {textStyle} 
+					transform = {textTransformString}>
 					{text}
 				</text>
 			</g>

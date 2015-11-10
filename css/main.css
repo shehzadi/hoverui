@@ -111,7 +111,7 @@
 }
 
 .workspace .component {
-  padding: 7px;
+  padding: 10px 14px;
   position: absolute;
   background-color: rgba(255, 255, 255, 0.6);
   outline: 1px solid rgba(153, 153, 153, 0.6);
@@ -143,6 +143,11 @@
   fill: grey;
   text-anchor: middle;
   position: absolute;
+}
+
+.workspace text {
+  text-anchor: middle;
+  dominant-baseline: central;
 }
 
 .workspace polygon {
