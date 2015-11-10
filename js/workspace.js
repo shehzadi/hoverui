@@ -28,7 +28,7 @@ var Workspace = React.createClass({
     		ifc: {
     			width: 20,
     			height: 1,
-    			margin: 5
+    			margin: 8
     		},
     		wire: {
     			width: 2
@@ -475,52 +475,118 @@ var Workspace = React.createClass({
 	  		var thisComponentY = this.componentData[componentID].top;
 
 			//loop through internal interface groups and get coordinates of other end components
+
+			var nRight = 0; 
+			var nLeft = 0;
+			var nTop = 0;
+			var nBottom = nInterfaceGroups;
 			
 			for (var groupID in interfaceGroups) {
 				var otherEndOfWire = getOtherWireGroupEndpoint(componentID, groupID, selectedProjectObject);
-				var vectorToOtherEndComponent = {};
+				var vectorToOtherEndComponent = null;
+				var interfaceSide = null;
 
 				if (otherEndOfWire){
-					var verticalDist = this.componentData[componentID].top - this.componentData[otherEndOfWire.component].top;
-					var horizontalDist = this.componentData[componentID].left - this.componentData[otherEndOfWire.component].left;
+					var verticalDist = this.componentData[otherEndOfWire.component].top - this.componentData[componentID].top;
+					var horizontalDist = this.componentData[otherEndOfWire.component].left - this.componentData[componentID].left;
 
 					vectorToOtherEndComponent = {
 						x: horizontalDist,
 						y: verticalDist
 					}
+
+					var refMultiplier = this.props.component.height / this.props.component.width;
+
+					if ((vectorToOtherEndComponent.x * refMultiplier) <= vectorToOtherEndComponent.y){
+						if ((vectorToOtherEndComponent.x * -refMultiplier) < vectorToOtherEndComponent.y){
+							interfaceSide = "bottom";
+						}
+						else {
+							interfaceSide = "left";
+							nLeft += 1;
+							nBottom -= 1
+						}
+					}
+
+					else {
+						if ((vectorToOtherEndComponent.x * -refMultiplier) > vectorToOtherEndComponent.y){
+							interfaceSide = "top";
+							nTop += 1;
+							nBottom -= 1
+						}
+						else {
+							interfaceSide = "right";
+							nRight += 1;
+							nBottom -= 1
+						}
+					}
+				}
+				else {
+					interfaceSide = "bottom"
 				}
 
 				this.componentData[componentID]["interfaceGroups"][groupID] = {
+					face: interfaceSide,
 					top: null,
 					left: null,
 					wireTo: otherEndOfWire,
 					vector: vectorToOtherEndComponent
 				};
-				//this.componentData[componentID]["interfaceGroups"][thisGroupID].wireTo = otherEndOfWire
-				
 			};
 
-			var groupIndex = 0;
-			for (var group in interfaceGroups) {
 
-				//console.log(this.componentData);
-				
+			var groupIndex = 0;
+			var rightIndex = 0; 
+			var leftIndex = 0;
+			var topIndex = 0;
+			var bottomIndex = 0;
+			for (var group in interfaceGroups) {
 				var thisGroupID = group;
 			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
+
+			    //get number of interfaces in group
 				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
 
+				//get protocol and mode
 				var referenceInterface = Object.keys(thisInterfaceGroup)[0];
-
 				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
 				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
 
+				//get face
+				var thisFace = this.componentData[componentID]["interfaceGroups"][group].face;
+
+				//calculate location
+				console.log(thisFace);
+				if (thisFace == "top"){ //include
+					var leftDatum = (0.5 * this.props.component.width) - (0.5 * (nTop - 1) * (this.props.ifc.width + this.props.ifc.margin));
+					var thisLeft = thisComponentX + leftDatum + (topIndex * (this.props.ifc.width + this.props.ifc.margin));
+					var thisTop = thisComponentY ;
+					topIndex += 1
+				}
+				if (thisFace == "right"){ //include
+					var topDatum = (0.5 * this.props.component.height) - (0.5 * (nRight - 1) * (this.props.ifc.width + this.props.ifc.margin));
+					var thisTop = thisComponentY + topDatum + (rightIndex * (this.props.ifc.width + this.props.ifc.margin));
+					var thisLeft = thisComponentX + this.props.component.width - (this.props.ifc.height / 2) + 1;
+					rightIndex += 1
+				}
+				if (thisFace == "bottom"){ //include
+					//console.log(bottomIndex);
+					var leftDatum = (0.5 * this.props.component.width) - (0.5 * (nBottom - 1) * (this.props.ifc.width + this.props.ifc.margin));
+					var thisLeft = thisComponentX + leftDatum + (bottomIndex * (this.props.ifc.width + this.props.ifc.margin));
+					var thisTop = thisComponentY + this.props.component.height;
+					bottomIndex += 1
+				}
+				if (thisFace == "left"){ //include
+					var topDatum = (0.5 * this.props.component.height) - (0.5 * (nLeft - 1) * (this.props.ifc.width + this.props.ifc.margin));
+					var thisTop = thisComponentY + topDatum + (leftIndex * (this.props.ifc.width + this.props.ifc.margin));
+					var thisLeft = thisComponentX - (this.props.ifc.height / 2) + 1;
+					leftIndex += 1
+				}
+
+				
 				
 
-
-				var leftDatum = (0.5 * this.props.component.width) - (0.5 * ((nInterfaceGroups * (this.props.ifc.width + this.props.ifc.margin)) - this.props.ifc.margin));
-				var thisLeft = thisComponentX + leftDatum + ((groupIndex) * (this.props.ifc.width + this.props.ifc.margin));
-				var thisTop = thisComponentY + this.props.component.height - (this.props.ifc.height / 2) + 1;
-
+				//calculate state etc.
 				var isInvalid = false;
 				var isStartOfNewWire = false;
 
@@ -559,8 +625,9 @@ var Workspace = React.createClass({
 				}
 
 				this.componentData[componentID]["interfaceGroups"][thisGroupID] = {
-					top: thisTop + (this.props.ifc.height / 2),
-					left: thisLeft + (this.props.ifc.width / 2),
+					face: this.componentData[componentID]["interfaceGroups"][thisGroupID].face,
+					top: thisTop,
+					left: thisLeft,
 					wireTo: this.componentData[componentID]["interfaceGroups"][thisGroupID].wireTo,
 					vector: this.componentData[componentID]["interfaceGroups"][thisGroupID].vector
 				};
@@ -579,6 +646,7 @@ var Workspace = React.createClass({
 						onMouseDown = {this.onMouseDown} 
 						onMouseUp = {this.onInterfaceMouseUp} 
 						interfaceMode = {interfaceGroupMode} 
+						face = {thisFace} 
 						color = {thisFillColor} 
 						border = {thisBorderColor} 
 						width = {this.props.ifc.width} 
@@ -712,7 +780,6 @@ var Workspace = React.createClass({
 });
 
 var HostInterface = React.createClass({
-
 	onMouseDown: function() {
 		this.props.onMouseDown(this.props.attachmentID)
 	},
@@ -736,8 +803,6 @@ var HostInterface = React.createClass({
 		);
 	}
 });
-
-
 
 var Component = React.createClass({
 	handleMouseDown: function(){
