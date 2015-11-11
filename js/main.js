@@ -447,7 +447,7 @@ var Home = React.createClass({
     						protocol: "protocol-1"
     					},
     					"host_interface-2": {
-    						mode: "input",
+    						mode: "output",
     						protocol: "protocol-2"
     					},
     					"host_interface-3": {

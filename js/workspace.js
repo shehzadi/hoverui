@@ -295,6 +295,36 @@ var Workspace = React.createClass({
     		}
 		}
 
+				var getFaceString = function(vector, refVector){
+			var refMultiplier = refVector;
+			var interfaceSide = "";
+
+			if ((vector.x * refMultiplier) <= vector.y){
+				if ((vector.x * -refMultiplier) < vector.y){
+					interfaceSide = "bottom";
+				}
+				else {
+					interfaceSide = "left";
+					//nLeft += 1;
+					//nBottom -= 1
+				}
+			}
+
+			else {
+				if ((vector.x * -refMultiplier) > vector.y){
+					interfaceSide = "top";
+					//nTop += 1;
+					//nBottom -= 1
+				}
+				else {
+					interfaceSide = "right";
+					//nRight += 1;
+					//nBottom -= 1
+				}
+			}
+			return interfaceSide
+		}
+
 		this.isPendingDeletion = false;
 
 		this.componentData = {};
@@ -352,20 +382,6 @@ var Workspace = React.createClass({
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 		var hostComponentsArray = [];
 		var hostPortsArray = [];
 		for (var hostInterface in hostInterfacesObject) {
@@ -405,93 +421,6 @@ var Workspace = React.createClass({
 			};
 
 
-			// host interface ports
-			// figure out component at other end, vector, face etc.
-			var otherEndOfWire = getOtherWireGroupEndpoint(hostInterface, "interface-1", selectedProjectObject);
-			//console.log(otherEndOfWire);
-			var vectorToOtherEndComponent = null;
-			var interfaceSide = null;
-
-
-
-
-			if (otherEndOfWire){
-				var verticalDist = this.componentData[otherEndOfWire.component].top - this.componentData[hostInterface].top;
-				var horizontalDist = this.componentData[otherEndOfWire.component].left - this.componentData[hostInterface].left;
-
-				vectorToOtherEndComponent = {
-					x: horizontalDist,
-					y: verticalDist
-				}
-
-				var refMultiplier = this.props.hostInterface.height / this.props.hostInterface.width;
-
-				if ((vectorToOtherEndComponent.x * refMultiplier) <= vectorToOtherEndComponent.y){
-					if ((vectorToOtherEndComponent.x * -refMultiplier) < vectorToOtherEndComponent.y){
-						interfaceSide = "bottom";
-					}
-					else {
-						interfaceSide = "left";
-						nLeft += 1;
-						nBottom -= 1
-					}
-				}
-
-				else {
-					if ((vectorToOtherEndComponent.x * -refMultiplier) > vectorToOtherEndComponent.y){
-						interfaceSide = "top";
-						nTop += 1;
-						nBottom -= 1
-					}
-					else {
-						interfaceSide = "right";
-						nRight += 1;
-						nBottom -= 1
-					}
-				}
-				//console.log(interfaceSide);
-			}
-			else {
-				interfaceSide = "default"
-			}
-
-			
-			if (interfaceSide == "top"){
-				var thisLeft2 = hostInterfaceX + (this.props.hostInterface.width / 2);
-				var thisTop2 = hostInterfaceY ;
-			}
-			if (interfaceSide == "right"){
-				var thisTop2 = hostInterfaceY + ((this.props.hostInterface.height / 2));
-				var thisLeft2 = hostInterfaceX + this.props.hostInterface.width;
-			}
-			if (interfaceSide == "bottom" || interfaceSide == "default"){
-				var thisLeft2 = hostInterfaceX + (this.props.hostInterface.width / 2);
-				var thisTop2 = hostInterfaceY + this.props.hostInterface.height;
-			}
-			if (interfaceSide == "left"){
-				var thisTop2 = hostInterfaceY + ((this.props.hostInterface.height / 2));
-				var thisLeft2 = hostInterfaceX;
-			}
-			
-
-
-
-
-
-
-			this.componentData[hostInterface]["interfaceGroups"] = {};
-			this.componentData[hostInterface].interfaceGroups = {
-				"interface-1": {
-					//top: ifcY + (this.props.attachmentInterface.height / 2),
-					//left: ifcX + (this.props.attachmentInterface.width / 2),
-					top: thisTop2,
-					left: thisLeft2,
-					face: interfaceSide,
-					wireTo: otherEndOfWire,
-					vector: vectorToOtherEndComponent
-				}
-			};
-
 			var isInvalid = false;
 			var isStartOfNewWire = false;
 			if (this.state.isWireInProgress){
@@ -520,6 +449,121 @@ var Workspace = React.createClass({
 				}
 			}
 
+
+
+
+
+			// host interface ports
+			// figure out component at other end, vector, face etc.
+			var otherEndOfWire = getOtherWireGroupEndpoint(hostInterface, "interface-1", selectedProjectObject);
+			//console.log(otherEndOfWire);
+			var vectorToOtherEndComponent = null;
+			var interfaceSide = null;
+
+
+
+
+			if (otherEndOfWire){
+				var verticalDist = this.componentData[otherEndOfWire.component].top - this.componentData[hostInterface].top;
+				var horizontalDist = this.componentData[otherEndOfWire.component].left - this.componentData[hostInterface].left;
+
+				vectorToOtherEndComponent = {
+					x: horizontalDist,
+					y: verticalDist
+				}
+
+				var refMultiplier = this.props.hostInterface.height / this.props.hostInterface.width;
+
+				if ((vectorToOtherEndComponent.x * refMultiplier) <= vectorToOtherEndComponent.y){
+					if ((vectorToOtherEndComponent.x * -refMultiplier) < vectorToOtherEndComponent.y){
+						interfaceSide = "bottom";
+					}
+					else {
+						interfaceSide = "left";
+					}
+				}
+
+				else {
+					if ((vectorToOtherEndComponent.x * -refMultiplier) > vectorToOtherEndComponent.y){
+						interfaceSide = "top";
+					}
+					else {
+						interfaceSide = "right";
+					}
+				}
+			}
+
+			else {
+				interfaceSide = "default"
+			}
+
+			
+		
+
+
+
+
+
+
+
+			var updatedFace = null;
+			if (!isInvalid && this.state.isWireInProgress){ //this is a valid interface
+				console.log(hostInterface);
+				//console.log(this.state.interfaceGroupID + ", " + this.state.componentID);
+				//var otherEndOfWire = getOtherWireGroupEndpoint(this.state.componentID, this.state.interfaceGroupID, selectedProjectObject);
+				var vectorToOtherEndComponent = null;
+
+				
+				
+				vectorToOtherEndComponent = {
+					x: this.componentData[this.state.componentID].left - this.componentData[componentID].left,
+					y: this.componentData[this.state.componentID].top - this.componentData[componentID].top
+				}
+				var refVector = this.props.component.height / this.props.component.width;
+				updatedFace = getFaceString(vectorToOtherEndComponent, refVector);
+				interfaceSide = updatedFace
+				
+				
+			}
+			
+
+
+			if (interfaceSide == "top"){
+				var thisLeft = hostInterfaceX + (this.props.hostInterface.width / 2);
+				var thisTop = hostInterfaceY ;
+			}
+			if (interfaceSide == "right"){
+				var thisTop = hostInterfaceY + ((this.props.hostInterface.height / 2));
+				var thisLeft = hostInterfaceX + this.props.hostInterface.width;
+			}
+			if (interfaceSide == "bottom" || interfaceSide == "default"){
+				var thisLeft = hostInterfaceX + (this.props.hostInterface.width / 2);
+				var thisTop = hostInterfaceY + this.props.hostInterface.height;
+			}
+			if (interfaceSide == "left"){
+				var thisTop = hostInterfaceY + ((this.props.hostInterface.height / 2));
+				var thisLeft = hostInterfaceX;
+			}
+
+
+
+
+
+			this.componentData[hostInterface]["interfaceGroups"] = {};
+			this.componentData[hostInterface].interfaceGroups = {
+				"interface-1": {
+					//top: ifcY + (this.props.attachmentInterface.height / 2),
+					//left: ifcX + (this.props.attachmentInterface.width / 2),
+					top: thisTop,
+					left: thisLeft,
+					face: interfaceSide,
+					wireTo: otherEndOfWire,
+					vector: vectorToOtherEndComponent
+				}
+			};
+
+
+
 			var thisFillColor = getHSL(this.props.protocols[thisProtocol].hue);
 			var thisBorderColor = getHSL(this.props.protocols[thisProtocol].hue, true);
 
@@ -536,8 +580,8 @@ var Workspace = React.createClass({
 					border = {thisBorderColor} 
 					width = {this.props.attachmentInterface.width} 
 					height = {this.props.attachmentInterface.height} 
-					left = {thisLeft2} 
-					top = {thisTop2} 
+					left = {thisLeft} 
+					top = {thisTop} 
 					apex = {this.props.attachmentInterface.apex} 
 					interfaceID = "interface-1" 
 					componentID = {hostInterface}/>				
@@ -545,41 +589,6 @@ var Workspace = React.createClass({
 
 		};
 
-
-
-
-
-
-
-		var getFaceString = function(vector, refVector){
-			var refMultiplier = refVector;
-			var interfaceSide = "";
-
-			if ((vector.x * refMultiplier) <= vector.y){
-				if ((vector.x * -refMultiplier) < vector.y){
-					interfaceSide = "bottom";
-				}
-				else {
-					interfaceSide = "left";
-					nLeft += 1;
-					nBottom -= 1
-				}
-			}
-
-			else {
-				if ((vector.x * -refMultiplier) > vector.y){
-					interfaceSide = "top";
-					nTop += 1;
-					nBottom -= 1
-				}
-				else {
-					interfaceSide = "right";
-					nRight += 1;
-					nBottom -= 1
-				}
-			}
-			return interfaceSide
-		}
 
 
 
@@ -615,11 +624,27 @@ var Workspace = React.createClass({
 			var nBottom = nInterfaceGroups;
 			
 			for (var groupID in interfaceGroups) {
+
+				var thisGroupID = groupID;
+			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
+
+				//console.log(thisInterfaceGroup);
 				var otherEndOfWire = getOtherWireGroupEndpoint(componentID, groupID, selectedProjectObject);
 				var vectorToOtherEndComponent = null;
 				var interfaceSide = null;
 
-				
+
+
+				//get number of interfaces in group
+				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
+
+				//get protocol and mode
+				var referenceInterface = Object.keys(thisInterfaceGroup)[0];
+				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
+				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
+
+
+			
 				if (otherEndOfWire){
 					vectorToOtherEndComponent = {
 						x: this.componentData[otherEndOfWire.component].left - this.componentData[componentID].left,
@@ -631,34 +656,6 @@ var Workspace = React.createClass({
 				else {
 					interfaceSide = "default"					
 				}
-
-				this.componentData[componentID]["interfaceGroups"][groupID] = {
-					face: interfaceSide,
-					top: null,
-					left: null,
-					wireTo: otherEndOfWire,
-					vector: vectorToOtherEndComponent
-				};
-			};
-
-
-			var groupIndex = 0;
-			var rightIndex = 0; 
-			var leftIndex = 0;
-			var topIndex = 0;
-			var bottomIndex = 0;
-			for (var group in interfaceGroups) {
-				var thisGroupID = group;
-			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
-
-			    //get number of interfaces in group
-				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
-
-				//get protocol and mode
-				var referenceInterface = Object.keys(thisInterfaceGroup)[0];
-				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
-				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
-
 
 
 
@@ -700,38 +697,89 @@ var Workspace = React.createClass({
 					}
 				}
 
+
+
+				this.componentData[componentID]["interfaceGroups"][groupID] = {
+					face: interfaceSide,
+					top: null,
+					left: null,
+					isInvalid: null,
+					isStartOfNewWire: null,
+					wireTo: otherEndOfWire,
+					vector: vectorToOtherEndComponent
+				};
+
+
+
+				//console.log(this.componentData[componentID]["interfaceGroups"][thisGroupID]);
+				this.componentData[componentID]["interfaceGroups"][thisGroupID].isInvalid = isInvalid;
+				this.componentData[componentID]["interfaceGroups"][thisGroupID].isStartOfNewWire = isStartOfNewWire;
+
+
+
+
 				var updatedFace = null;
-				if (!isInvalid && this.state.isWireInProgress){ //this is a valid interface
-					console.log(this.state.interfaceGroupID + ", " + this.state.componentID);
+				if (!this.componentData[componentID]["interfaceGroups"][groupID].isInvalid && this.state.isWireInProgress){ //this is a valid interface
+					//console.log(this.state.interfaceGroupID + ", " + this.state.componentID);
 					//var otherEndOfWire = getOtherWireGroupEndpoint(this.state.componentID, this.state.interfaceGroupID, selectedProjectObject);
 					var vectorToOtherEndComponent = null;
 
 					
 					
-						vectorToOtherEndComponent = {
-							x: this.componentData[this.state.componentID].left - this.componentData[componentID].left,
-							y: this.componentData[this.state.componentID].top - this.componentData[componentID].top
-						}
-						var refVector = this.props.component.height / this.props.component.width;
-						updatedFace = getFaceString(vectorToOtherEndComponent, refVector)
+					vectorToOtherEndComponent = {
+						x: this.componentData[this.state.componentID].left - this.componentData[componentID].left,
+						y: this.componentData[this.state.componentID].top - this.componentData[componentID].top
+					}
+					var refVector = this.props.component.height / this.props.component.width;
+					updatedFace = getFaceString(vectorToOtherEndComponent, refVector);
 					
-					console.log(updatedFace);
-					var oldFace = this.componentData[componentID]["interfaceGroups"][group].face;
-					if (oldFace == "default" || oldFace == "bottom"){
-						nBottom -= 1
-					}
-					if (oldFace == "top"){
-						nTop -= 1
-					}
-					if (oldFace == "left"){
-						nLeft -= 1
-					}
-					if (oldFace == "right"){
-						nRight -= 1
-					}
-					this.componentData[componentID]["interfaceGroups"][group].face = updatedFace;
+					
+					this.componentData[componentID]["interfaceGroups"][groupID].face = updatedFace;
 				}
+
+
+				// update N
+
+				var thisFace = this.componentData[componentID]["interfaceGroups"][groupID].face;
+				if (thisFace == "top"){nTop += 1; nBottom -= 1}
+				if (thisFace == "left"){nLeft += 1; nBottom -= 1}
+				if (thisFace == "right"){nRight += 1; nBottom -= 1}
+
 				
+			};
+
+//--------
+
+			var groupIndex = 0;
+			var rightIndex = 0; 
+			var leftIndex = 0;
+			var topIndex = 0;
+			var bottomIndex = 0;
+			for (var group in interfaceGroups) {
+				var thisGroupID = group;
+			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
+
+
+
+
+
+				//get number of interfaces in group
+				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
+
+
+				//get protocol and mode
+				var referenceInterface = Object.keys(thisInterfaceGroup)[0];
+				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
+				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
+
+
+
+
+
+
+
+
+
 
 				//calculate location
 				//get face
@@ -773,6 +821,8 @@ var Workspace = React.createClass({
 					face: this.componentData[componentID]["interfaceGroups"][thisGroupID].face,
 					top: thisTop,
 					left: thisLeft,
+					isStartOfNewWire: this.componentData[componentID]["interfaceGroups"][thisGroupID].isStartOfNewWire,
+					isInvalid: this.componentData[componentID]["interfaceGroups"][thisGroupID].isInvalid,
 					wireTo: this.componentData[componentID]["interfaceGroups"][thisGroupID].wireTo,
 					vector: this.componentData[componentID]["interfaceGroups"][thisGroupID].vector
 				};
@@ -784,8 +834,8 @@ var Workspace = React.createClass({
 
 				ifcs.push(
 					<InterfaceGroup 
-						isInvalid = {isInvalid} 
-						isStartOfNewWire = {isStartOfNewWire} 
+						isInvalid = {this.componentData[componentID]["interfaceGroups"][group].isInvalid} 
+						isStartOfNewWire = {this.componentData[componentID]["interfaceGroups"][group].isStartOfNewWire} 
 						isPendingDeletion = {this.isPendingDeletion} 
 						key = {thisKey} 
 						onMouseDown = {this.onMouseDown} 
