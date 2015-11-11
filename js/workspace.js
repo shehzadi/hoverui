@@ -507,12 +507,8 @@ var Workspace = React.createClass({
 
 
 			var updatedFace = null;
-			if (this.state.isWireInProgress){ 
-				
+			if (this.state.isWireInProgress){ 				
 				if (!isInvalid){ //this is a valid interface
-					//console.log(hostInterface);
-					//console.log(this.state.interfaceGroupID + ", " + this.state.componentID);
-					//var otherEndOfWire = getOtherWireGroupEndpoint(this.state.componentID, this.state.interfaceGroupID, selectedProjectObject);
 					var vectorToOtherEndComponent = null;
 	
 					vectorToOtherEndComponent = {
@@ -524,10 +520,7 @@ var Workspace = React.createClass({
 					interfaceSide = updatedFace
 				}
 
-				
-
 				else if (this.state.componentID == hostInterface){
-					console.log(this.state.componentID);
 					var vectorToCursor = null;
 	
 					vectorToCursor = {
@@ -732,24 +725,50 @@ var Workspace = React.createClass({
 
 
 
-				var updatedFace = null;
-				if (!this.componentData[componentID]["interfaceGroups"][groupID].isInvalid && this.state.isWireInProgress){ //this is a valid interface
-					//console.log(this.state.interfaceGroupID + ", " + this.state.componentID);
-					//var otherEndOfWire = getOtherWireGroupEndpoint(this.state.componentID, this.state.interfaceGroupID, selectedProjectObject);
-					var vectorToOtherEndComponent = null;
+			
 
-					
-					
-					vectorToOtherEndComponent = {
-						x: this.componentData[this.state.componentID].left - this.componentData[componentID].left,
-						y: this.componentData[this.state.componentID].top - this.componentData[componentID].top
+				var updatedFace = null;
+				if (this.state.isWireInProgress){ 				
+					if (!this.componentData[componentID]["interfaceGroups"][groupID].isInvalid){ //this is a valid interface
+						var vectorToOtherEndComponent = null;
+		
+						vectorToOtherEndComponent = {
+							x: this.componentData[this.state.componentID].left - this.componentData[componentID].left,
+							y: this.componentData[this.state.componentID].top - this.componentData[componentID].top
+						}
+						var refVector = this.props.component.height / this.props.component.width;
+						updatedFace = getFaceString(vectorToOtherEndComponent, refVector);
+						this.componentData[componentID]["interfaceGroups"][groupID].face = updatedFace;
 					}
-					var refVector = this.props.component.height / this.props.component.width;
-					updatedFace = getFaceString(vectorToOtherEndComponent, refVector);
-					
-					
-					this.componentData[componentID]["interfaceGroups"][groupID].face = updatedFace;
+
+					else if (this.state.componentID == componentID && this.state.interfaceGroupID == groupID){
+						var vectorToCursor = null;
+		
+						vectorToCursor = {
+							x: this.state.cursorX - (this.props.component.width/2) - this.componentData[componentID].left,
+							y: this.state.cursorY - (this.props.component.height/2) - this.componentData[componentID].top
+						}
+						var refVector = this.props.component.height / this.props.component.width;
+						updatedFace = getFaceString(vectorToCursor, refVector);
+						this.componentData[componentID]["interfaceGroups"][groupID].face = updatedFace
+					}
 				}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 				// update N
