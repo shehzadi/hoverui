@@ -507,23 +507,37 @@ var Workspace = React.createClass({
 
 
 			var updatedFace = null;
-			if (!isInvalid && this.state.isWireInProgress){ //this is a valid interface
-				console.log(hostInterface);
-				//console.log(this.state.interfaceGroupID + ", " + this.state.componentID);
-				//var otherEndOfWire = getOtherWireGroupEndpoint(this.state.componentID, this.state.interfaceGroupID, selectedProjectObject);
-				var vectorToOtherEndComponent = null;
+			if (this.state.isWireInProgress){ 
+				
+				if (!isInvalid){ //this is a valid interface
+					//console.log(hostInterface);
+					//console.log(this.state.interfaceGroupID + ", " + this.state.componentID);
+					//var otherEndOfWire = getOtherWireGroupEndpoint(this.state.componentID, this.state.interfaceGroupID, selectedProjectObject);
+					var vectorToOtherEndComponent = null;
+	
+					vectorToOtherEndComponent = {
+						x: this.componentData[this.state.componentID].left - this.componentData[hostInterface].left,
+						y: this.componentData[this.state.componentID].top - this.componentData[hostInterface].top
+					}
+					var refVector = this.props.hostInterface.height / this.props.hostInterface.width;
+					updatedFace = getFaceString(vectorToOtherEndComponent, refVector);
+					interfaceSide = updatedFace
+				}
 
 				
-				
-				vectorToOtherEndComponent = {
-					x: this.componentData[this.state.componentID].left - this.componentData[componentID].left,
-					y: this.componentData[this.state.componentID].top - this.componentData[componentID].top
+
+				else if (this.state.componentID == hostInterface){
+					console.log(this.state.componentID);
+					var vectorToCursor = null;
+	
+					vectorToCursor = {
+						x: this.state.cursorX - (this.props.hostInterface.width/2) - this.componentData[hostInterface].left,
+						y: this.state.cursorY - (this.props.hostInterface.height/2) - this.componentData[hostInterface].top
+					}
+					var refVector = this.props.hostInterface.height / this.props.hostInterface.width;
+					updatedFace = getFaceString(vectorToCursor, refVector);
+					interfaceSide = updatedFace
 				}
-				var refVector = this.props.component.height / this.props.component.width;
-				updatedFace = getFaceString(vectorToOtherEndComponent, refVector);
-				interfaceSide = updatedFace
-				
-				
 			}
 			
 
