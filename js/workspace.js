@@ -452,7 +452,7 @@ var Workspace = React.createClass({
 				//console.log(interfaceSide);
 			}
 			else {
-				interfaceSide = "bottom"
+				interfaceSide = "default"
 			}
 
 			
@@ -464,7 +464,7 @@ var Workspace = React.createClass({
 				var thisTop2 = hostInterfaceY + ((this.props.hostInterface.height / 2));
 				var thisLeft2 = hostInterfaceX + this.props.hostInterface.width;
 			}
-			if (interfaceSide == "bottom"){
+			if (interfaceSide == "bottom" || interfaceSide == "default"){
 				var thisLeft2 = hostInterfaceX + (this.props.hostInterface.width / 2);
 				var thisTop2 = hostInterfaceY + this.props.hostInterface.height;
 			}
@@ -551,7 +551,35 @@ var Workspace = React.createClass({
 
 
 
+		var getFaceString = function(vector, refVector){
+			var refMultiplier = refVector;
+			var interfaceSide = "";
 
+			if ((vector.x * refMultiplier) <= vector.y){
+				if ((vector.x * -refMultiplier) < vector.y){
+					interfaceSide = "bottom";
+				}
+				else {
+					interfaceSide = "left";
+					nLeft += 1;
+					nBottom -= 1
+				}
+			}
+
+			else {
+				if ((vector.x * -refMultiplier) > vector.y){
+					interfaceSide = "top";
+					nTop += 1;
+					nBottom -= 1
+				}
+				else {
+					interfaceSide = "right";
+					nRight += 1;
+					nBottom -= 1
+				}
+			}
+			return interfaceSide
+		}
 
 
 
@@ -591,43 +619,17 @@ var Workspace = React.createClass({
 				var vectorToOtherEndComponent = null;
 				var interfaceSide = null;
 
+				
 				if (otherEndOfWire){
-					var verticalDist = this.componentData[otherEndOfWire.component].top - this.componentData[componentID].top;
-					var horizontalDist = this.componentData[otherEndOfWire.component].left - this.componentData[componentID].left;
-
 					vectorToOtherEndComponent = {
-						x: horizontalDist,
-						y: verticalDist
+						x: this.componentData[otherEndOfWire.component].left - this.componentData[componentID].left,
+						y: this.componentData[otherEndOfWire.component].top - this.componentData[componentID].top
 					}
-
-					var refMultiplier = this.props.component.height / this.props.component.width;
-
-					if ((vectorToOtherEndComponent.x * refMultiplier) <= vectorToOtherEndComponent.y){
-						if ((vectorToOtherEndComponent.x * -refMultiplier) < vectorToOtherEndComponent.y){
-							interfaceSide = "bottom";
-						}
-						else {
-							interfaceSide = "left";
-							nLeft += 1;
-							nBottom -= 1
-						}
-					}
-
-					else {
-						if ((vectorToOtherEndComponent.x * -refMultiplier) > vectorToOtherEndComponent.y){
-							interfaceSide = "top";
-							nTop += 1;
-							nBottom -= 1
-						}
-						else {
-							interfaceSide = "right";
-							nRight += 1;
-							nBottom -= 1
-						}
-					}
+					var refVector = this.props.component.height / this.props.component.width;
+					interfaceSide = getFaceString(vectorToOtherEndComponent, refVector)
 				}
 				else {
-					interfaceSide = "bottom"
+					interfaceSide = "default"					
 				}
 
 				this.componentData[componentID]["interfaceGroups"][groupID] = {
@@ -657,40 +659,10 @@ var Workspace = React.createClass({
 				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
 				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
 
-				//get face
-				var thisFace = this.componentData[componentID]["interfaceGroups"][group].face;
 
-				//calculate location
-				if (thisFace == "top"){ //include
-					var leftDatum = (0.5 * this.props.component.width) - (0.5 * (nTop - 1) * (this.props.ifc.width + this.props.ifc.margin));
-					var thisLeft = thisComponentX + leftDatum + (topIndex * (this.props.ifc.width + this.props.ifc.margin));
-					var thisTop = thisComponentY ;
-					topIndex += 1
-				}
-				if (thisFace == "right"){ //include
-					var topDatum = (0.5 * this.props.component.height) - (0.5 * (nRight - 1) * (this.props.ifc.width + this.props.ifc.margin));
-					var thisTop = thisComponentY + topDatum + (rightIndex * (this.props.ifc.width + this.props.ifc.margin));
-					var thisLeft = thisComponentX + this.props.component.width - (this.props.ifc.height / 2) + 1;
-					rightIndex += 1
-				}
-				if (thisFace == "bottom"){ //include
-					//console.log(bottomIndex);
-					var leftDatum = (0.5 * this.props.component.width) - (0.5 * (nBottom - 1) * (this.props.ifc.width + this.props.ifc.margin));
-					var thisLeft = thisComponentX + leftDatum + (bottomIndex * (this.props.ifc.width + this.props.ifc.margin));
-					var thisTop = thisComponentY + this.props.component.height;
-					bottomIndex += 1
-				}
-				if (thisFace == "left"){ //include
-					var topDatum = (0.5 * this.props.component.height) - (0.5 * (nLeft - 1) * (this.props.ifc.width + this.props.ifc.margin));
-					var thisTop = thisComponentY + topDatum + (leftIndex * (this.props.ifc.width + this.props.ifc.margin));
-					var thisLeft = thisComponentX - (this.props.ifc.height / 2) + 1;
-					leftIndex += 1
-				}
 
-				
-				
 
-				//calculate state etc.
+				//calculate start-of-new-wire & validity
 				var isInvalid = false;
 				var isStartOfNewWire = false;
 
@@ -727,6 +699,75 @@ var Workspace = React.createClass({
 						isInvalid = false;
 					}
 				}
+
+				var updatedFace = null;
+				if (!isInvalid && this.state.isWireInProgress){ //this is a valid interface
+					console.log(this.state.interfaceGroupID + ", " + this.state.componentID);
+					//var otherEndOfWire = getOtherWireGroupEndpoint(this.state.componentID, this.state.interfaceGroupID, selectedProjectObject);
+					var vectorToOtherEndComponent = null;
+
+					
+					
+						vectorToOtherEndComponent = {
+							x: this.componentData[this.state.componentID].left - this.componentData[componentID].left,
+							y: this.componentData[this.state.componentID].top - this.componentData[componentID].top
+						}
+						var refVector = this.props.component.height / this.props.component.width;
+						updatedFace = getFaceString(vectorToOtherEndComponent, refVector)
+					
+					console.log(updatedFace);
+					var oldFace = this.componentData[componentID]["interfaceGroups"][group].face;
+					if (oldFace == "default" || oldFace == "bottom"){
+						nBottom -= 1
+					}
+					if (oldFace == "top"){
+						nTop -= 1
+					}
+					if (oldFace == "left"){
+						nLeft -= 1
+					}
+					if (oldFace == "right"){
+						nRight -= 1
+					}
+					this.componentData[componentID]["interfaceGroups"][group].face = updatedFace;
+				}
+				
+
+				//calculate location
+				//get face
+				var thisFace = this.componentData[componentID]["interfaceGroups"][group].face;
+				if (thisFace == "top"){
+					var leftDatum = (0.5 * this.props.component.width) - (0.5 * (nTop - 1) * (this.props.ifc.width + this.props.ifc.margin));
+					var thisLeft = thisComponentX + leftDatum + (topIndex * (this.props.ifc.width + this.props.ifc.margin));
+					var thisTop = thisComponentY ;
+					topIndex += 1
+				}
+				if (thisFace == "right"){
+					var topDatum = (0.5 * this.props.component.height) - (0.5 * (nRight - 1) * (this.props.ifc.width + this.props.ifc.margin));
+					var thisTop = thisComponentY + topDatum + (rightIndex * (this.props.ifc.width + this.props.ifc.margin));
+					var thisLeft = thisComponentX + this.props.component.width - (this.props.ifc.height / 2) + 1;
+					rightIndex += 1
+				}
+				if (thisFace == "bottom" || thisFace == "default"){
+					var leftDatum = (0.5 * this.props.component.width) - (0.5 * (nBottom - 1) * (this.props.ifc.width + this.props.ifc.margin));
+					var thisLeft = thisComponentX + leftDatum + (bottomIndex * (this.props.ifc.width + this.props.ifc.margin));
+					var thisTop = thisComponentY + this.props.component.height;
+					bottomIndex += 1
+				}
+				if (thisFace == "left"){
+					var topDatum = (0.5 * this.props.component.height) - (0.5 * (nLeft - 1) * (this.props.ifc.width + this.props.ifc.margin));
+					var thisTop = thisComponentY + topDatum + (leftIndex * (this.props.ifc.width + this.props.ifc.margin));
+					var thisLeft = thisComponentX - (this.props.ifc.height / 2) + 1;
+					leftIndex += 1
+				}
+
+
+
+
+
+
+
+
 
 				this.componentData[componentID]["interfaceGroups"][thisGroupID] = {
 					face: this.componentData[componentID]["interfaceGroups"][thisGroupID].face,
