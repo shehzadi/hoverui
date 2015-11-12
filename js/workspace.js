@@ -15,7 +15,8 @@ var Workspace = React.createClass({
 			startY: 0,
 			cursorX: 0,
 			cursorY: 0,
-			isWireInProgress: false
+			isWireInProgress: false,
+			isSnapping: false
 		};
 	},
 
@@ -138,6 +139,30 @@ var Workspace = React.createClass({
 		return thisMode
 	},
 
+	ifcMouseLeave: function(componentID, interfaceGroupID, isInvalid) {
+		if (this.state.isWireInProgress){
+			this.setState({
+				isSnapping: false,
+			});
+		}
+	},
+
+	ifcMouseEnter: function(componentID, interfaceGroupID, isInvalid) {
+
+		if (this.state.isWireInProgress && isInvalid == false){
+			var snapObject = {
+				component: componentID,
+				ifcGroup: interfaceGroupID
+			}
+			console.log(snapObject)
+
+			this.setState({
+				isSnapping: snapObject,
+			});
+
+		}
+	},
+
 	onMouseMove: function(event) { //captured on document
 		var cursorX = event.pageX - this.state.workspaceOriginX;
 		var cursorY = event.pageY - this.state.workspaceOriginY;
@@ -232,7 +257,11 @@ var Workspace = React.createClass({
 
 		else if (!isInvalid && this.state.isWireInProgress) {
 			this.props.handleWireDrop(componentID, interfaceGroupID, this.state.componentID, this.state.interfaceGroupID);
-		};		
+		};	
+
+		this.setState({
+			isSnapping: false
+		});		
 	},
 
 	onMouseUp: function(event) {
@@ -580,6 +609,8 @@ var Workspace = React.createClass({
 					isInvalid = {isInvalid} 
 					isStartOfNewWire = {isStartOfNewWire} 
 					mode = {thisMode} 
+					onMouseEnter = {this.ifcMouseEnter} 
+					onMouseLeave = {this.ifcMouseLeave} 
 					onMouseDown = {this.onMouseDown} 
 					onMouseUp = {this.onInterfaceMouseUp} 
 					color = {thisFillColor} 
@@ -871,6 +902,8 @@ var Workspace = React.createClass({
 						isStartOfNewWire = {this.componentData[componentID]["interfaceGroups"][group].isStartOfNewWire} 
 						isPendingDeletion = {this.isPendingDeletion} 
 						key = {thisKey} 
+						onMouseEnter = {this.ifcMouseEnter} 
+						onMouseLeave = {this.ifcMouseLeave} 
 						onMouseDown = {this.onMouseDown} 
 						onMouseUp = {this.onInterfaceMouseUp} 
 						interfaceMode = {interfaceGroupMode} 
@@ -963,6 +996,7 @@ var Workspace = React.createClass({
 
 			var wireInProgress = <WireInProgress
 				color = {thisStrokeColor} 
+				isSnapping = {this.state.isSnapping} 
 				thisInterfaceGroup = {this.state.interfaceGroupID} 
 				thisComponent = {this.state.componentID} 
 				componentData = {this.componentData} 
@@ -1054,8 +1088,7 @@ var Component = React.createClass({
 
 var WireInProgress = React.createClass({
 	render: function() {
-
-
+		console.log(this.props.isSnapping);
 		var end1Comp = this.props.thisComponent;
 		var end1Int = this.props.thisInterfaceGroup;
 
@@ -1067,6 +1100,13 @@ var WireInProgress = React.createClass({
 			strokeWidth: this.props.stroke,
 		};
 
+		var x2 = this.props.thisAbsX;
+		var y2 = this.props.thisAbsY;
+		if (this.props.isSnapping){
+			x2 = this.props.componentData[this.props.isSnapping.component].interfaceGroups[this.props.isSnapping.ifcGroup].left;
+			y2 = this.props.componentData[this.props.isSnapping.component].interfaceGroups[this.props.isSnapping.ifcGroup].top
+		}
+
 
 		//console.log (this.props.componentData);
 		//console.log (end1Comp);
@@ -1077,8 +1117,8 @@ var WireInProgress = React.createClass({
 				className = "wire" 
 				x1 = {this.props.componentData[end1Comp].interfaceGroups[end1Int].left} 
 				y1 = {this.props.componentData[end1Comp].interfaceGroups[end1Int].top} 
-				x2 = {this.props.thisAbsX}
-				y2 = {this.props.thisAbsY}
+				x2 = {x2}
+				y2 = {y2}
 				style = {componentStyle}/>
 		);
 	}

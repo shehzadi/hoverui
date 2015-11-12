@@ -21,6 +21,26 @@
   background-position: 50% 50%;
 }
 
+/* Scrollbars */
+::-webkit-scrollbar {
+  background: rgba(0, 0, 0, 0.05);
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 /* Patterns */
 .pattern {
   background-image: linear-gradient(#c7c7c7 1px, transparent 1px), linear-gradient(90deg, #c7c7c7 1px, transparent 1px);
@@ -63,7 +83,7 @@
   left: 0;
   right: 0;
   position: absolute;
-  overflow: scroll;
+  overflow: auto;
 }
 
 #header {
@@ -76,7 +96,7 @@
 }
 
 #main {
-  flex: 4;
+  flex: 3.5;
   position: relative;
   background-color: #bfbfbf;
   box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.2), 0 0 4px 0 rgba(0, 0, 0, 0.2);
@@ -90,7 +110,7 @@
 .componentInProgress {
   position: absolute;
   z-index: 1000;
-  padding: 7px;
+  padding: 10px 14px;
   background-color: rgba(230, 230, 230, 0.6);
   outline: 1px dashed rgba(128, 128, 128, 0.6);
   font-size: 12px;
@@ -197,6 +217,10 @@
   margin: 0 8px 0 5px;
 }
 
+.disabled {
+  opacity: 0.6;
+}
+
 #navigation .app-actions {
   background-image: url("../img/hamburger.svg");
   background-size: 12px;
@@ -209,12 +233,13 @@
   height: 24px;
   width: 26px;
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.75);
   background-color: transparent;
 }
 
-#navigation .add:hover, #navigation .app-actions:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+#navigation .add:hover:not(.disabled), #navigation .app-actions:hover:not(.disabled) {
+  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
 .home {
@@ -265,10 +290,6 @@
   box-sizing: content-box;
 }
 
-.projects .add {
-  display: none;
-}
-
 .projects .project {
   padding: 2px 8px;
   margin-left: -8px;
@@ -305,7 +326,7 @@
 
 .ioModules {
   flex: 1 1 auto;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .ioModules h2 {
@@ -381,7 +402,7 @@
   min-width: 20px;
   margin: 2px;
   background-color: #9e9e9e;
-  border: 1px solid #949494;
+  border: 1px solid #8c8c8c;
   border-radius: 2px;
   white-space: nowrap;
   font-size: 10px;
@@ -391,9 +412,9 @@
   white-space: nowrap;
 }
 
-.tools button:hover {
-  background-color: #a1a1a1;
-  border: 1px solid #999999;
+.tools button:hover:not(.disabled) {
+  background-color: #949494;
+  border: 1px solid #8a8a8a;
 }
 
 .tools .buttons {
@@ -415,6 +436,6 @@
   white-space: nowrap;
 }
 
-.tools .buttons button:hover {
+.tools .buttons button:hover:not(.disabled) {
   background-color: #a1a1a1;
 }

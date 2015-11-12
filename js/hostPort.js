@@ -6,12 +6,14 @@ var HostPort = React.createClass({
 	},
 
 	onMouseEnter: function() {	
+		this.props.onMouseEnter(this.props.componentID, this.props.interfaceID, this.props.isInvalid);
 		this.setState({
 			isHover: true
     	});
 	},
 
 	onMouseLeave: function() {	
+		this.props.onMouseLeave(this.props.componentID, this.props.interfaceID, this.props.isInvalid);
 		this.setState({
 			isHover: false
     	});
@@ -22,7 +24,10 @@ var HostPort = React.createClass({
 	},
 
 	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.componentID, "interface-1", this.props.isInvalid)
+		this.props.onMouseUp(this.props.componentID, "interface-1", this.props.isInvalid);
+		this.setState({
+			isHover: false
+    	});
 	},
 
 	render: function() {

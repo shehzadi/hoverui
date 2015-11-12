@@ -12,12 +12,14 @@ var InterfaceGroup = React.createClass({
 	},
 
 	onMouseEnter: function() {	
+		this.props.onMouseEnter(this.props.componentID, this.props.interfaceGroupID, this.props.isInvalid);
 		this.setState({
 			isHover: true
     	});
 	},
 
 	onMouseLeave: function() {	
+		this.props.onMouseLeave(this.props.componentID, this.props.interfaceGroupID, this.props.isInvalid);
 		this.setState({
 			isHover: false
     	});

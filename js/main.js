@@ -18,8 +18,8 @@ var IOConsole = React.createClass({
   	getDefaultProps: function() {
     	return {
     		componentInProgress: {
-    			width: 135,
-    			height: 72
+    			width: 145,
+    			height: 76
     		}
     	};
 	},
@@ -219,17 +219,20 @@ var IOConsole = React.createClass({
 
    	deleteProject: function() {
 
-		this.firebaseProjectsRef.child(this.state.selectedProjectID).remove();
-
-		var projectIDsArray = _.keys(this.state.projectsObject);
-		var indexOfSelectedProject = _.indexOf(projectIDsArray, this.state.selectedProjectID);
-		var newSelectedProjectIndex = indexOfSelectedProject - 1;
-		if (newSelectedProjectIndex == -1){
-			newSelectedProjectIndex = 0
+   		var confirmProjectDeletion = confirm("Delete all versions of " + this.state.projectsObject[this.state.selectedProjectID].name + "?");
+		if (confirmProjectDeletion == true) {
+		    this.firebaseProjectsRef.child(this.state.selectedProjectID).remove();
+			var projectIDsArray = _.keys(this.state.projectsObject);
+			var indexOfSelectedProject = _.indexOf(projectIDsArray, this.state.selectedProjectID);
+			var newSelectedProjectIndex = indexOfSelectedProject - 1;
+			if (newSelectedProjectIndex == -1){
+				newSelectedProjectIndex = 0
+			}
+			var newSelectedProject = projectIDsArray[newSelectedProjectIndex];
+			this.firebaseUserRef.child('settings').child('selectedProject').set(newSelectedProject);
 		}
-		var newSelectedProject = projectIDsArray[newSelectedProjectIndex];
 
-		this.firebaseUserRef.child('settings').child('selectedProject').set(newSelectedProject);
+		
 	
     },
 
@@ -491,7 +494,7 @@ var Home = React.createClass({
 				<button 
 						onClick = {this.handleNewProjectClick} 
 						className="add">+</button>
-				<button className="app-actions"></button>
+				<button className="app-actions disabled"></button>
 			</div>
 		);
 	},
@@ -669,13 +672,13 @@ var Tools = React.createClass({
 			<div className="tools">
 				<span>{project}</span>
 				<span className="version">{version}</span>
-				<button>Save Version&hellip;</button>
-				<button>Duplicate</button>
-				<button>Export JSON</button>
-				<button>Save as Module&hellip;</button>
+				<button className="disabled">Save Version&hellip;</button>
+				<button className="disabled">Duplicate</button>
+				<button className="disabled">Export JSON</button>
+				<button className="disabled">Save as Module&hellip;</button>
 				<button onClick = {this.handleDeleteProjectClick}>Delete Project</button>
 				<div className="buttons">
-					<button>Deploy to IO Visor&hellip;</button>
+					<button className="disabled">Deploy to IO Visor&hellip;</button>
 				</div>
 			</div>
 		);
