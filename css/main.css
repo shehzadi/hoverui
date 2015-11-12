@@ -336,7 +336,20 @@ body::-webkit-scrollbar {
   text-transform: capitalize;
   font-style: italic;
   color: #666666;
-  margin-top: 1px;
+  padding-top: 1px;
+}
+
+.ioModules h2 .category {
+  padding-left: 3px;
+}
+
+.ioModules h2:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ioModules h2 * {
+  pointer-events: none;
 }
 
 .ioModules h3 {
@@ -378,6 +391,23 @@ body::-webkit-scrollbar {
   border-bottom: 1px dotted grey;
   padding: 1px 0 4px 0;
   margin-right: 8px;
+}
+
+.ioModules .categorySection .disclosure {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 4px 0 4px 6px;
+  border-color: transparent transparent transparent #666666;
+  transform-origin: 50% 50%;
+}
+
+.ioModules .categorySection .open {
+  transform: rotate(90deg);
+}
+
+.ioModules .categorySection .closed {
+  transform: rotate(0deg);
 }
 
 .tools {

@@ -324,7 +324,7 @@ var Workspace = React.createClass({
     		}
 		}
 
-				var getFaceString = function(vector, refVector){
+		var getFaceString = function(vector, refVector){
 			var refMultiplier = refVector;
 			var interfaceSide = "";
 
@@ -1046,7 +1046,7 @@ var HostInterface = React.createClass({
 				className="hostInterface" 
 				style={containerStyle}
 				onMouseDown={this.onMouseDown}>
-				Host Interface
+				hostIfcName
   			</div>
 		);
 	}

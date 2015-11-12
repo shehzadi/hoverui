@@ -12,6 +12,7 @@ var IOConsole = React.createClass({
     		cursorX: 0,
     		cursorY: 0,
     		selectedProjectID: null,
+    		categoryVisibility: {}
     	};
   	},
 
@@ -276,6 +277,7 @@ var IOConsole = React.createClass({
 			var rootUserObject = dataSnapshot.val();
 			this.setState({
 				selectedProjectID: rootUserObject.settings.selectedProject,
+				categoryVisibility: rootUserObject.settings.categoryVisibility
 			});
 		}.bind(this));
 	},
@@ -349,11 +351,13 @@ var IOConsole = React.createClass({
 
 	handleProjectClick: function(payload) {
         if (payload.projectID != this.state.selectedProjectID){
-        	this.setState({
-				selectedProjectID: payload.projectID
-			});
 			this.firebaseUserRef.child('settings').child('selectedProject').set(payload.projectID)
         }  
+    },
+
+	handleCategoryClick: function(category, isOpen) {
+       // console.log(payload);
+        this.firebaseUserRef.child('settings').child('categoryVisibility').child(category).set(!isOpen)
     },
 
 	render: function() {
@@ -380,10 +384,12 @@ var IOConsole = React.createClass({
 						createNewProject = {this.createNewProject} />
 					<PrimaryNav 
 						onProjectClick = {this.handleProjectClick} 
+						onCategoryClick = {this.handleCategoryClick} 
 						onModuleMouseDown = {this.onModuleMouseDown} 
 						projects = {this.state.projectsObject}
 						modules = {this.state.modulesObject} 
 						categories = {this.state.categoriesObject} 
+						categoryVisibility = {this.state.categoryVisibility} 
 						selectedProjectID = {this.state.selectedProjectID}/>
 
 				</div>
@@ -511,7 +517,9 @@ var PrimaryNav = React.createClass({
 
 				<ModuleSection 
 					modules = {this.props.modules} 
-					categories = {this.props.categories}
+					categories = {this.props.categories} 
+					onCategoryClick = {this.props.onCategoryClick} 
+					categoryVisibility = {this.props.categoryVisibility}
 					onModuleMouseDown = {this.props.onModuleMouseDown} />
 			</div>
 		);
@@ -560,14 +568,14 @@ var ModuleSection = React.createClass({
 
 	getInitialState: function() {
     	return {
-    		isAtTop: true
+    		isScrollAtTop: true
     	};
   	},
 
 	handleSectionScroll: function() {
 		var sectionElement = this.refs.ioModules.getDOMNode();
 		this.setState({
-			isAtTop: sectionElement.scrollTop == 0
+			isScrollAtTop: sectionElement.scrollTop == 0
 		});
 
 	},
@@ -578,10 +586,13 @@ var ModuleSection = React.createClass({
 
 		for (var category in this.props.categories) {
 			var moduleList = this.props.categories[category].modules;
+			var isOpen = this.props.categoryVisibility[category];
       		categoryItems.push(
       			<Category
       				key = {category} 
       				category = {category} 
+      				onCategoryClick = {this.props.onCategoryClick} 
+      				isOpen = {isOpen}
       				moduleList = {moduleList}
       				onModuleMouseDown = {this.props.onModuleMouseDown}
       				modules = {this.props.modules}/>
@@ -606,27 +617,38 @@ var ModuleSection = React.createClass({
 });
 
 var Category = React.createClass({
+	onCategoryClick: function() {
+		this.props.onCategoryClick(this.props.category, this.props.isOpen)
+	},
+
 	render: function() {
-		var moduleItems = []
+		var moduleItems = [];
+		var classString = "disclosure";
+		if (this.props.isOpen){
+			for (var moduleID in this.props.moduleList) {
+				var thisModuleItem = this.props.modules[moduleID];
 
-		for (var moduleID in this.props.moduleList) {
-			var thisModuleItem = this.props.modules[moduleID];
+	      		moduleItems.push(
+	      			<ModuleItem
+	      				key = {moduleID} 
+	      				onMouseDown = {this.props.onModuleMouseDown} 
+	      				moduleID = {moduleID} 
+	      				moduleItem = {thisModuleItem}/>
+	      		);
+	    	};
 
-      		moduleItems.push(
-      			<ModuleItem
-      				key = {moduleID} 
-      				onMouseDown = {this.props.onModuleMouseDown} 
-      				moduleID = {moduleID} 
-      				moduleItem = {thisModuleItem}/>
-      		);
-    	};
-
-    	//console.log(moduleItems);
+	    	classString += " open"
+    	}
+    	else {
+    		classString += " closed"
+    	}
 
 		return (
 			<div 
 				className="categorySection">
-  				<h2>
+  				<h2
+  					onClick={this.onCategoryClick}>
+  					<span className={classString}></span>
   					<span className="category">{this.props.category}</span>
   				</h2>
   				{moduleItems}

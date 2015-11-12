@@ -397,7 +397,20 @@ body::-webkit-scrollbar {
 			text-transform: capitalize;
 			font-style: italic;
 			color: hsl(0, 0%,40%);
-			margin-top: 1px
+			padding-top: 1px;
+		}
+
+		h2 .category {
+			padding-left: 3px;
+		}
+
+		h2:hover {
+			text-decoration: underline;
+			cursor: pointer;
+		}
+
+		h2 * {
+			pointer-events: none;
 		}
 
 		h3 {
@@ -438,6 +451,20 @@ body::-webkit-scrollbar {
 			border-bottom: 1px dotted grey;
 			padding: 1px 0 4px 0;
 			margin-right: 8px;
+			.disclosure {
+				width: 0;
+				height: 0;
+				border-style: solid;
+				border-width: 4px 0 4px 6px;
+				border-color: transparent transparent transparent hsl(0, 0%, 40%);
+				transform-origin: 50% 50%;
+			}
+			.open {
+				transform: rotate(90deg);
+			}
+			.closed {
+				transform: rotate(0deg);
+			}
 		}
 }
 
