@@ -220,13 +220,17 @@ var IOConsole = React.createClass({
 		if (confirmProjectDeletion == true) {
 		    
 			var indexOfSelectedProject = _.indexOf(this.state.sortedProjectArray, this.state.selectedProjectID);
+			
 			var newSelectedProjectIndex = indexOfSelectedProject - 1;
 			if (newSelectedProjectIndex == -1){
-				newSelectedProjectIndex = 0
+				newSelectedProjectIndex = 1
 			}
 			var newSelectedProject = this.state.sortedProjectArray[newSelectedProjectIndex];
-			this.firebaseUserRef.child('settings').child('selectedProject').set(newSelectedProject);
+			console.log(newSelectedProject);
+
 			this.firebaseProjectsRef.child(this.state.selectedProjectID).remove();
+			this.firebaseUserRef.child('settings').child('selectedProject').set(newSelectedProject);
+			
 		}
     },
 
@@ -654,7 +658,6 @@ var ModuleSection = React.createClass({
 
 		for (var category in this.props.categories) {
 			var moduleList = this.props.categories[category].modules;
-			console.log(moduleList);
 			var isOpen = this.props.categoryVisibility[category];
       		categoryItems.push(
       			<Category
