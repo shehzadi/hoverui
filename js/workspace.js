@@ -1088,7 +1088,6 @@ var Component = React.createClass({
 
 var WireInProgress = React.createClass({
 	render: function() {
-		console.log(this.props.isSnapping);
 		var end1Comp = this.props.thisComponent;
 		var end1Int = this.props.thisInterfaceGroup;
 
@@ -1106,11 +1105,6 @@ var WireInProgress = React.createClass({
 			x2 = this.props.componentData[this.props.isSnapping.component].interfaceGroups[this.props.isSnapping.ifcGroup].left;
 			y2 = this.props.componentData[this.props.isSnapping.component].interfaceGroups[this.props.isSnapping.ifcGroup].top
 		}
-
-
-		//console.log (this.props.componentData);
-		//console.log (end1Comp);
-		//console.log (end1Int);
 
 		return (
 			<line 

@@ -182,9 +182,7 @@ var IOConsole = React.createClass({
 	    	else {
 	    		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
 	    	}
-	    }
-
-		
+	    }	
     },
 
    	deleteComponent: function(componentID) {
@@ -201,12 +199,10 @@ var IOConsole = React.createClass({
 	   			}
 	   		}
    		}
-
    		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
     },
 
 	createNewProject: function(projectTemplate) {
-		console.log("create New");
 		var newProjectsObject = _.cloneDeep(this.state.projectsObject);	
 
         var newProjectID = "project-" + guid();
@@ -215,11 +211,9 @@ var IOConsole = React.createClass({
         this.firebaseProjectsRef.set(newProjectsObject);
 
 		this.firebaseUserRef.child('settings').child('selectedProject').set(newProjectID);
-
     },
 
    	deleteProject: function() {
-
    		var confirmProjectDeletion = confirm("Delete all versions of " + this.state.projectsObject[this.state.selectedProjectID].name + "?");
 		if (confirmProjectDeletion == true) {
 		    this.firebaseProjectsRef.child(this.state.selectedProjectID).remove();
@@ -232,9 +226,10 @@ var IOConsole = React.createClass({
 			var newSelectedProject = projectIDsArray[newSelectedProjectIndex];
 			this.firebaseUserRef.child('settings').child('selectedProject').set(newSelectedProject);
 		}
+    },
 
-		
-	
+   	renameProject: function(newName) {
+		this.firebaseProjectsRef.child(this.state.selectedProjectID).child('name').set(newName)		
     },
 
   	componentWillMount: function() {
@@ -397,7 +392,8 @@ var IOConsole = React.createClass({
 					<div id="header">
 						<Tools 
 							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]}
-							deleteProject = {this.deleteProject}/>
+							deleteProject = {this.deleteProject}
+							renameProject = {this.renameProject}/>
 					</div>
 					<div id="workspace">
 						<Workspace 
@@ -527,11 +523,40 @@ var PrimaryNav = React.createClass({
 });
 
 var ProjectSection = React.createClass({
+
+	getInitialState: function() {
+    	return {
+    		isScrollAtTop: true
+    	};
+  	},
+
+	handleSectionScroll: function() {
+		var sectionElement = this.refs.projects.getDOMNode();
+		this.setState({
+			isScrollAtTop: sectionElement.scrollTop == 0
+		});
+	},
+
 	render: function() {
 		var projectsObject = this.props.projects;
 		if (projectsObject){
 			var projectsCode = [];
-			for (var projectID in projectsObject) {
+
+			//sort by name
+			var sortedProjectArray = [];
+			for (var key in projectsObject) {
+				sortedProjectArray.push({
+					key: key,
+					name: projectsObject[key].name
+				})
+			};
+
+			sortedProjectArray.sort(function(a, b){
+				return a.name.localeCompare(b.name)
+			});
+
+			for (var i = 0; i < sortedProjectArray.length; i++){
+				var projectID = sortedProjectArray[i].key;
 				var thisProject = projectsObject[projectID];
 				var projectClass = "project";
 				if (projectID == this.props.selectedProjectID){
@@ -550,12 +575,20 @@ var ProjectSection = React.createClass({
       					<div className="projectDetails">{thisProject.details}</div>
       				</div>
       			);
-    		};	
+			};
+
 		}
+
+		var classString = "projects";
+    	if (this.state.isScrollAtTop == false){
+    		classString += " scrolled"
+    	}
 		
 		return (
 			<section 
-				className="projects">
+				ref = "projects"
+				className = {classString}
+				onScroll = {this.handleSectionScroll}>
 				<h1>Projects
 				</h1>
 				<div>{projectsCode}</div>
@@ -600,7 +633,7 @@ var ModuleSection = React.createClass({
     	};
     	//console.log(categoryItems);
     	var classString = "ioModules";
-    	if (this.state.isAtTop == false){
+    	if (this.state.isScrollAtTop == false){
     		classString += " scrolled"
     	}
 
@@ -624,6 +657,8 @@ var Category = React.createClass({
 	render: function() {
 		var moduleItems = [];
 		var classString = "disclosure";
+		var nModulesInCategory = Object.keys(this.props.moduleList).length;
+		var contentString = this.props.category + " (" + nModulesInCategory + ")";
 		if (this.props.isOpen){
 			for (var moduleID in this.props.moduleList) {
 				var thisModuleItem = this.props.modules[moduleID];
@@ -649,7 +684,7 @@ var Category = React.createClass({
   				<h2
   					onClick={this.onCategoryClick}>
   					<span className={classString}></span>
-  					<span className="category">{this.props.category}</span>
+  					<span className="category">{contentString}</span>
   				</h2>
   				{moduleItems}
       		</div>
@@ -674,37 +709,5 @@ var ModuleItem = React.createClass({
 });
 
 
-var Tools = React.createClass({
-	handleDeleteProjectClick: function(){
-		this.props.deleteProject()
-	},
-
-	render: function() {
-		var project = "";
-		var version = "";
-
-		selectedProjectObject = this.props.selectedProject;
-
-		if (selectedProjectObject){
-			project = selectedProjectObject.name;
-			version = selectedProjectObject.version;		
-		}
-
-		return (
-			<div className="tools">
-				<span>{project}</span>
-				<span className="version">{version}</span>
-				<button className="disabled">Save Version&hellip;</button>
-				<button className="disabled">Duplicate</button>
-				<button className="disabled">Export JSON</button>
-				<button className="disabled">Save as Module&hellip;</button>
-				<button onClick = {this.handleDeleteProjectClick}>Delete Project</button>
-				<div className="buttons">
-					<button className="disabled">Deploy to IO Visor&hellip;</button>
-				</div>
-			</div>
-		);
-	},
-});
 
 React.render(<IOConsole></IOConsole>, document.body);

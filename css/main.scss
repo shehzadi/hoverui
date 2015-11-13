@@ -119,8 +119,6 @@ body::-webkit-scrollbar {
 	@include fill-container;
 }
 
-
-
 #IOConsole {
 	@include flexbox;
 	background-color: $app-background-color;
@@ -349,9 +347,13 @@ body::-webkit-scrollbar {
 
 
 .projects {
-	border-bottom: 1px solid hsl(0, 0%, 53%);
+	outline: 1px solid hsl(0, 0%, 50%);
+	border-bottom: 2px solid hsl(0, 0%, 60%);
 	flex: 0 0 auto;
+	overflow-y: auto;
+	max-height: 30vh;
 	box-sizing: content-box;
+	padding-bottom: 10px;
 
 	.project {
 		padding: 2px 8px;
@@ -383,12 +385,13 @@ body::-webkit-scrollbar {
 	}
 }
 
-.ioModules.scrolled {
-	box-shadow: inset 0px 10px 10px -10px hsla(0, 0%, 0%, 0.25);
+.scrolled {
+	box-shadow: inset 0px 10px 10px -10px hsla(0, 0%, 0%, 0.4);
 }
 
 .ioModules {
 	flex: 1 1 auto;
+	border-bottom: 2px solid hsl(0, 0%, 60%);
 	overflow-y: auto;
 		h2 {
 			display: flex;
@@ -450,7 +453,7 @@ body::-webkit-scrollbar {
 		.categorySection {
 			border-bottom: 1px dotted grey;
 			padding: 1px 0 4px 0;
-			margin-right: 8px;
+			margin-right: 6px;
 			.disclosure {
 				width: 0;
 				height: 0;
@@ -468,7 +471,6 @@ body::-webkit-scrollbar {
 		}
 }
 
-
 .tools {
 	display: flex;
 	align-items: baseline;
@@ -483,8 +485,21 @@ body::-webkit-scrollbar {
 		flex-shrink: 0;
 	}
 
+	.version {
+		margin-left: 2px;
+	}
+
+	.projectName, .projectNameInput {
+		padding: 2px 2px 2px 3px;
+		margin-right: 2px
+	}
+
+	.projectName:hover {
+		outline: 1px solid hsla(0, 0%, 0%, 0.15);
+	}
+
 	button {
-		padding: 1px 8px;
+		padding: 1px 8px 1px 7px;
 		min-width: 20px;
 		margin: 2px;
 		background-color: lighten($button-color, 2%);
