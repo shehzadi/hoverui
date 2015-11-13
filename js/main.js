@@ -2,7 +2,9 @@ var IOConsole = React.createClass({
 	getInitialState: function() {
     	return {
     		projectsObject: {},
+    		sortedProjectArray: [],
     		modulesObject: {},
+    		sortedModuleArray: [],
     		categoriesObject: {},
     		protocolsObject: {},
     		mouseDown: false,
@@ -216,15 +218,15 @@ var IOConsole = React.createClass({
    	deleteProject: function() {
    		var confirmProjectDeletion = confirm("Delete all versions of " + this.state.projectsObject[this.state.selectedProjectID].name + "?");
 		if (confirmProjectDeletion == true) {
-		    this.firebaseProjectsRef.child(this.state.selectedProjectID).remove();
-			var projectIDsArray = _.keys(this.state.projectsObject);
-			var indexOfSelectedProject = _.indexOf(projectIDsArray, this.state.selectedProjectID);
+		    
+			var indexOfSelectedProject = _.indexOf(this.state.sortedProjectArray, this.state.selectedProjectID);
 			var newSelectedProjectIndex = indexOfSelectedProject - 1;
 			if (newSelectedProjectIndex == -1){
 				newSelectedProjectIndex = 0
 			}
-			var newSelectedProject = projectIDsArray[newSelectedProjectIndex];
+			var newSelectedProject = this.state.sortedProjectArray[newSelectedProjectIndex];
 			this.firebaseUserRef.child('settings').child('selectedProject').set(newSelectedProject);
+			this.firebaseProjectsRef.child(this.state.selectedProjectID).remove();
 		}
     },
 
@@ -233,26 +235,67 @@ var IOConsole = React.createClass({
     },
 
   	componentWillMount: function() {
+  		var rootProjectsObject = {};
+  		var rootModulesObject = {};
+  		var rootCategoriesObject = {};
+  		var rootProtocolsObject = {};
+  		var rootUserObject = {};
 
 		this.firebaseProjectsRef = new Firebase("https://boiling-torch-3324.firebaseio.com/projects");
 		this.firebaseProjectsRef.on("value", function(dataSnapshot) {
-			var rootProjectsObject = dataSnapshot.val()
+			rootProjectsObject = dataSnapshot.val();
+
+			var sortedProjectArray = [];
+			for (var key in rootProjectsObject) {
+				sortedProjectArray.push({
+					key: key,
+					name: rootProjectsObject[key].name
+				})
+			};
+
+			sortedProjectArray.sort(function(a, b){
+				return a.name.localeCompare(b.name)
+			});
+
+			sortedProjectArray = sortedProjectArray.map(function(obj){ 
+			   return obj.key;
+			});
+
 			this.setState({
-				projectsObject: rootProjectsObject
+				projectsObject: rootProjectsObject,
+				sortedProjectArray: sortedProjectArray
 			});		
 		}.bind(this));
 
 		this.firebaseModulesRef = new Firebase("https://boiling-torch-3324.firebaseio.com/modules");
 		this.firebaseModulesRef.on("value", function(dataSnapshot) {
-			var rootModulesObject = dataSnapshot.val();
+			rootModulesObject = dataSnapshot.val();
+
+			var sortedModuleArray = [];
+			for (var key in rootModulesObject) {
+				sortedModuleArray.push({
+					key: key,
+					name: rootModulesObject[key].name
+				})
+			};
+
+			sortedModuleArray.sort(function(a, b){
+				return a.name.localeCompare(b.name)
+			});
+
+			sortedModuleArray = sortedModuleArray.map(function(obj){ 
+			   return obj.key;
+			});
+
 			this.setState({
-				modulesObject: rootModulesObject
+				modulesObject: rootModulesObject,
+				sortedModuleArray: sortedModuleArray
 			});
 		}.bind(this));
 
 		this.firebaseCategoriesRef = new Firebase("https://boiling-torch-3324.firebaseio.com/categories");
 		this.firebaseCategoriesRef.on("value", function(dataSnapshot) {
-			var rootCategoriesObject = dataSnapshot.val();
+			rootCategoriesObject = dataSnapshot.val();
 
 			this.setState({
 				categoriesObject: rootCategoriesObject
@@ -261,7 +304,7 @@ var IOConsole = React.createClass({
 
 		this.protocolsRef = new Firebase("https://boiling-torch-3324.firebaseio.com/protocols");
 		this.protocolsRef.on("value", function(dataSnapshot) {
-			var rootProtocolsObject = dataSnapshot.val();
+			rootProtocolsObject = dataSnapshot.val();
 			this.setState({
 				protocolsObject: rootProtocolsObject
 			});
@@ -269,7 +312,7 @@ var IOConsole = React.createClass({
 
 		this.firebaseUserRef = new Firebase("https://boiling-torch-3324.firebaseio.com/users/johnkelley");
 		this.firebaseUserRef.on("value", function(dataSnapshot) {
-			var rootUserObject = dataSnapshot.val();
+			rootUserObject = dataSnapshot.val();
 			this.setState({
 				selectedProjectID: rootUserObject.settings.selectedProject,
 				categoryVisibility: rootUserObject.settings.categoryVisibility
@@ -381,8 +424,10 @@ var IOConsole = React.createClass({
 						onProjectClick = {this.handleProjectClick} 
 						onCategoryClick = {this.handleCategoryClick} 
 						onModuleMouseDown = {this.onModuleMouseDown} 
-						projects = {this.state.projectsObject}
+						projects = {this.state.projectsObject} 
+						sortedProjectArray = {this.state.sortedProjectArray} 
 						modules = {this.state.modulesObject} 
+						sortedModuleArray = {this.state.sortedModuleArray} 
 						categories = {this.state.categoriesObject} 
 						categoryVisibility = {this.state.categoryVisibility} 
 						selectedProjectID = {this.state.selectedProjectID}/>
@@ -509,10 +554,12 @@ var PrimaryNav = React.createClass({
 				<ProjectSection 
 					onProjectClick = {this.props.onProjectClick} 
 					projects = {this.props.projects} 
+					sortedProjectArray = {this.props.sortedProjectArray} 
 					selectedProjectID = {this.props.selectedProjectID}/>
 
 				<ModuleSection 
 					modules = {this.props.modules} 
+					sortedModuleArray = {this.props.sortedModuleArray} 
 					categories = {this.props.categories} 
 					onCategoryClick = {this.props.onCategoryClick} 
 					categoryVisibility = {this.props.categoryVisibility}
@@ -539,24 +586,12 @@ var ProjectSection = React.createClass({
 
 	render: function() {
 		var projectsObject = this.props.projects;
+		var sortedProjectArray = this.props.sortedProjectArray;
 		if (projectsObject){
 			var projectsCode = [];
 
-			//sort by name
-			var sortedProjectArray = [];
-			for (var key in projectsObject) {
-				sortedProjectArray.push({
-					key: key,
-					name: projectsObject[key].name
-				})
-			};
-
-			sortedProjectArray.sort(function(a, b){
-				return a.name.localeCompare(b.name)
-			});
-
 			for (var i = 0; i < sortedProjectArray.length; i++){
-				var projectID = sortedProjectArray[i].key;
+				var projectID = sortedProjectArray[i];
 				var thisProject = projectsObject[projectID];
 				var projectClass = "project";
 				if (projectID == this.props.selectedProjectID){
@@ -619,6 +654,7 @@ var ModuleSection = React.createClass({
 
 		for (var category in this.props.categories) {
 			var moduleList = this.props.categories[category].modules;
+			console.log(moduleList);
 			var isOpen = this.props.categoryVisibility[category];
       		categoryItems.push(
       			<Category
@@ -626,7 +662,8 @@ var ModuleSection = React.createClass({
       				category = {category} 
       				onCategoryClick = {this.props.onCategoryClick} 
       				isOpen = {isOpen}
-      				moduleList = {moduleList}
+      				moduleList = {moduleList} 
+      				sortedModuleArray = {this.props.sortedModuleArray} 
       				onModuleMouseDown = {this.props.onModuleMouseDown}
       				modules = {this.props.modules}/>
       		);
@@ -659,18 +696,21 @@ var Category = React.createClass({
 		var classString = "disclosure";
 		var nModulesInCategory = Object.keys(this.props.moduleList).length;
 		var contentString = this.props.category + " (" + nModulesInCategory + ")";
+		var sortedModuleArray = this.props.sortedModuleArray;
 		if (this.props.isOpen){
-			for (var moduleID in this.props.moduleList) {
-				var thisModuleItem = this.props.modules[moduleID];
-
-	      		moduleItems.push(
+			for (var i = 0; i < sortedModuleArray.length; i++){
+				var thisModuleID = sortedModuleArray[i];
+				if(this.props.moduleList[thisModuleID]){
+					var thisModuleItem = this.props.modules[thisModuleID];
+					moduleItems.push(
 	      			<ModuleItem
-	      				key = {moduleID} 
+	      				key = {thisModuleID} 
 	      				onMouseDown = {this.props.onModuleMouseDown} 
-	      				moduleID = {moduleID} 
+	      				moduleID = {thisModuleID} 
 	      				moduleItem = {thisModuleItem}/>
-	      		);
-	    	};
+	      			);
+				}
+			}
 
 	    	classString += " open"
     	}

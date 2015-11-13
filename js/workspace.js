@@ -154,12 +154,10 @@ var Workspace = React.createClass({
 				component: componentID,
 				ifcGroup: interfaceGroupID
 			}
-			console.log(snapObject)
 
 			this.setState({
 				isSnapping: snapObject,
 			});
-
 		}
 	},
 
@@ -176,8 +174,7 @@ var Workspace = React.createClass({
 			});
 
 			if (this.state.interfaceGroupID){ //dragging from interface
-				
-			
+						
 				if (this.state.startFromExistingWire){ //drag starts from existing wire so update
 
 					var thisComponentID = this.state.componentID;
@@ -186,7 +183,6 @@ var Workspace = React.createClass({
 
 					var otherEnd = getOtherWireGroupEndpoint(thisComponentID, thisInterfaceGroupID, selectedProject);
 		
-
 					var otherEndRefInterface;
 					if (otherEnd.component.indexOf('host') == 0){ //is an attachment wire
 						otherEndRefInterface = "interface-1"

@@ -12,7 +12,6 @@ var NameEditor = React.createClass({
 	},
 
 	handleKeyPress: function(event) {
-		console.log(event);
    		if (event.which == 13) {
       		event.preventDefault();
         	this.refs.nameEditorInput.getDOMNode().blur()
@@ -25,7 +24,6 @@ var NameEditor = React.createClass({
 
 	componentDidMount: function(){
 		this.refs.nameEditorInput.getDOMNode().select();
-		console.log("hello")
 	},
 
 	render: function() {
