@@ -394,11 +394,8 @@ var IOConsole = React.createClass({
     },
 
     openModal: function(modalName) {
-    	console.log("Save as Module" + modalName);
-    	console.log(this.state.modalArray);
     	var newArray = _.cloneDeep(this.state.modalArray);
     	newArray.push(modalName);
-    	console.log(newArray);
     	this.setState({
 			modalArray: newArray,
 		});	
@@ -435,14 +432,17 @@ var IOConsole = React.createClass({
 
 		var modalDialogues = [];
 		if (this.state.modalArray.length > 0){
+			var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
 			var that = this;
 			_.forEach(this.state.modalArray, function(modalName) {
     			var modalDialogue = (<ModalDialogue
-				modalName = {modalName} 
-				cancelModal = {that.cancelModal}/>);
+					modalName = {modalName} 
+					categories = {that.state.categoriesObject} 
+					selectedProject = {selectedProject} 
+					cancelModal = {that.cancelModal}/>
+				);
 
 				modalDialogues.push(modalDialogue)
-
     		});
 		}
 
@@ -493,34 +493,6 @@ var IOConsole = React.createClass({
 	},
 });
 
-var ModalDialogue = React.createClass({
-	cancel: function() {
-		this.props.cancelModal(this.props.modalName)
-	},
-
-	render: function() {
-		var modal;
-		if (this.props.modalName == "saveAsModule"){
-			modal = (
-				<div className="modalBackground">
-	  				<div className="modalContainer">
-	  					<header>
-	  						<div>Save Project as Module</div>
-	  						<button>&times;</button>
-	  					</header>
-	  					<main>
-	  					</main>
-	  					<footer>
-	  						<button onClick={this.cancel}>Cancel</button>
-	  						<button>Save</button>
-	  					</footer>
-	  				</div>
-	  			</div>	
-			)
-		}
-		return modal
-	},
-});
 
 var ComponentInProgress = React.createClass({
 

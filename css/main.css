@@ -21,6 +21,11 @@
   background-position: 50% 50%;
 }
 
+:focus {
+  outline: none;
+  outline-offset: 0;
+}
+
 /* Scrollbars */
 ::-webkit-scrollbar {
   background: rgba(0, 0, 0, 0.05);
@@ -219,6 +224,11 @@ body::-webkit-scrollbar {
 
 .disabled {
   opacity: 0.6;
+  pointer-events: none;
+}
+
+.invalid {
+  outline: 1px solid #d0113d;
 }
 
 #navigation .app-actions {

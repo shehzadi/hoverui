@@ -45,7 +45,11 @@ $pattern-line-color: lighten($workspace-color, 3%);
 	box-sizing: border-box;
 	background-repeat: no-repeat;
 	background-position: 50% 50%;
+}
 
+:focus {
+	outline: none;
+	outline-offset: 0
 }
 
 /* Scrollbars */
@@ -277,6 +281,11 @@ body::-webkit-scrollbar {
 
 .disabled {
 	opacity: 0.6;
+	pointer-events: none
+}
+
+.invalid {
+	outline: 1px solid $primary-brand-color
 }
 
 #navigation {
