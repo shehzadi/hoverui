@@ -51,6 +51,10 @@ var Tools = React.createClass({
 		this.props.deleteProject()
 	},
 
+	handleSaveAsProjectClick: function(){
+		this.props.openModal("saveAsModule")
+	},
+
 	handleEditClick: function(event) {
    		this.setState({
    			isEditingName: true,
@@ -103,12 +107,12 @@ var Tools = React.createClass({
 				<button className="disabled">Save Version&hellip;</button>
 				<button className="disabled">Duplicate</button>
 				<button className="disabled">Export JSON</button>
-				<button className="disabled">Save as Module&hellip;</button>
+				<button onClick = {this.handleSaveAsProjectClick}>Save as Module&hellip;</button>
 				<button onClick = {this.handleDeleteProjectClick}>Delete Project</button>
 				<div className="buttons">
 					<button className="disabled">Deploy to IO Visor&hellip;</button>
 				</div>
 			</div>
-		);
-	},
-});
+		)
+	}
+})

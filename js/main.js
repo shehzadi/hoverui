@@ -9,6 +9,7 @@ var IOConsole = React.createClass({
     		protocolsObject: {},
     		mouseDown: false,
     		dragging: false,
+    		modalArray: [], 
     		startX: 0,
     		startY: 0,
     		cursorX: 0,
@@ -28,15 +29,10 @@ var IOConsole = React.createClass({
 	},
 
    	deleteWires: function(refEndPoint) {
-
    		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
-
    		var updatedProjectWiresObject = _.cloneDeep(selectedProject.topology.wires);
-
    		var refGroupID = convertToGroup(refEndPoint.component, refEndPoint.ifc, selectedProject.view);
-
    		var refGroupObject;
-
    		if (refEndPoint.component.indexOf('host') == 0){ //is an attachment wire
 			refGroupObject = {"interface-1": true}
 		}
@@ -397,6 +393,26 @@ var IOConsole = React.createClass({
         }  
     },
 
+    openModal: function(modalName) {
+    	console.log("Save as Module" + modalName);
+    	console.log(this.state.modalArray);
+    	var newArray = _.cloneDeep(this.state.modalArray);
+    	newArray.push(modalName);
+    	console.log(newArray);
+    	this.setState({
+			modalArray: newArray,
+		});	
+    },
+
+    cancelModal: function(modalName) {
+    	var newArray = _.cloneDeep(this.state.modalArray);
+    	var indexToRemove = newArray.indexOf(modalName);
+    	newArray.splice(indexToRemove, 1);
+    	this.setState({
+			modalArray: newArray,
+		});	
+    },
+
 	handleCategoryClick: function(category, isOpen) {
        // console.log(payload);
         this.firebaseUserRef.child('settings').child('categoryVisibility').child(category).set(!isOpen)
@@ -415,6 +431,19 @@ var IOConsole = React.createClass({
 				thisHeight = {this.props.componentInProgress.height} 
 				thisX = {this.state.cursorX} 
 				thisY = {this.state.cursorY}/>
+		}
+
+		var modalDialogues = [];
+		if (this.state.modalArray.length > 0){
+			var that = this;
+			_.forEach(this.state.modalArray, function(modalName) {
+    			var modalDialogue = (<ModalDialogue
+				modalName = {modalName} 
+				cancelModal = {that.cancelModal}/>);
+
+				modalDialogues.push(modalDialogue)
+
+    		});
 		}
 
 		//console.log(this.state.categoriesObject);
@@ -441,7 +470,8 @@ var IOConsole = React.createClass({
 					<div id="header">
 						<Tools 
 							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]}
-							deleteProject = {this.deleteProject}
+							deleteProject = {this.deleteProject} 
+							openModal = {this.openModal}
 							renameProject = {this.renameProject}/>
 					</div>
 					<div id="workspace">
@@ -457,8 +487,38 @@ var IOConsole = React.createClass({
 					</div>
 				</div>
 				{componentInProgress}
+				{modalDialogues}
 			</div>
 		);
+	},
+});
+
+var ModalDialogue = React.createClass({
+	cancel: function() {
+		this.props.cancelModal(this.props.modalName)
+	},
+
+	render: function() {
+		var modal;
+		if (this.props.modalName == "saveAsModule"){
+			modal = (
+				<div className="modalBackground">
+	  				<div className="modalContainer">
+	  					<header>
+	  						<div>Save Project as Module</div>
+	  						<button>&times;</button>
+	  					</header>
+	  					<main>
+	  					</main>
+	  					<footer>
+	  						<button onClick={this.cancel}>Cancel</button>
+	  						<button>Save</button>
+	  					</footer>
+	  				</div>
+	  			</div>	
+			)
+		}
+		return modal
 	},
 });
 
@@ -653,7 +713,6 @@ var ModuleSection = React.createClass({
 	},
 
 	render: function() {	
-
 		var categoryItems = []
 
 		for (var category in this.props.categories) {

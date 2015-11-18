@@ -487,3 +487,22 @@ body::-webkit-scrollbar {
 .tools .buttons button:hover:not(.disabled) {
   background-color: #a1a1a1;
 }
+
+.modalBackground {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalBackground .modalContainer {
+  width: 600px;
+  height: 300px;
+  background-color: grey;
+}
