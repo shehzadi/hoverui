@@ -20,7 +20,6 @@ var SaveAsModuleForm = React.createClass({
 			categories: this.state.categories,
 			refProject: this.props.projectID
 		}
-		console.log(submitPayload);
 		this.props.submit(this.props.modalName, submitPayload)
 	},
 

@@ -241,6 +241,8 @@ var IOConsole = React.createClass({
   		var rootProtocolsObject = {};
   		var rootUserObject = {};
 
+  		this.firebaseRootRef = new Firebase("https://boiling-torch-3324.firebaseio.com");
+
 		this.firebaseProjectsRef = new Firebase("https://boiling-torch-3324.firebaseio.com/projects");
 		this.firebaseProjectsRef.on("value", function(dataSnapshot) {
 			rootProjectsObject = dataSnapshot.val();
@@ -402,7 +404,6 @@ var IOConsole = React.createClass({
     },
 
     cancelModal: function(modalName) {
-    	console.log(modalName);
     	var newArray = _.cloneDeep(this.state.modalArray);
     	var indexToRemove = newArray.indexOf(modalName);
     	newArray.splice(indexToRemove, 1);
@@ -412,7 +413,6 @@ var IOConsole = React.createClass({
     },
 
     submitModal: function(modalName, payload) {
-    	console.log(modalName);
     	if (modalName == "saveAsModule"){
     		this.saveAsModule(payload)
     	}
@@ -420,7 +420,6 @@ var IOConsole = React.createClass({
     },
 
     saveAsModule: function(payload){
-    	console.log(payload);
     	// get interfaces from wired host interfaces
     	// loop through wires and save component id if component is a host interface
     	var projectTopology = this.state.projectsObject[this.state.selectedProjectID].topology;
@@ -455,8 +454,31 @@ var IOConsole = React.createClass({
     			"protocol": thisInterfaceObject.protocol
     		}
     	}
-    	console.log(interfaceObject)
 
+    	var moduleID = "module-" + guid();
+
+    	var categoriesObject = {};
+    	for (var category in payload.categories) {
+    		var thisCategory = payload.categories[category];
+    		categoriesObject[thisCategory] = true
+    	}    	
+
+    	var moduleObject = {
+    		name: payload.name,
+    		description: payload.description,
+    		categories: categoriesObject,
+    		interfaces: interfaceObject,
+    		version: "0.0.1"
+    	}
+
+    	this.firebaseModulesRef.child(moduleID).set(moduleObject);
+
+    	for (var category in payload.categories) {
+    		var thisCategory = payload.categories[category];
+    		var categoryObject = {};
+    		categoryObject[moduleID] = true;
+    		this.firebaseCategoriesRef.child(thisCategory).child('modules').update(categoryObject);
+    	}
     },
 
 	handleCategoryClick: function(category, isOpen) {
@@ -735,7 +757,7 @@ var ModuleSection = React.createClass({
 	},
 
 	render: function() {	
-		var categoryItems = []
+		var categoryItems = [];
 
 		for (var category in this.props.categories) {
 			var moduleList = this.props.categories[category].modules;
@@ -776,6 +798,7 @@ var Category = React.createClass({
 	},
 
 	render: function() {
+
 		var moduleItems = [];
 		var classString = "disclosure";
 		var nModulesInCategory = Object.keys(this.props.moduleList).length;
