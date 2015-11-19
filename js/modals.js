@@ -51,9 +51,9 @@ var SaveAsModuleForm = React.createClass({
 		var categoryItems = [];
 		for (var category in this.props.categories) {
 			
-			if (category == "uncategorised") { continue; }
+			if (category == "uncategorised") {continue}
 			categoryItems.push(
-      			<label>
+      			<label key={category}>
       				<input type="checkbox" name={category} value={this.state.analytics} onChange={this.onFromChange}/>
       				{category}
       			</label>

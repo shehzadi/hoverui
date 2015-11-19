@@ -524,6 +524,7 @@ var IOConsole = React.createClass({
 			var that = this;
 			_.forEach(this.state.modalArray, function(modalName) {
     			var modalDialogue = (<ModalDialogue
+                    key = {modalName} 
 					modalName = {modalName} 
 					categories = {that.state.categoriesObject} 
 					selectedProject = {selectedProject} 
