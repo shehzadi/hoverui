@@ -1,7 +1,7 @@
 var SaveAsModuleForm = React.createClass({
 	getInitialState: function() {
    		return {
-			name: this.props.selectedProject.name,
+			name: this.props.projectName,
 			description: "",
 			categories: []
 		};
@@ -17,9 +17,11 @@ var SaveAsModuleForm = React.createClass({
 		var submitPayload = {
 			name: this.state.name,
 			description: this.state.description,
-			categories: this.state.categories
+			categories: this.state.categories,
+			refProject: this.props.projectID
 		}
-		console.log(submitPayload)
+		console.log(submitPayload);
+		this.props.submit(this.props.modalName, submitPayload)
 	},
 
 	onFromChange: function(event) {
@@ -31,14 +33,11 @@ var SaveAsModuleForm = React.createClass({
 			if (this.state.categories.indexOf(elementName) >= 0){
 				//take away category from arry
 				_.pull(newArray, elementName)
-
-
 			}
 			else {
 				//add category to array
 				newArray.push(elementName)
 			}
-
 			this.setState({categories: newArray})
 		}
 	},
@@ -89,7 +88,11 @@ var SaveAsModuleForm = React.createClass({
 
 var ModalDialogue = React.createClass({
 	cancel: function() {
-		this.props.cancelModal(this.props.modalName)
+		this.props.cancelModal()
+	},
+
+	submit: function(modalName, payload) {
+		this.props.submitModal(modalName, payload)
 	},
 
 	render: function() {
@@ -101,8 +104,10 @@ var ModalDialogue = React.createClass({
 	  					<SaveAsModuleForm
 	  						modalName = {this.props.modalName} 
 	  						categories = {this.props.categories} 
-	  						cancel = {this.cancel}
-	  						selectedProject = {this.props.selectedProject}/>
+	  						cancel = {this.cancel} 
+	  						submit = {this.submit} 
+	  						projectID = {this.props.projectID} 
+	  						projectName = {this.props.selectedProject.name}/>
 	  				</div>
 	  			</div>	
 			)

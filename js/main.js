@@ -402,6 +402,7 @@ var IOConsole = React.createClass({
     },
 
     cancelModal: function(modalName) {
+    	console.log(modalName);
     	var newArray = _.cloneDeep(this.state.modalArray);
     	var indexToRemove = newArray.indexOf(modalName);
     	newArray.splice(indexToRemove, 1);
@@ -410,8 +411,55 @@ var IOConsole = React.createClass({
 		});	
     },
 
+    submitModal: function(modalName, payload) {
+    	console.log(modalName);
+    	if (modalName == "saveAsModule"){
+    		this.saveAsModule(payload)
+    	}
+    	this.cancelModal(modalName)
+    },
+
+    saveAsModule: function(payload){
+    	console.log(payload);
+    	// get interfaces from wired host interfaces
+    	// loop through wires and save component id if component is a host interface
+    	var projectTopology = this.state.projectsObject[this.state.selectedProjectID].topology;
+    	var projectWires = projectTopology.wires;
+    	var projectHostInterfaces = projectTopology.host_interfaces;
+    	var hostInterfaceArray = [];
+    	for (var wire in projectWires) {
+    		thisWireObject = projectWires[wire];
+    		var component1 = thisWireObject["endpoint-1"].component;
+    		var component2 = thisWireObject["endpoint-2"].component;
+    		if (component1.indexOf('host') == 0){ 
+    			hostInterfaceArray.push(component1)
+    		}
+    		if (component2.indexOf('host') == 0){ 
+    			hostInterfaceArray.push(component2)
+    		}
+    	}
+    	// get mode and protocol of host interface
+    	var interfaceObject = {};
+    	for (var i = 0; i < hostInterfaceArray.length; i++){
+    		thisInterface = hostInterfaceArray[i];
+    		thisInterfaceObject = projectHostInterfaces[thisInterface];
+    		var inverseMode = "bidirectional";
+    		if (thisInterfaceObject.mode == "output"){
+    			inverseMode = "input"
+    		}
+    		if (thisInterfaceObject.mode == "input"){
+    			inverseMode = "output"
+    		}
+    		interfaceObject["interface-" + i] = {
+    			"mode": inverseMode,
+    			"protocol": thisInterfaceObject.protocol
+    		}
+    	}
+    	console.log(interfaceObject)
+
+    },
+
 	handleCategoryClick: function(category, isOpen) {
-       // console.log(payload);
         this.firebaseUserRef.child('settings').child('categoryVisibility').child(category).set(!isOpen)
     },
 
@@ -439,6 +487,8 @@ var IOConsole = React.createClass({
 					modalName = {modalName} 
 					categories = {that.state.categoriesObject} 
 					selectedProject = {selectedProject} 
+					projectID = {that.state.selectedProjectID} 
+					submitModal = {that.submitModal}
 					cancelModal = {that.cancelModal}/>
 				);
 
