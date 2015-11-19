@@ -50,10 +50,8 @@ var SaveAsModuleForm = React.createClass({
 		}
 		var categoryItems = [];
 		for (var category in this.props.categories) {
-			var thisValue = false;
-			if (this.state.categories.indexOf(category) >= 0){
-				thisValue = true;
-			}
+			
+			if (category == "uncategorised") { continue; }
 			categoryItems.push(
       			<label>
       				<input type="checkbox" name={category} value={this.state.analytics} onChange={this.onFromChange}/>
@@ -74,6 +72,7 @@ var SaveAsModuleForm = React.createClass({
 				<div>Description</div>
 				<textarea name="description" value={this.state.description} onChange={this.onFromChange}/>
 				<div>Categories</div>
+				<p>Select or leave uncategorised.</p>
 				{categoryItems} 					
 			</main>
 			<footer>

@@ -457,11 +457,20 @@ var IOConsole = React.createClass({
 
     	var moduleID = "module-" + guid();
 
+        //add module to module object
     	var categoriesObject = {};
-    	for (var category in payload.categories) {
-    		var thisCategory = payload.categories[category];
-    		categoriesObject[thisCategory] = true
-    	}    	
+
+        var isUncategorised = _.isEmpty(payload.categories);
+
+        if (isUncategorised){
+            categoriesObject["uncategorised"] = true
+        }
+        else {
+            for (var category in payload.categories) {
+                var thisCategory = payload.categories[category];
+                categoriesObject[thisCategory] = true
+            } 
+        }
 
     	var moduleObject = {
     		name: payload.name,
@@ -471,14 +480,23 @@ var IOConsole = React.createClass({
     		version: "0.0.1"
     	}
 
+        console.log(moduleObject);
+
     	this.firebaseModulesRef.child(moduleID).set(moduleObject);
 
-    	for (var category in payload.categories) {
-    		var thisCategory = payload.categories[category];
-    		var categoryObject = {};
-    		categoryObject[moduleID] = true;
-    		this.firebaseCategoriesRef.child(thisCategory).child('modules').update(categoryObject);
-    	}
+        //add module id to the relevant categories
+        var categoryObject = {};
+        if (isUncategorised){   
+            categoryObject[moduleID] = true;
+            this.firebaseCategoriesRef.child('uncategorised').child('modules').update(categoryObject);
+        }
+        else {
+        	for (var category in payload.categories) {
+        		var thisCategory = payload.categories[category];
+        		categoryObject[moduleID] = true;
+        		this.firebaseCategoriesRef.child(thisCategory).child('modules').update(categoryObject);
+        	}
+        }
     },
 
 	handleCategoryClick: function(category, isOpen) {
@@ -774,7 +792,6 @@ var ModuleSection = React.createClass({
       				modules = {this.props.modules}/>
       		);
     	};
-    	//console.log(categoryItems);
     	var classString = "ioModules";
     	if (this.state.isScrollAtTop == false){
     		classString += " scrolled"

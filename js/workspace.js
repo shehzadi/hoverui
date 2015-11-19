@@ -396,17 +396,6 @@ var Workspace = React.createClass({
   			);
 		};
 
-
-
-
-
-
-
-
-
-
-
-
 		var hostComponentsArray = [];
 		var hostPortsArray = [];
 		for (var hostInterface in hostInterfacesObject) {
@@ -474,19 +463,12 @@ var Workspace = React.createClass({
 				}
 			}
 
-
-
-
-
 			// host interface ports
 			// figure out component at other end, vector, face etc.
 			var otherEndOfWire = getOtherWireGroupEndpoint(hostInterface, "interface-1", selectedProjectObject);
 			//console.log(otherEndOfWire);
 			var vectorToOtherEndComponent = null;
 			var interfaceSide = null;
-
-
-
 
 			if (otherEndOfWire){
 				var verticalDist = this.componentData[otherEndOfWire.component].top - this.componentData[hostInterface].top;
@@ -522,15 +504,6 @@ var Workspace = React.createClass({
 				interfaceSide = "default"
 			}
 
-			
-		
-
-
-
-
-
-
-
 			var updatedFace = null;
 			if (this.state.isWireInProgress){ 				
 				if (!isInvalid){ //this is a valid interface
@@ -558,8 +531,6 @@ var Workspace = React.createClass({
 				}
 			}
 			
-
-
 			if (interfaceSide == "top"){
 				var thisLeft = hostInterfaceX + (this.props.hostInterface.width / 2);
 				var thisTop = hostInterfaceY ;
@@ -578,9 +549,6 @@ var Workspace = React.createClass({
 			}
 
 
-
-
-
 			this.componentData[hostInterface]["interfaceGroups"] = {};
 			this.componentData[hostInterface].interfaceGroups = {
 				"interface-1": {
@@ -593,8 +561,6 @@ var Workspace = React.createClass({
 					vector: vectorToOtherEndComponent
 				}
 			};
-
-
 
 			var thisFillColor = getHSL(this.props.protocols[thisProtocol].hue);
 			var thisBorderColor = getHSL(this.props.protocols[thisProtocol].hue, true);
@@ -620,18 +586,7 @@ var Workspace = React.createClass({
 					interfaceID = "interface-1" 
 					componentID = {hostInterface}/>				
 			);
-
 		};
-
-
-
-
-
-
-
-
-
-
 
 
 		//interfaces
@@ -662,12 +617,9 @@ var Workspace = React.createClass({
 				var thisGroupID = groupID;
 			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
 
-				//console.log(thisInterfaceGroup);
 				var otherEndOfWire = getOtherWireGroupEndpoint(componentID, groupID, selectedProjectObject);
 				var vectorToOtherEndComponent = null;
 				var interfaceSide = null;
-
-
 
 				//get number of interfaces in group
 				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
@@ -676,9 +628,7 @@ var Workspace = React.createClass({
 				var referenceInterface = Object.keys(thisInterfaceGroup)[0];
 				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
 				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
-
-
-			
+		
 				if (otherEndOfWire){
 					vectorToOtherEndComponent = {
 						x: this.componentData[otherEndOfWire.component].left - this.componentData[componentID].left,
@@ -690,8 +640,6 @@ var Workspace = React.createClass({
 				else {
 					interfaceSide = "default"					
 				}
-
-
 
 				//calculate start-of-new-wire & validity
 				var isInvalid = false;
@@ -731,8 +679,6 @@ var Workspace = React.createClass({
 					}
 				}
 
-
-
 				this.componentData[componentID]["interfaceGroups"][groupID] = {
 					face: interfaceSide,
 					top: null,
@@ -743,16 +689,9 @@ var Workspace = React.createClass({
 					vector: vectorToOtherEndComponent
 				};
 
-
-
-				//console.log(this.componentData[componentID]["interfaceGroups"][thisGroupID]);
 				this.componentData[componentID]["interfaceGroups"][thisGroupID].isInvalid = isInvalid;
 				this.componentData[componentID]["interfaceGroups"][thisGroupID].isStartOfNewWire = isStartOfNewWire;
 
-
-
-
-			
 
 				var updatedFace = null;
 				if (this.state.isWireInProgress){ 				
@@ -781,31 +720,13 @@ var Workspace = React.createClass({
 					}
 				}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 				// update N
 
 				var thisFace = this.componentData[componentID]["interfaceGroups"][groupID].face;
 				if (thisFace == "top"){nTop += 1; nBottom -= 1}
 				if (thisFace == "left"){nLeft += 1; nBottom -= 1}
 				if (thisFace == "right"){nRight += 1; nBottom -= 1}
-
-				
+			
 			};
 
 //--------
@@ -819,27 +740,13 @@ var Workspace = React.createClass({
 				var thisGroupID = group;
 			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
 
-
-
-
-
 				//get number of interfaces in group
 				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
-
 
 				//get protocol and mode
 				var referenceInterface = Object.keys(thisInterfaceGroup)[0];
 				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
 				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
-
-
-
-
-
-
-
-
-
 
 				//calculate location
 				//get face
@@ -868,13 +775,6 @@ var Workspace = React.createClass({
 					var thisLeft = thisComponentX - (this.props.ifc.height / 2) + 1;
 					leftIndex += 1
 				}
-
-
-
-
-
-
-
 
 
 				this.componentData[componentID]["interfaceGroups"][thisGroupID] = {
@@ -1113,4 +1013,3 @@ var WireInProgress = React.createClass({
 		);
 	}
 });
-
