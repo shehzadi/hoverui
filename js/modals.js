@@ -63,11 +63,11 @@ var SaveAsModuleForm = React.createClass({
 		return (
 		<form id="saveAsModule">
 			<header>
-				<div>Save Project as Module</div>
-				<button>&times;</button>
+				<h1>Save as Module</h1>
+				<button onClick={this.cancel}>&times;</button>
 			</header>
 			<main>
-				<div>Name</div>
+				<div>Module Name</div>
 				<input type="text" className={invalidClassString} name="name" value={this.state.name} onChange={this.onFromChange}/>
 				<div>Description</div>
 				<textarea name="description" value={this.state.description} onChange={this.onFromChange}/>
@@ -76,8 +76,8 @@ var SaveAsModuleForm = React.createClass({
 				{categoryItems} 					
 			</main>
 			<footer>
-				<input type="button" onClick={this.cancel} value="Cancel"/>
 				<input type="button" className={buttonClassString} onClick={this.submit} value="Save"/>
+				<input type="button" onClick={this.cancel} value="Cancel"/>
 			</footer>
 		</form>
 		)
