@@ -155,11 +155,12 @@ body::-webkit-scrollbar {
 }
 
 .modalContainer header h1 {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: normal;
   color: #4d4d4d;
   flex: 1;
   margin-left: 12px;
+  padding-top: 2px;
 }
 
 .modalContainer header button {
@@ -205,11 +206,11 @@ body::-webkit-scrollbar {
   padding: 4px 12px;
   min-width: 90px;
   margin: 4px;
-  background-color: #999999;
+  background-color: #9c9c9c;
   border: 1px solid #8c8c8c;
   border-radius: 3px;
   white-space: nowrap;
-  font-size: 15px;
+  font-size: 14px;
   color: #4d4d4d;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -217,8 +218,18 @@ body::-webkit-scrollbar {
 }
 
 .modalContainer input[type=button]:hover:not(.disabled) {
-  background-color: #949494;
-  border: 1px solid #8a8a8a;
+  background-color: #969696;
+  border: 1px solid #878787;
+}
+
+.modalContainer input.affirmative {
+  background-color: #8f8f8f;
+  border: 1px solid #7a7a7a;
+}
+
+.modalContainer input.affirmative:hover:not(.disabled) {
+  background-color: #8a8a8a;
+  border: 1px solid #7d7d7d;
 }
 
 .componentInProgress {

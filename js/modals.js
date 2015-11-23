@@ -42,10 +42,10 @@ var SaveAsModuleForm = React.createClass({
 	},
 
 	render: function() {
-		var buttonClassString = "";
+		var buttonClassString = "affirmative";
 		var invalidClassString = "";
 		if (this.state.name == "") {
-			buttonClassString = "disabled";
+			buttonClassString += " disabled";
 			invalidClassString = "invalid"
 		}
 		var categoryItems = [];
@@ -76,8 +76,8 @@ var SaveAsModuleForm = React.createClass({
 				{categoryItems} 					
 			</main>
 			<footer>
-				<input type="button" className={buttonClassString} onClick={this.submit} value="Save"/>
 				<input type="button" onClick={this.cancel} value="Cancel"/>
+				<input type="button" className={buttonClassString} onClick={this.submit} value="Save"/>
 			</footer>
 		</form>
 		)
