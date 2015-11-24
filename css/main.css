@@ -21,6 +21,10 @@
   background-position: 50% 50%;
 }
 
+small {
+  font-size: 85%;
+}
+
 :focus {
   outline: none;
   outline-offset: 0;
@@ -117,21 +121,27 @@ body::-webkit-scrollbar {
   border: 1px solid #333333;
   display: flex;
   flex-direction: column;
+  min-width: 500px;
   width: auto;
-  min-width: 550px;
   height: auto;
 }
 
 .modalContainer div {
   font-size: 13px;
   font-weight: bold;
-  margin-top: 10px;
+  margin-top: 16px;
   margin-bottom: 2px;
 }
 
 .modalContainer p {
   font-size: 13px;
-  color: #666666;
+  color: #595959;
+}
+
+.modalContainer .help {
+  font-size: 12px;
+  padding: 3px 8px;
+  color: #737373;
 }
 
 .modalContainer label {
@@ -178,7 +188,7 @@ body::-webkit-scrollbar {
 
 .modalContainer main {
   flex-grow: 1;
-  margin: 15px 30px 20px 30px;
+  margin: 15px 30px 40px 30px;
 }
 
 .modalContainer footer {
@@ -198,8 +208,12 @@ body::-webkit-scrollbar {
 }
 
 .modalContainer input[type=text] {
-  width: 250px;
+  width: 350px;
   padding: 2px 6px;
+}
+
+.modalContainer #librariesForm input[type=text] {
+  width: 500px;
 }
 
 .modalContainer input[type=button] {
@@ -211,7 +225,7 @@ body::-webkit-scrollbar {
   border-radius: 3px;
   white-space: nowrap;
   font-size: 14px;
-  color: #4d4d4d;
+  color: #333333;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

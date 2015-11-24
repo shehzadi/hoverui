@@ -63,11 +63,11 @@ var SaveAsModuleForm = React.createClass({
 		return (
 		<form id="saveAsModule">
 			<header>
-				<h1>Save as Module</h1>
+				<h1>Publish as IO Module</h1>
 				<button onClick={this.cancel}>&times;</button>
 			</header>
 			<main>
-				<div>Module Name</div>
+				<div>Name</div>
 				<input type="text" className={invalidClassString} name="name" value={this.state.name} onChange={this.onFromChange}/>
 				<div>Description</div>
 				<textarea name="description" value={this.state.description} onChange={this.onFromChange}/>
@@ -77,7 +77,60 @@ var SaveAsModuleForm = React.createClass({
 			</main>
 			<footer>
 				<input type="button" onClick={this.cancel} value="Cancel"/>
-				<input type="button" className={buttonClassString} onClick={this.submit} value="Save"/>
+				<input type="button" className={buttonClassString} onClick={this.submit} value="Publish"/>
+			</footer>
+		</form>
+		)
+	}
+});
+
+var LibrariesForm = React.createClass({
+	getInitialState: function() {
+   		return {
+			modulesSrc: this.props.modulesSrc,
+			projectsSrc: this.props.projectsSrc
+		};
+	},
+
+	cancel: function(event) {
+		event.preventDefault();
+		this.props.cancel(this.props.modalName)
+	},
+
+	submit: function(event) {
+		event.preventDefault();
+		var submitPayload = {
+			modulesSrc: this.state.modulesSrc,
+			projectsSrc: this.state.projectsSrc
+		}
+		this.props.submit(this.props.modalName, submitPayload)
+	},
+
+	onFromChange: function(event) {
+		var elementName = event.target.attributes.name.value;
+		if (elementName == "moduleSrc"){this.setState({modulesSrc: event.target.value})}
+		else if (elementName == "projectsSrc"){this.setState({projectsSrc: event.target.value})}
+	},
+
+	render: function() {
+		return (
+		<form id="librariesForm">
+			<header>
+				<h1>Data Sources</h1>
+				<button onClick={this.cancel}>&times;</button>
+			</header>
+			<main>
+				<p>Provide locations for IO Modules (usually shared) and Projects (usually personal).</p>
+				<div>IO Modules</div>
+				<input type="text" name="moduleSrc" value={this.state.modulesSrc} onChange={this.onFromChange}/>
+				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com/moduledata</p>
+				<div>Projects</div>
+				<input type="text" name="projectsSrc" value={this.state.projectsSrc} onChange={this.onFromChange}/>
+				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com/users/johndoe</p>
+			</main>
+			<footer>
+				<input type="button" onClick={this.cancel} value="Cancel"/>
+				<input type="button" className="affirmative disabled" onClick={this.submit} value="Save"/>
 			</footer>
 		</form>
 		)
@@ -95,6 +148,22 @@ var ModalDialogue = React.createClass({
 
 	render: function() {
 		var modal;
+		console.log(this.props.modalName);
+		if (this.props.modalName == "librariesSettings"){
+			modal = (
+				<div className="modalBackground">
+	  				<div className="modalContainer">
+	  					<LibrariesForm
+	  						modalName = {this.props.modalName} 
+	  						projectsSrc = {this.props.projectsSrc} 
+	  						modulesSrc = {this.props.modulesSrc}
+	  						cancel = {this.cancel} 
+	  						submit = {this.submit}/>
+	  				</div>
+	  			</div>	
+			)
+		}
+
 		if (this.props.modalName == "saveAsModule"){
 			modal = (
 				<div className="modalBackground">

@@ -47,6 +47,10 @@ $pattern-line-color: lighten($workspace-color, 3%);
 	background-position: 50% 50%;
 }
 
+small {
+	font-size: 85%
+}
+
 :focus {
 	outline: none;
 	outline-offset: 0
@@ -177,19 +181,26 @@ body::-webkit-scrollbar {
 	border: 1px solid hsl(0, 0%, 20%);
 	display: flex;
 	flex-direction: column;
+	min-width: 500px;
 	width: auto;
-	min-width: 550px;
 	height: auto;
 	div {
 		font-size: 13px;
 		font-weight: bold;
-		margin-top: 10px;
+		margin-top: 16px;
 		margin-bottom: 2px;
 	}
 	p {
 		font-size: 13px;
-		color: hsl(0, 0%, 40%);
+		color: hsl(0, 0%, 35%);
 	}
+
+	.help {
+		font-size: 12px;
+		padding: 3px 8px;
+		color: hsl(0, 0%, 45%);
+	}
+
 	label {
 		display: block;
 		font-size: 15px;
@@ -230,7 +241,7 @@ body::-webkit-scrollbar {
 	}
 	main {
 		flex-grow: 1;
-		margin: 15px 30px 20px 30px;
+		margin: 15px 30px 40px 30px;
 	}
 	footer {
 		background-color: hsl(0, 0%, 66%);
@@ -249,8 +260,13 @@ body::-webkit-scrollbar {
 	}
 
 	input[type=text] {
-		width: 250px;
+		width: 350px;
 		padding: 2px 6px;
+
+	}
+
+	#librariesForm input[type=text]{
+		width: 500px;
 	}
 
 	input[type=button] {
@@ -262,7 +278,7 @@ body::-webkit-scrollbar {
 		border-radius: 3px;
 		white-space: nowrap;
 		font-size: 14px;
-		color: hsl(0, 0%, 30%);
+		color: hsl(0, 0%, 20%);
 		@include text-ellipsis;
 		&:hover:not(.disabled) {
 			background-color: hsl(0, 0%, 59%);

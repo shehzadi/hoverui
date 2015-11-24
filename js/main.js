@@ -1,7 +1,9 @@
 var IOConsole = React.createClass({
 	getInitialState: function() {
     	return {
-    		projectsObject: {},
+    		projectsSrc: "https://boiling-torch-3324.firebaseio.com/projects",
+            modulesSrc: "https://boiling-torch-3324.firebaseio.com/modules",
+            projectsObject: {},
     		sortedProjectArray: [],
     		modulesObject: {},
     		sortedModuleArray: [],
@@ -27,6 +29,10 @@ var IOConsole = React.createClass({
     		}
     	};
 	},
+
+    openSettings: function(){
+        console.log("open settings")
+    },
 
    	deleteWires: function(refEndPoint) {
    		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
@@ -241,9 +247,7 @@ var IOConsole = React.createClass({
   		var rootProtocolsObject = {};
   		var rootUserObject = {};
 
-  		this.firebaseRootRef = new Firebase("https://boiling-torch-3324.firebaseio.com");
-
-		this.firebaseProjectsRef = new Firebase("https://boiling-torch-3324.firebaseio.com/projects");
+		this.firebaseProjectsRef = new Firebase(this.state.projectsSrc);
 		this.firebaseProjectsRef.on("value", function(dataSnapshot) {
 			rootProjectsObject = dataSnapshot.val();
 
@@ -416,6 +420,9 @@ var IOConsole = React.createClass({
     	if (modalName == "saveAsModule"){
     		this.saveAsModule(payload)
     	}
+        if (modalName == "librariesSettings"){
+            console.log(payload)
+        }
     	this.cancelModal(modalName)
     },
 
@@ -524,6 +531,8 @@ var IOConsole = React.createClass({
 			var that = this;
 			_.forEach(this.state.modalArray, function(modalName) {
     			var modalDialogue = (<ModalDialogue
+                    projectsSrc = {that.state.projectsSrc} 
+                    modulesSrc = {that.state.modulesSrc}
                     key = {modalName} 
 					modalName = {modalName} 
 					categories = {that.state.categoriesObject} 
@@ -543,7 +552,8 @@ var IOConsole = React.createClass({
 			<div id="IOConsole">
 				<div id="navigation">
 					<Home 
-						createNewProject = {this.createNewProject} />
+						createNewProject = {this.createNewProject}
+                        openModal = {this.openModal}/>
 					<PrimaryNav 
 						onProjectClick = {this.handleProjectClick} 
 						onCategoryClick = {this.handleCategoryClick} 
@@ -660,15 +670,17 @@ var Home = React.createClass({
 		this.props.createNewProject(this.props.projectTemplate)
 	},
 
+    handleMenuControlClick: function(){
+        this.props.openModal("librariesSettings")
+    },
+
 	render: function() {	
 		return (
 			<div className="home">
 				<img className="logo" src="img/logo.png"/>
 				<h1>IO Visor Console</h1>
-				<button 
-						onClick = {this.handleNewProjectClick} 
-						className="add">+</button>
-				<button className="app-actions disabled"></button>
+				<button className="add" onClick={this.handleNewProjectClick}>+</button>
+				<button className="app-actions" onClick={this.handleMenuControlClick}></button>
 			</div>
 		);
 	},
