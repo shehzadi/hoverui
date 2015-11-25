@@ -100,6 +100,11 @@ var Tools = React.createClass({
 			)
 		}
 
+		var classString = "";
+		if (this.props.nProjects == 1){
+			classString = "disabled"
+		}
+
 		return (
 			<div className="tools">
 				{projectName}
@@ -108,7 +113,7 @@ var Tools = React.createClass({
 				<button className="disabled">Duplicate</button>
 				<button className="disabled">Export JSON</button>
 				<button onClick = {this.handleSaveAsProjectClick}>Publish as IO Module&hellip;</button>
-				<button onClick = {this.handleDeleteProjectClick}>Delete Project</button>
+				<button className={classString} onClick = {this.handleDeleteProjectClick}>Delete Project</button>
 				<div className="buttons">
 					<button className="disabled">Deploy to IO Visor&hellip;</button>
 				</div>

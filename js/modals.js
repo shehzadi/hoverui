@@ -130,7 +130,7 @@ var LibrariesForm = React.createClass({
 			</main>
 			<footer>
 				<input type="button" onClick={this.cancel} value="Cancel"/>
-				<input type="button" className="affirmative disabled" onClick={this.submit} value="Save"/>
+				<input type="button" className="affirmative" onClick={this.submit} value="Save"/>
 			</footer>
 		</form>
 		)
@@ -148,7 +148,6 @@ var ModalDialogue = React.createClass({
 
 	render: function() {
 		var modal;
-		console.log(this.props.modalName);
 		if (this.props.modalName == "librariesSettings"){
 			modal = (
 				<div className="modalBackground">

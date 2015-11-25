@@ -15,7 +15,9 @@ var IOConsole = React.createClass({
     		cursorX: 0,
     		cursorY: 0,
     		selectedProjectID: null,
-    		categoryVisibility: {}
+    		categoryVisibility: {},
+            projectsSrc: "https://boiling-torch-3324.firebaseio.com/development/users/jdoe/projects",
+            modulesSrc: "https://boiling-torch-3324.firebaseio.com/development/modules"
     	};
   	},
 
@@ -24,9 +26,7 @@ var IOConsole = React.createClass({
     		componentInProgress: {
     			width: 145,
     			height: 76
-    		},
-            projectsSrc: "https://boiling-torch-3324.firebaseio.com/development/users/jdoe/projects",
-            modulesSrc: "https://boiling-torch-3324.firebaseio.com/development/modules"
+    		}
     	};
 	},
 
@@ -245,73 +245,80 @@ var IOConsole = React.createClass({
 		this.firebaseProjectsRef.child(this.state.selectedProjectID).child('name').set(newName)		
     },
 
+    handleFirebaseProjects: function(dataSnapshot) {
+        var rootProjectsObject = dataSnapshot.val();
+        var sortedProjectArray = [];
+
+        for (var key in rootProjectsObject) {
+            sortedProjectArray.push({
+                key: key,
+                name: rootProjectsObject[key].name
+            })
+        };
+
+        sortedProjectArray.sort(function(a, b){
+            return a.name.localeCompare(b.name)
+        });
+
+        sortedProjectArray = sortedProjectArray.map(function(obj){ 
+           return obj.key;
+        });
+
+         this.setState({
+            projectsObject: rootProjectsObject,
+            sortedProjectArray: sortedProjectArray
+        });
+    },
+
+    handleFirebaseModules: function(dataSnapshot) {
+        var rootModulesObject = dataSnapshot.val();
+        var sortedModuleArray = [];
+
+        var modulesObject = rootModulesObject.data;
+        for (var key in modulesObject) {
+            sortedModuleArray.push({
+                key: key,
+                name: modulesObject[key].name
+            })
+        };
+        sortedModuleArray.sort(function(a, b){
+            return a.name.localeCompare(b.name)
+        });
+        sortedModuleArray = sortedModuleArray.map(function(obj){ 
+           return obj.key;
+        });
+
+        var categoriesObject = rootModulesObject.shared.categories;
+        var protocolsObject = rootModulesObject.shared.protocols;
+
+        this.setState({
+            modulesObject: modulesObject,
+            sortedModuleArray: sortedModuleArray,
+            categoriesObject: categoriesObject,
+            protocolsObject: protocolsObject
+        }); 
+    },
+
   	componentWillMount: function() {
-		this.firebaseProjectsRef = new Firebase(this.props.projectsSrc);
+		this.firebaseProjectsRef = new Firebase(this.state.projectsSrc);
 		this.firebaseProjectsRef.on("value", function(dataSnapshot) {
-			var rootProjectsObject = dataSnapshot.val();
-            var sortedProjectArray = [];
+            this.handleFirebaseProjects(dataSnapshot)
+        }.bind(this));
 
-			for (var key in rootProjectsObject) {
-				sortedProjectArray.push({
-					key: key,
-					name: rootProjectsObject[key].name
-				})
-			};
-
-			sortedProjectArray.sort(function(a, b){
-				return a.name.localeCompare(b.name)
-			});
-
-			sortedProjectArray = sortedProjectArray.map(function(obj){ 
-			   return obj.key;
-			});
-
-             this.setState({
-                projectsObject: rootProjectsObject,
-                sortedProjectArray: sortedProjectArray
-            }); 
-		}.bind(this));
-
-		this.firebaseModulesRef = new Firebase(this.props.modulesSrc);
+		this.firebaseModulesRef = new Firebase(this.state.modulesSrc);
 		this.firebaseModulesRef.on("value", function(dataSnapshot) {
-			var rootModulesObject = dataSnapshot.val();
-            var sortedModuleArray = [];
-
-            var modulesObject = rootModulesObject.data;
-			for (var key in modulesObject) {
-				sortedModuleArray.push({
-					key: key,
-					name: modulesObject[key].name
-				})
-			};
-			sortedModuleArray.sort(function(a, b){
-				return a.name.localeCompare(b.name)
-			});
-			sortedModuleArray = sortedModuleArray.map(function(obj){ 
-			   return obj.key;
-			});
-
-            var categoriesObject = rootModulesObject.shared.categories;
-            var protocolsObject = rootModulesObject.shared.protocols;
-
-            this.setState({
-                modulesObject: modulesObject,
-                sortedModuleArray: sortedModuleArray,
-                categoriesObject: categoriesObject,
-                protocolsObject: protocolsObject
-            }); 
+			this.handleFirebaseModules(dataSnapshot)
 		}.bind(this));
 	},
 
-    componentDidUpdate: function(){
-        var settings;
+    componentDidUpdate: function(){   
+        var newSelectedProjectID = this.state.sortedProjectArray[0];
         if (!window.localStorage.getItem('selectedProjectID')) { //first time use case
-            if (!this.state.selectedProjectID){
+            if (this.state.selectedProjectID != newSelectedProjectID){
                 this.setState({
-                    selectedProjectID: this.state.sortedProjectArray[0]
+                    selectedProjectID: newSelectedProjectID
                 });
-            }
-            
+            }          
         }
         else { //settings exist on this machine
             var setting = this.getSetting('selectedProjectID');
@@ -322,8 +329,7 @@ var IOConsole = React.createClass({
             } 
         } 
 
-        if (!window.localStorage.getItem('categoryVisibility')) { //first time use case
-            
+        if (!window.localStorage.getItem('categoryVisibility')) { //first time use case           
             if (!_.isEmpty(this.state.categoriesObject)){
                 if (_.isEmpty(this.state.categoryVisibility)){
                     var categoryVisibilityObject = {};
@@ -347,8 +353,6 @@ var IOConsole = React.createClass({
     },
 
     setSetting: function(settingName, newObject){
-        console.log(settingName);
-        console.log(newObject);
         var setting = JSON.stringify(newObject);
         window.localStorage.setItem(settingName, setting);
     },
@@ -466,9 +470,38 @@ var IOConsole = React.createClass({
     		this.saveAsModule(payload)
     	}
         if (modalName == "librariesSettings"){
-            console.log(payload)
+            
+            this.updateDataSources(payload)
         }
     	this.cancelModal(modalName)
+    },
+
+    updateDataSources: function(payload){
+        if (payload.modulesSrc != this.state.modulesSrc){
+            this.firebaseModulesRef.off();
+            this.firebaseModulesRef = new Firebase(payload.modulesSrc);
+            this.firebaseModulesRef.on("value", function(dataSnapshot) {
+                this.handleFirebaseModules(dataSnapshot)
+            }.bind(this));
+
+            this.setState({
+                modulesSrc: payload.modulesSrc
+            }); 
+        }
+        if (payload.projectsSrc != this.state.projectsSrc){
+             
+            this.firebaseProjectsRef.off();
+            this.firebaseProjectsRef = new Firebase(payload.projectsSrc);
+            this.firebaseProjectsRef.on("value", function(dataSnapshot) {
+                this.handleFirebaseProjects(dataSnapshot)
+            }.bind(this));
+        
+            this.setState({
+                projectsSrc: payload.projectsSrc
+            });
+            
+            window.localStorage.removeItem("selectedProjectID");      
+        }
     },
 
     saveAsModule: function(payload){
@@ -556,6 +589,8 @@ var IOConsole = React.createClass({
             return false
         }
 
+        var nProjects = Object.keys(this.state.projectsObject).length;
+
 		var componentInProgress;
 		if (this.state.dragging){
 			var moduleName = this.state.modulesObject[this.state.mouseDown].name;
@@ -576,8 +611,8 @@ var IOConsole = React.createClass({
 			var that = this;
 			_.forEach(this.state.modalArray, function(modalName) {
     			var modalDialogue = (<ModalDialogue
-                    projectsSrc = {that.props.projectsSrc} 
-                    modulesSrc = {that.props.modulesSrc}
+                    projectsSrc = {that.state.projectsSrc} 
+                    modulesSrc = {that.state.modulesSrc}
                     key = {modalName} 
 					modalName = {modalName} 
 					categories = {that.state.categoriesObject} 
@@ -616,6 +651,7 @@ var IOConsole = React.createClass({
 					<div id="header">
 						<Tools 
 							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]}
+                            nProjects = {nProjects} 
 							deleteProject = {this.deleteProject} 
 							openModal = {this.openModal}
 							renameProject = {this.renameProject}/>
