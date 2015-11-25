@@ -561,10 +561,12 @@ var Workspace = React.createClass({
 					vector: vectorToOtherEndComponent
 				}
 			};
-
-			var thisFillColor = getHSL(this.props.protocols[thisProtocol].hue);
-			var thisBorderColor = getHSL(this.props.protocols[thisProtocol].hue, true);
-
+			var thisFillColor = getHSL(0);
+			var thisBorderColor = getHSL(0, true);
+			
+			thisFillColor = getHSL(this.props.protocols[thisProtocol].hue);
+			thisBorderColor = getHSL(this.props.protocols[thisProtocol].hue, true);
+			
 			hostPortsArray.push(
 				<HostPort 
 					key = {hostInterface + "interface-1"} 

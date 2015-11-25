@@ -123,10 +123,10 @@ var LibrariesForm = React.createClass({
 				<p>Provide locations for IO Modules (usually shared) and Projects (usually personal).</p>
 				<div>IO Modules</div>
 				<input type="text" name="moduleSrc" value={this.state.modulesSrc} onChange={this.onFromChange}/>
-				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com/moduledata</p>
+				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;modules</p>
 				<div>Projects</div>
 				<input type="text" name="projectsSrc" value={this.state.projectsSrc} onChange={this.onFromChange}/>
-				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com/users/johndoe</p>
+				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;users&#47;jdoe&#47;projects</p>
 			</main>
 			<footer>
 				<input type="button" onClick={this.cancel} value="Cancel"/>

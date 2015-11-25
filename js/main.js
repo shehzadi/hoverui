@@ -1,8 +1,6 @@
 var IOConsole = React.createClass({
 	getInitialState: function() {
     	return {
-    		projectsSrc: "https://boiling-torch-3324.firebaseio.com/projects",
-            modulesSrc: "https://boiling-torch-3324.firebaseio.com/modules",
             projectsObject: {},
     		sortedProjectArray: [],
     		modulesObject: {},
@@ -26,7 +24,9 @@ var IOConsole = React.createClass({
     		componentInProgress: {
     			width: 145,
     			height: 76
-    		}
+    		},
+            projectsSrc: "https://boiling-torch-3324.firebaseio.com/development/users/jdoe/projects",
+            modulesSrc: "https://boiling-torch-3324.firebaseio.com/development/modules"
     	};
 	},
 
@@ -214,7 +214,10 @@ var IOConsole = React.createClass({
         newProjectsObject[newProjectID] = projectTemplate;
         this.firebaseProjectsRef.set(newProjectsObject);
 
-		this.firebaseUserRef.child('settings').child('selectedProject').set(newProjectID);
+        this.setState({
+            selectedProjectID: newProjectID
+        });
+        this.setSetting("selectedProjectID", newProjectID);
     },
 
    	deleteProject: function() {
@@ -228,10 +231,12 @@ var IOConsole = React.createClass({
 				newSelectedProjectIndex = 1
 			}
 			var newSelectedProject = this.state.sortedProjectArray[newSelectedProjectIndex];
-			console.log(newSelectedProject);
 
 			this.firebaseProjectsRef.child(this.state.selectedProjectID).remove();
-			this.firebaseUserRef.child('settings').child('selectedProject').set(newSelectedProject);
+			this.setState({
+                selectedProjectID: newSelectedProject
+            });
+            this.setSetting("selectedProjectID", newSelectedProject);
 			
 		}
     },
@@ -241,17 +246,11 @@ var IOConsole = React.createClass({
     },
 
   	componentWillMount: function() {
-  		var rootProjectsObject = {};
-  		var rootModulesObject = {};
-  		var rootCategoriesObject = {};
-  		var rootProtocolsObject = {};
-  		var rootUserObject = {};
-
-		this.firebaseProjectsRef = new Firebase(this.state.projectsSrc);
+		this.firebaseProjectsRef = new Firebase(this.props.projectsSrc);
 		this.firebaseProjectsRef.on("value", function(dataSnapshot) {
-			rootProjectsObject = dataSnapshot.val();
+			var rootProjectsObject = dataSnapshot.val();
+            var sortedProjectArray = [];
 
-			var sortedProjectArray = [];
 			for (var key in rootProjectsObject) {
 				sortedProjectArray.push({
 					key: key,
@@ -267,64 +266,116 @@ var IOConsole = React.createClass({
 			   return obj.key;
 			});
 
-			this.setState({
-				projectsObject: rootProjectsObject,
-				sortedProjectArray: sortedProjectArray
-			});		
+             this.setState({
+                projectsObject: rootProjectsObject,
+                sortedProjectArray: sortedProjectArray
+            }); 
 		}.bind(this));
 
-		this.firebaseModulesRef = new Firebase("https://boiling-torch-3324.firebaseio.com/modules");
+		this.firebaseModulesRef = new Firebase(this.props.modulesSrc);
 		this.firebaseModulesRef.on("value", function(dataSnapshot) {
-			rootModulesObject = dataSnapshot.val();
+			var rootModulesObject = dataSnapshot.val();
+            var sortedModuleArray = [];
 
-			var sortedModuleArray = [];
-			for (var key in rootModulesObject) {
+            var modulesObject = rootModulesObject.data;
+			for (var key in modulesObject) {
 				sortedModuleArray.push({
 					key: key,
-					name: rootModulesObject[key].name
+					name: modulesObject[key].name
 				})
 			};
-
 			sortedModuleArray.sort(function(a, b){
 				return a.name.localeCompare(b.name)
 			});
-
 			sortedModuleArray = sortedModuleArray.map(function(obj){ 
 			   return obj.key;
 			});
 
-			this.setState({
-				modulesObject: rootModulesObject,
-				sortedModuleArray: sortedModuleArray
-			});
-		}.bind(this));
+            var categoriesObject = rootModulesObject.shared.categories;
+            var protocolsObject = rootModulesObject.shared.protocols;
 
-		this.firebaseCategoriesRef = new Firebase("https://boiling-torch-3324.firebaseio.com/categories");
-		this.firebaseCategoriesRef.on("value", function(dataSnapshot) {
-			rootCategoriesObject = dataSnapshot.val();
-
-			this.setState({
-				categoriesObject: rootCategoriesObject
-			});
-		}.bind(this));
-
-		this.protocolsRef = new Firebase("https://boiling-torch-3324.firebaseio.com/protocols");
-		this.protocolsRef.on("value", function(dataSnapshot) {
-			rootProtocolsObject = dataSnapshot.val();
-			this.setState({
-				protocolsObject: rootProtocolsObject
-			});
-		}.bind(this));
-
-		this.firebaseUserRef = new Firebase("https://boiling-torch-3324.firebaseio.com/users/johnkelley");
-		this.firebaseUserRef.on("value", function(dataSnapshot) {
-			rootUserObject = dataSnapshot.val();
-			this.setState({
-				selectedProjectID: rootUserObject.settings.selectedProject,
-				categoryVisibility: rootUserObject.settings.categoryVisibility
-			});
+            this.setState({
+                modulesObject: modulesObject,
+                sortedModuleArray: sortedModuleArray,
+                categoriesObject: categoriesObject,
+                protocolsObject: protocolsObject
+            }); 
 		}.bind(this));
 	},
+
+    componentDidUpdate: function(){
+        var settings;
+        if (!window.localStorage.getItem('selectedProjectID')) { //first time use case
+            if (!this.state.selectedProjectID){
+                this.setState({
+                    selectedProjectID: this.state.sortedProjectArray[0]
+                });
+            }
+            
+        }
+        else { //settings exist on this machine
+            var setting = this.getSetting('selectedProjectID');
+            if (!_.isEqual(setting, this.state.selectedProjectID)){
+                this.setState({
+                    selectedProjectID: setting
+                });
+            } 
+        } 
+
+        if (!window.localStorage.getItem('categoryVisibility')) { //first time use case
+            
+            if (!_.isEmpty(this.state.categoriesObject)){
+                if (_.isEmpty(this.state.categoryVisibility)){
+                    var categoryVisibilityObject = {};
+                    for (category in this.state.categoriesObject){
+                        categoryVisibilityObject[category] = false;
+                    }
+                    this.setState({
+                        categoryVisibility: categoryVisibilityObject
+                    });
+                }
+            }
+        }
+        else { //settings exist on this machine
+            var setting = this.getSetting('categoryVisibility');
+            if (!_.isEqual(setting, this.state.categoryVisibility)){
+                this.setState({
+                    categoryVisibility: setting
+                });
+            }           
+        }     
+    },
+
+    setSetting: function(settingName, newObject){
+        console.log(settingName);
+        console.log(newObject);
+        var setting = JSON.stringify(newObject);
+        window.localStorage.setItem(settingName, setting);
+    },
+
+    getSetting: function(settingName){
+        var setting = window.localStorage.getItem(settingName);
+        setting = JSON.parse(setting);
+        return setting
+    },
+
+    handleCategoryClick: function(category, isOpen) {
+        var newVisibility = _.cloneDeep(this.state.categoryVisibility);
+        newVisibility[category] = !isOpen;
+        this.setState({
+            categoryVisibility: newVisibility
+        });
+        this.setSetting("categoryVisibility", newVisibility);
+    },
+
+    handleProjectClick: function(payload) {
+        if (payload.projectID != this.state.selectedProjectID){
+            this.setState({
+                selectedProjectID: payload.projectID
+            });
+            this.setSetting("selectedProjectID", payload.projectID);
+        } 
+    },
 
 	onModuleMouseDown: function(thisModule){
 		
@@ -392,12 +443,6 @@ var IOConsole = React.createClass({
     	document.removeEventListener('mousemove', this.onMouseMove);
     	document.removeEventListener('mouseup', this.onMouseUp);
 	},
-
-	handleProjectClick: function(payload) {
-        if (payload.projectID != this.state.selectedProjectID){
-			this.firebaseUserRef.child('settings').child('selectedProject').set(payload.projectID)
-        }  
-    },
 
     openModal: function(modalName) {
     	var newArray = _.cloneDeep(this.state.modalArray);
@@ -489,28 +534,28 @@ var IOConsole = React.createClass({
 
         console.log(moduleObject);
 
-    	this.firebaseModulesRef.child(moduleID).set(moduleObject);
+    	this.firebaseModulesRef.child('data').child(moduleID).set(moduleObject);
 
         //add module id to the relevant categories
         var categoryObject = {};
         if (isUncategorised){   
             categoryObject[moduleID] = true;
-            this.firebaseCategoriesRef.child('uncategorised').child('modules').update(categoryObject);
+            this.firebaseModulesRef.child('shared').child('categories').child('uncategorised').child('modules').update(categoryObject);
         }
         else {
         	for (var category in payload.categories) {
         		var thisCategory = payload.categories[category];
         		categoryObject[moduleID] = true;
-        		this.firebaseCategoriesRef.child(thisCategory).child('modules').update(categoryObject);
+        		this.firebaseModulesRef.child('shared').child('categories').child(thisCategory).child('modules').update(categoryObject);
         	}
         }
     },
 
-	handleCategoryClick: function(category, isOpen) {
-        this.firebaseUserRef.child('settings').child('categoryVisibility').child(category).set(!isOpen)
-    },
-
 	render: function() {
+        if (_.isEmpty(this.state.modulesObject) || _.isEmpty(this.state.projectsObject)){
+            return false
+        }
+
 		var componentInProgress;
 		if (this.state.dragging){
 			var moduleName = this.state.modulesObject[this.state.mouseDown].name;
@@ -531,8 +576,8 @@ var IOConsole = React.createClass({
 			var that = this;
 			_.forEach(this.state.modalArray, function(modalName) {
     			var modalDialogue = (<ModalDialogue
-                    projectsSrc = {that.state.projectsSrc} 
-                    modulesSrc = {that.state.modulesSrc}
+                    projectsSrc = {that.props.projectsSrc} 
+                    modulesSrc = {that.props.modulesSrc}
                     key = {modalName} 
 					modalName = {modalName} 
 					categories = {that.state.categoriesObject} 
@@ -792,7 +837,11 @@ var ModuleSection = React.createClass({
 
 		for (var category in this.props.categories) {
 			var moduleList = this.props.categories[category].modules;
-			var isOpen = this.props.categoryVisibility[category];
+            var isOpen = false;
+            if (this.props.categoryVisibility[category]){
+                isOpen = this.props.categoryVisibility[category];
+
+            }
       		categoryItems.push(
       			<Category
       				key = {category} 
