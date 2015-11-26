@@ -266,7 +266,9 @@ var IOConsole = React.createClass({
            return obj.key;
         });
 
-         this.setState({
+       // console.log(sortedProjectArray);
+
+        this.setState({
             projectsObject: rootProjectsObject,
             sortedProjectArray: sortedProjectArray
         });
@@ -310,10 +312,15 @@ var IOConsole = React.createClass({
 		this.firebaseModulesRef = new Firebase(this.state.modulesSrc);
 		this.firebaseModulesRef.on("value", function(dataSnapshot) {
 			this.handleFirebaseModules(dataSnapshot)
-		}.bind(this));
+		}.bind(this));	
+		console.log(this.state.sortedProjectArray);	
+	},
 
-		if (this.state.selectedProjectID == null){
+	componentDidUpdate: function(){
+		if (!this.state.selectedProjectID){
+			console.log(this.state.sortedProjectArray);
         	var newSelectedProject = this.state.sortedProjectArray[0];
+        	console.log(this.state.sortedProjectArray);
         	this.setSetting("selectedProjectID", newSelectedProject);
         	this.setState({
                 selectedProjectID: this.state.sortedProjectArray[0]
@@ -474,6 +481,7 @@ var IOConsole = React.createClass({
 
     getSetting: function(settingName){
         var setting = window.localStorage.getItem(settingName);
+        console.log(setting);
         setting = JSON.parse(setting);
         return setting
     },
@@ -649,9 +657,7 @@ var IOConsole = React.createClass({
 	},
 });
 
-
 var ComponentInProgress = React.createClass({
-
 	render: function() {
 		var style = {
 			width: this.props.thisWidth,
