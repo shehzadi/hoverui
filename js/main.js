@@ -1,5 +1,9 @@
 var IOConsole = React.createClass({
 	getInitialState: function() {
+		var projectsSrc = this.getSetting("projectsSrc") || "https://boiling-torch-3324.firebaseio.com/development/users/jdoe/projects";
+		var modulesSrc = this.getSetting("modulesSrc") || "https://boiling-torch-3324.firebaseio.com/development/modules";
+		var selectedProjectID = this.getSetting("selectedProjectID");
+
     	return {
             projectsObject: {},
     		sortedProjectArray: [],
@@ -14,10 +18,10 @@ var IOConsole = React.createClass({
     		startY: 0,
     		cursorX: 0,
     		cursorY: 0,
-    		selectedProjectID: null,
+    		selectedProjectID: selectedProjectID,
     		categoryVisibility: {},
-            projectsSrc: "https://boiling-torch-3324.firebaseio.com/development/users/jdoe/projects",
-            modulesSrc: "https://boiling-torch-3324.firebaseio.com/development/modules"
+            projectsSrc: projectsSrc,
+            modulesSrc: modulesSrc
     	};
   	},
 
@@ -42,7 +46,6 @@ var IOConsole = React.createClass({
    		if (refEndPoint.component.indexOf('host') == 0){ //is an attachment wire
 			refGroupObject = {"interface-1": true}
 		}
-
 		else {
    			refGroupObject = selectedProject.view[refEndPoint.component].groups[refGroupID];
 		}
@@ -55,7 +58,6 @@ var IOConsole = React.createClass({
    			for (thisWire in updatedProjectWiresObject){
    				var endpoint1 = updatedProjectWiresObject[thisWire]["endpoint-1"];
    				var endpoint2 = updatedProjectWiresObject[thisWire]["endpoint-2"];
-   				//console.log(endpoint2);
    				if (_.isEqual(endpoint1, thisEndpoint) || _.isEqual(endpoint2, thisEndpoint)) {
    					delete updatedProjectWiresObject[thisWire]
    				}
@@ -309,59 +311,15 @@ var IOConsole = React.createClass({
 		this.firebaseModulesRef.on("value", function(dataSnapshot) {
 			this.handleFirebaseModules(dataSnapshot)
 		}.bind(this));
+
+		if (this.state.selectedProjectID == null){
+        	var newSelectedProject = this.state.sortedProjectArray[0];
+        	this.setSetting("selectedProjectID", newSelectedProject);
+        	this.setState({
+                selectedProjectID: this.state.sortedProjectArray[0]
+            });
+        }
 	},
-
-    componentDidUpdate: function(){   
-        var newSelectedProjectID = this.state.sortedProjectArray[0];
-        if (!window.localStorage.getItem('selectedProjectID')) { //first time use case
-            if (this.state.selectedProjectID != newSelectedProjectID){
-                this.setState({
-                    selectedProjectID: newSelectedProjectID
-                });
-            }          
-        }
-        else { //settings exist on this machine
-            var setting = this.getSetting('selectedProjectID');
-            if (!_.isEqual(setting, this.state.selectedProjectID)){
-                this.setState({
-                    selectedProjectID: setting
-                });
-            } 
-        } 
-
-        if (!window.localStorage.getItem('categoryVisibility')) { //first time use case           
-            if (!_.isEmpty(this.state.categoriesObject)){
-                if (_.isEmpty(this.state.categoryVisibility)){
-                    var categoryVisibilityObject = {};
-                    for (category in this.state.categoriesObject){
-                        categoryVisibilityObject[category] = false;
-                    }
-                    this.setState({
-                        categoryVisibility: categoryVisibilityObject
-                    });
-                }
-            }
-        }
-        else { //settings exist on this machine
-            var setting = this.getSetting('categoryVisibility');
-            if (!_.isEqual(setting, this.state.categoryVisibility)){
-                this.setState({
-                    categoryVisibility: setting
-                });
-            }           
-        }     
-    },
-
-    setSetting: function(settingName, newObject){
-        var setting = JSON.stringify(newObject);
-        window.localStorage.setItem(settingName, setting);
-    },
-
-    getSetting: function(settingName){
-        var setting = window.localStorage.getItem(settingName);
-        setting = JSON.parse(setting);
-        return setting
-    },
 
     handleCategoryClick: function(category, isOpen) {
         var newVisibility = _.cloneDeep(this.state.categoryVisibility);
@@ -473,6 +431,7 @@ var IOConsole = React.createClass({
             
             this.updateDataSources(payload)
         }
+        console.log("closing");
     	this.cancelModal(modalName)
     },
 
@@ -483,6 +442,8 @@ var IOConsole = React.createClass({
             this.firebaseModulesRef.on("value", function(dataSnapshot) {
                 this.handleFirebaseModules(dataSnapshot)
             }.bind(this));
+
+            this.setSetting("modulesSrc", payload.modulesSrc);
 
             this.setState({
                 modulesSrc: payload.modulesSrc
@@ -495,13 +456,26 @@ var IOConsole = React.createClass({
             this.firebaseProjectsRef.on("value", function(dataSnapshot) {
                 this.handleFirebaseProjects(dataSnapshot)
             }.bind(this));
+
+            this.setSetting("projectsSrc", payload.projectsSrc);
+            window.localStorage.removeItem("selectedProjectID"); 
         
             this.setState({
-                projectsSrc: payload.projectsSrc
-            });
-            
-            window.localStorage.removeItem("selectedProjectID");      
+                projectsSrc: payload.projectsSrc,
+                selectedProjectID: null
+            });  
         }
+    },
+
+    setSetting: function(settingName, newObject){
+        var setting = JSON.stringify(newObject);
+        window.localStorage.setItem(settingName, setting);
+    },
+
+    getSetting: function(settingName){
+        var setting = window.localStorage.getItem(settingName);
+        setting = JSON.parse(setting);
+        return setting
     },
 
     saveAsModule: function(payload){
@@ -707,7 +681,6 @@ var Home = React.createClass({
     		projectTemplate: {
     			name: "Untitled Project",
     			version: "0.0.1",
-    			description: null,
     			topology: {
     				host_interfaces: {
     					"host_interface-1": {
@@ -739,10 +712,7 @@ var Home = React.createClass({
     					x: 240,
     					y: headerHeight + 15
     				}
-    			},
-    			users: {
-    				johnkelley: "owner"
-    			},
+    			}
     		}
     	};
 	},
