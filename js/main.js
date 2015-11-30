@@ -1,8 +1,8 @@
 var IOConsole = React.createClass({
 	getInitialState: function() {
-		var projectsSrc = this.getSetting("projectsSrc") || "https://boiling-torch-3324.firebaseio.com/development/users/jdoe/projects";
-		var modulesSrc = this.getSetting("modulesSrc") || "https://boiling-torch-3324.firebaseio.com/development/modules";
-		var selectedProjectID = this.getSetting("selectedProjectID");
+		var projectsSrc = this.getLocalSetting("projectsSrc") || "https://boiling-torch-3324.firebaseio.com/development/users/jdoe/projects";
+		var modulesSrc = this.getLocalSetting("modulesSrc") || "https://boiling-torch-3324.firebaseio.com/development/modules";
+		var selectedProjectID = this.getLocalSetting("selectedProjectID");
 
     	return {
             projectsObject: {},
@@ -219,7 +219,7 @@ var IOConsole = React.createClass({
         this.setState({
             selectedProjectID: newProjectID
         });
-        this.setSetting("selectedProjectID", newProjectID);
+        this.setLocalSetting("selectedProjectID", newProjectID);
     },
 
    	deleteProject: function() {
@@ -238,7 +238,7 @@ var IOConsole = React.createClass({
 			this.setState({
                 selectedProjectID: newSelectedProject
             });
-            this.setSetting("selectedProjectID", newSelectedProject);
+            this.setLocalSetting("selectedProjectID", newSelectedProject);
 			
 		}
     },
@@ -313,17 +313,14 @@ var IOConsole = React.createClass({
 		this.firebaseModulesRef.on("value", function(dataSnapshot) {
 			this.handleFirebaseModules(dataSnapshot)
 		}.bind(this));	
-		console.log(this.state.sortedProjectArray);	
 	},
 
 	componentDidUpdate: function(){
 		if (!this.state.selectedProjectID){
-			console.log(this.state.sortedProjectArray);
         	var newSelectedProject = this.state.sortedProjectArray[0];
-        	console.log(this.state.sortedProjectArray);
-        	this.setSetting("selectedProjectID", newSelectedProject);
+        	this.setLocalSetting("selectedProjectID", newSelectedProject);
         	this.setState({
-                selectedProjectID: this.state.sortedProjectArray[0]
+                selectedProjectID: newSelectedProject
             });
         }
 	},
@@ -334,7 +331,7 @@ var IOConsole = React.createClass({
         this.setState({
             categoryVisibility: newVisibility
         });
-        this.setSetting("categoryVisibility", newVisibility);
+        this.setLocalSetting("categoryVisibility", newVisibility);
     },
 
     handleProjectClick: function(payload) {
@@ -342,7 +339,7 @@ var IOConsole = React.createClass({
             this.setState({
                 selectedProjectID: payload.projectID
             });
-            this.setSetting("selectedProjectID", payload.projectID);
+            this.setLocalSetting("selectedProjectID", payload.projectID);
         } 
     },
 
@@ -450,7 +447,7 @@ var IOConsole = React.createClass({
                 this.handleFirebaseModules(dataSnapshot)
             }.bind(this));
 
-            this.setSetting("modulesSrc", payload.modulesSrc);
+            this.setLocalSetting("modulesSrc", payload.modulesSrc);
 
             this.setState({
                 modulesSrc: payload.modulesSrc
@@ -464,7 +461,7 @@ var IOConsole = React.createClass({
                 this.handleFirebaseProjects(dataSnapshot)
             }.bind(this));
 
-            this.setSetting("projectsSrc", payload.projectsSrc);
+            this.setLocalSetting("projectsSrc", payload.projectsSrc);
             window.localStorage.removeItem("selectedProjectID"); 
         
             this.setState({
@@ -474,14 +471,13 @@ var IOConsole = React.createClass({
         }
     },
 
-    setSetting: function(settingName, newObject){
+    setLocalSetting: function(settingName, newObject){
         var setting = JSON.stringify(newObject);
         window.localStorage.setItem(settingName, setting);
     },
 
-    getSetting: function(settingName){
+    getLocalSetting: function(settingName){
         var setting = window.localStorage.getItem(settingName);
-        console.log(setting);
         setting = JSON.parse(setting);
         return setting
     },
@@ -803,7 +799,6 @@ var ProjectSection = React.createClass({
       						<span>{thisProject.name}</span>
       						<span className="version">{thisProject.version}</span>
       					</h2>
-      					<div className="projectDetails">{thisProject.details}</div>
       				</div>
       			);
 			};
@@ -935,12 +930,16 @@ var ModuleItem = React.createClass({
 		return (
 			<div 
 				className="moduleItem"
-				onMouseDown = {this.props.onMouseDown.bind(null, this.props.moduleID)} >
-  				<h3>
-  					<span className="name">{this.props.moduleItem.name}</span>
-  					<span className="version">{this.props.moduleItem.version}</span>
-  				</h3>
-  				<div className="moduleDescription">{this.props.moduleItem.description}</div>
+				onMouseDown = {this.props.onMouseDown.bind(null, this.props.moduleID)}>
+				<div className="content">
+	  				<h3>
+	  					<span className="name">{this.props.moduleItem.name}</span>
+	  					<span className="version">{this.props.moduleItem.version}</span>
+	  				</h3>
+	  				<div className="moduleDescription">{this.props.moduleItem.description}</div>
+  				</div>
+  				<div className="affordance">
+  				</div>
       		</div>
 		);
 	}

@@ -23,7 +23,7 @@ var SaveAsModuleForm = React.createClass({
 		this.props.submit(this.props.modalName, submitPayload)
 	},
 
-	onFromChange: function(event) {
+	onFormChange: function(event) {
 		var elementName = event.target.attributes.name.value;
 		if (elementName == "name"){this.setState({name: event.target.value})}
 		else if (elementName == "description"){this.setState({description: event.target.value})}
@@ -54,7 +54,7 @@ var SaveAsModuleForm = React.createClass({
 			if (category == "uncategorised") {continue}
 			categoryItems.push(
       			<label key={category}>
-      				<input type="checkbox" name={category} value={this.state.analytics} onChange={this.onFromChange}/>
+      				<input type="checkbox" name={category} value={this.state.analytics} onChange={this.onFormChange}/>
       				{category}
       			</label>
       		);
@@ -68,9 +68,9 @@ var SaveAsModuleForm = React.createClass({
 			</header>
 			<main>
 				<div>Name</div>
-				<input type="text" className={invalidClassString} name="name" value={this.state.name} onChange={this.onFromChange}/>
+				<input type="text" className={invalidClassString} name="name" value={this.state.name} onChange={this.onFormChange}/>
 				<div>Description</div>
-				<textarea name="description" value={this.state.description} onChange={this.onFromChange}/>
+				<textarea name="description" value={this.state.description} onChange={this.onFormChange}/>
 				<div>Categories</div>
 				<p>Select or leave uncategorised.</p>
 				{categoryItems} 					
@@ -98,7 +98,9 @@ var LibrariesForm = React.createClass({
 	},
 
 	submit: function(event) {
+		console.log("submitting");
 		event.preventDefault();
+
 		var submitPayload = {
 			modulesSrc: this.state.modulesSrc,
 			projectsSrc: this.state.projectsSrc
@@ -106,7 +108,7 @@ var LibrariesForm = React.createClass({
 		this.props.submit(this.props.modalName, submitPayload)
 	},
 
-	onFromChange: function(event) {
+	onFormChange: function(event) {
 		var elementName = event.target.attributes.name.value;
 		if (elementName == "moduleSrc"){this.setState({modulesSrc: event.target.value})}
 		else if (elementName == "projectsSrc"){this.setState({projectsSrc: event.target.value})}
@@ -122,15 +124,15 @@ var LibrariesForm = React.createClass({
 			<main>
 				<p>Provide locations for IO Modules (usually shared) and Projects (usually personal).</p>
 				<div>IO Modules</div>
-				<input type="text" name="moduleSrc" value={this.state.modulesSrc} onChange={this.onFromChange}/>
+				<input type="text" name="moduleSrc" value={this.state.modulesSrc} onChange={this.onFormChange}/>
 				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;modules</p>
 				<div>Projects</div>
-				<input type="text" name="projectsSrc" value={this.state.projectsSrc} onChange={this.onFromChange}/>
+				<input type="text" name="projectsSrc" value={this.state.projectsSrc} onChange={this.onFormChange}/>
 				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;users&#47;jdoe&#47;projects</p>
 			</main>
 			<footer>
 				<input type="button" onClick={this.cancel} value="Cancel"/>
-				<input type="button" className="affirmative" onClick={this.submit} value="Save"/>
+				<input type="button" className="affirmative"  onClick={this.submit} value="Save"/>
 			</footer>
 		</form>
 		)
