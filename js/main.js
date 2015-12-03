@@ -34,6 +34,75 @@ var IOConsole = React.createClass({
     	};
 	},
 
+    componentWillMount: function() {
+        this.firebaseProjectsRef = new Firebase(this.state.projectsSrc);
+        this.firebaseProjectsRef.on("value", function(dataSnapshot) {
+            this.handleFirebaseProjects(dataSnapshot)
+        }.bind(this));
+
+        this.firebaseModulesRef = new Firebase(this.state.modulesSrc);
+        this.firebaseModulesRef.on("value", function(dataSnapshot) {
+            this.handleFirebaseModules(dataSnapshot)
+        }.bind(this));  
+    },
+
+    handleFirebaseProjects: function(dataSnapshot) {
+        console.log(dataSnapshot.val());
+        var rootProjectsObject = dataSnapshot.val();
+        var sortedProjectArray = [];
+
+        for (var key in rootProjectsObject) {
+            sortedProjectArray.push({
+                key: key,
+                name: rootProjectsObject[key].name
+            })
+        };
+
+        sortedProjectArray.sort(function(a, b){
+            return a.name.localeCompare(b.name)
+        });
+
+        sortedProjectArray = sortedProjectArray.map(function(obj){ 
+           return obj.key;
+        });
+
+        console.log(sortedProjectArray);
+
+        this.setState({
+            projectsObject: rootProjectsObject,
+            sortedProjectArray: sortedProjectArray
+        });
+    },
+
+    handleFirebaseModules: function(dataSnapshot) {
+        var rootModulesObject = dataSnapshot.val();
+        var sortedModuleArray = [];
+
+        var modulesObject = rootModulesObject.data;
+        for (var key in modulesObject) {
+            sortedModuleArray.push({
+                key: key,
+                name: modulesObject[key].name
+            })
+        };
+        sortedModuleArray.sort(function(a, b){
+            return a.name.localeCompare(b.name)
+        });
+        sortedModuleArray = sortedModuleArray.map(function(obj){ 
+           return obj.key;
+        });
+
+        var categoriesObject = rootModulesObject.shared.categories;
+        var protocolsObject = rootModulesObject.shared.protocols;
+
+        this.setState({
+            modulesObject: modulesObject,
+            sortedModuleArray: sortedModuleArray,
+            categoriesObject: categoriesObject,
+            protocolsObject: protocolsObject
+        }); 
+    },
+
     openSettings: function(){
         console.log("open settings")
     },
@@ -247,83 +316,19 @@ var IOConsole = React.createClass({
 		this.firebaseProjectsRef.child(this.state.selectedProjectID).child('name').set(newName)		
     },
 
-    handleFirebaseProjects: function(dataSnapshot) {
-        var rootProjectsObject = dataSnapshot.val();
-        var sortedProjectArray = [];
-
-        for (var key in rootProjectsObject) {
-            sortedProjectArray.push({
-                key: key,
-                name: rootProjectsObject[key].name
-            })
-        };
-
-        sortedProjectArray.sort(function(a, b){
-            return a.name.localeCompare(b.name)
-        });
-
-        sortedProjectArray = sortedProjectArray.map(function(obj){ 
-           return obj.key;
-        });
-
-       // console.log(sortedProjectArray);
-
-        this.setState({
-            projectsObject: rootProjectsObject,
-            sortedProjectArray: sortedProjectArray
-        });
-    },
-
-    handleFirebaseModules: function(dataSnapshot) {
-        var rootModulesObject = dataSnapshot.val();
-        var sortedModuleArray = [];
-
-        var modulesObject = rootModulesObject.data;
-        for (var key in modulesObject) {
-            sortedModuleArray.push({
-                key: key,
-                name: modulesObject[key].name
-            })
-        };
-        sortedModuleArray.sort(function(a, b){
-            return a.name.localeCompare(b.name)
-        });
-        sortedModuleArray = sortedModuleArray.map(function(obj){ 
-           return obj.key;
-        });
-
-        var categoriesObject = rootModulesObject.shared.categories;
-        var protocolsObject = rootModulesObject.shared.protocols;
-
-        this.setState({
-            modulesObject: modulesObject,
-            sortedModuleArray: sortedModuleArray,
-            categoriesObject: categoriesObject,
-            protocolsObject: protocolsObject
-        }); 
-    },
-
-  	componentWillMount: function() {
-		this.firebaseProjectsRef = new Firebase(this.state.projectsSrc);
-		this.firebaseProjectsRef.on("value", function(dataSnapshot) {
-            this.handleFirebaseProjects(dataSnapshot)
-        }.bind(this));
-
-		this.firebaseModulesRef = new Firebase(this.state.modulesSrc);
-		this.firebaseModulesRef.on("value", function(dataSnapshot) {
-			this.handleFirebaseModules(dataSnapshot)
-		}.bind(this));	
+	componentDidUpdate: function(){
+		this.selectFirstProject()
 	},
 
-	componentDidUpdate: function(){
-		if (!this.state.selectedProjectID){
-        	var newSelectedProject = this.state.sortedProjectArray[0];
-        	this.setLocalSetting("selectedProjectID", newSelectedProject);
-        	this.setState({
+    selectFirstProject: function() {
+        if (!this.state.selectedProjectID){
+            var newSelectedProject = this.state.sortedProjectArray[0];
+            this.setLocalSetting("selectedProjectID", newSelectedProject);
+            this.setState({
                 selectedProjectID: newSelectedProject
             });
         }
-	},
+    },
 
     handleCategoryClick: function(category, isOpen) {
         var newVisibility = _.cloneDeep(this.state.categoryVisibility);
@@ -440,9 +445,51 @@ var IOConsole = React.createClass({
     },
 
     updateDataSources: function(payload){
+        if (payload.projectsSrc != this.state.projectsSrc){           
+            this.firebaseProjectsRef.off();
+            this.firebaseProjectsRef = new Firebase(payload.projectsSrc);
+
+            //check for existance of seed data (at least)
+            this.firebaseProjectsRef.once("value", function(snapshot) {
+                var isSeeded = snapshot.exists() && snapshot.val() !== true;
+                if (!isSeeded){
+                    //add seed data to location
+                    this.firebaseProjectsRef.set(projectsSeed);
+                }
+            }.bind(this));
+
+            //add event handler for data change  
+            this.firebaseProjectsRef.on("value", function(dataSnapshot) {
+                this.handleFirebaseProjects(dataSnapshot)
+            }.bind(this));
+
+            this.setLocalSetting("projectsSrc", payload.projectsSrc);
+            window.localStorage.removeItem("selectedProjectID");
+
+            console.log(this.state.projectsSrc);
+        
+            this.setState({
+                projectsSrc: payload.projectsSrc,
+                selectedProjectID: false
+            });
+
+            console.log(this.state.projectsSrc);
+        }
+
         if (payload.modulesSrc != this.state.modulesSrc){
             this.firebaseModulesRef.off();
             this.firebaseModulesRef = new Firebase(payload.modulesSrc);
+
+            //check for existance of seed data (at least)
+            this.firebaseModulesRef.once("value", function(snapshot) {
+                var isSeeded = snapshot.exists() && snapshot.child("data").exists() && snapshot.child("shared").exists();
+                if (!isSeeded){
+                    //add seed data to location
+                    this.firebaseModulesRef.set(modulesSeed);
+                }
+            }.bind(this));
+
+            //add event handler for data change    
             this.firebaseModulesRef.on("value", function(dataSnapshot) {
                 this.handleFirebaseModules(dataSnapshot)
             }.bind(this));
@@ -452,22 +499,6 @@ var IOConsole = React.createClass({
             this.setState({
                 modulesSrc: payload.modulesSrc
             }); 
-        }
-        if (payload.projectsSrc != this.state.projectsSrc){
-             
-            this.firebaseProjectsRef.off();
-            this.firebaseProjectsRef = new Firebase(payload.projectsSrc);
-            this.firebaseProjectsRef.on("value", function(dataSnapshot) {
-                this.handleFirebaseProjects(dataSnapshot)
-            }.bind(this));
-
-            this.setLocalSetting("projectsSrc", payload.projectsSrc);
-            window.localStorage.removeItem("selectedProjectID"); 
-        
-            this.setState({
-                projectsSrc: payload.projectsSrc,
-                selectedProjectID: null
-            });  
         }
     },
 
@@ -777,6 +808,7 @@ var ProjectSection = React.createClass({
 	},
 
 	render: function() {
+        console.log(this.props.selectedProjectID);
 		var projectsObject = this.props.projects;
 		var sortedProjectArray = this.props.sortedProjectArray;
 		if (projectsObject){

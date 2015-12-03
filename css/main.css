@@ -139,6 +139,7 @@ body::-webkit-scrollbar {
 
 .modalContainer p {
   font-size: 13px;
+  margin-bottom: 6px;
   color: #595959;
 }
 

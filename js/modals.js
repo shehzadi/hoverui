@@ -118,17 +118,18 @@ var LibrariesForm = React.createClass({
 		return (
 		<form id="librariesForm">
 			<header>
-				<h1>Data Sources</h1>
+				<h1>Data Repositories</h1>
 				<button onClick={this.cancel}>&times;</button>
 			</header>
 			<main>
 				<p>Provide locations for IO Modules (usually shared) and Projects (usually personal).</p>
-				<div>IO Modules</div>
-				<input type="text" name="moduleSrc" value={this.state.modulesSrc} onChange={this.onFormChange}/>
-				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;modules</p>
+				<p>The locations must be different.</p>
 				<div>Projects</div>
 				<input type="text" name="projectsSrc" value={this.state.projectsSrc} onChange={this.onFormChange}/>
 				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;users&#47;jdoe&#47;projects</p>
+				<div>IO Modules</div>
+				<input type="text" name="moduleSrc" value={this.state.modulesSrc} onChange={this.onFormChange}/>
+				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;modules</p>
 			</main>
 			<footer>
 				<input type="button" onClick={this.cancel} value="Cancel"/>
