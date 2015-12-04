@@ -98,7 +98,6 @@ var LibrariesForm = React.createClass({
 	},
 
 	submit: function(event) {
-		console.log("submitting");
 		event.preventDefault();
 
 		var submitPayload = {

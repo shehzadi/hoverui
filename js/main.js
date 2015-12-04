@@ -46,8 +46,77 @@ var IOConsole = React.createClass({
         }.bind(this));  
     },
 
+    componentDidUpdate: function(){
+        console.log('did update: ' + this.state.selectedProjectID);
+        console.log('project array: ' + this.state.sortedProjectArray);
+        if (_.indexOf(this.state.sortedProjectArray, this.state.selectedProjectID) == -1){ //todo - 
+            this.selectFirstProject()
+        }
+    },
+
+    selectFirstProject: function() {
+        console.log (this.state.selectedProjectID);
+        console.log (this.state.sortedProjectArray);
+        
+        var newSelectedProject = this.state.sortedProjectArray[0];
+        this.setLocalSetting("selectedProjectID", newSelectedProject);
+        this.setState({
+            selectedProjectID: newSelectedProject
+        });
+        
+    },
+
+    updateDataSources: function(payload){
+        if (payload.projectsSrc != this.state.projectsSrc){           
+            this.firebaseProjectsRef.off();
+            console.log(payload.projectsSrc);
+            this.firebaseProjectsRef = new Firebase(payload.projectsSrc);
+
+            this.firebaseProjectsRef.on("value", function(dataSnapshot) {
+                
+                var isSeeded = dataSnapshot.exists() && dataSnapshot.val() !== true;
+                if (!isSeeded){
+                    this.firebaseProjectsRef.set(projectsSeed);
+                   // this.handleFirebaseProjects(dataSnapshot)
+                }
+                else {
+                    this.handleFirebaseProjects(dataSnapshot)
+                }       
+            }.bind(this));
+
+            this.setLocalSetting("projectsSrc", payload.projectsSrc);
+            this.setLocalSetting("selectedProjectID", false);
+            console.log("should be false: " + this.getLocalSetting("selectedProjectID"));
+            this.setState({
+                projectsSrc: payload.projectsSrc,
+                selectedProjectID: false
+            });
+            console.log('set state and removed local setting for selected project ID')       
+        }
+
+        if (payload.modulesSrc != this.state.modulesSrc){
+            this.firebaseModulesRef.off();
+            this.firebaseModulesRef = new Firebase(payload.modulesSrc);
+
+            //check for existance of seed data (at least)
+            this.firebaseModulesRef.on("value", function(dataSnapshot) {
+                var isSeeded = dataSnapshot.exists() && dataSnapshot.child("data").exists() && dataSnapshot.child("shared").exists();
+                if (!isSeeded){
+                    this.firebaseModulesRef.set(modulesSeed);
+                }
+                else {
+                    this.handleFirebaseModules(dataSnapshot)
+                }
+            }.bind(this));
+
+            this.setLocalSetting("modulesSrc", payload.modulesSrc);
+            this.setState({
+                modulesSrc: payload.modulesSrc
+            }); 
+        }
+    },
+
     handleFirebaseProjects: function(dataSnapshot) {
-        console.log(dataSnapshot.val());
         var rootProjectsObject = dataSnapshot.val();
         var sortedProjectArray = [];
 
@@ -65,9 +134,6 @@ var IOConsole = React.createClass({
         sortedProjectArray = sortedProjectArray.map(function(obj){ 
            return obj.key;
         });
-
-        console.log(sortedProjectArray);
-
         this.setState({
             projectsObject: rootProjectsObject,
             sortedProjectArray: sortedProjectArray
@@ -316,20 +382,6 @@ var IOConsole = React.createClass({
 		this.firebaseProjectsRef.child(this.state.selectedProjectID).child('name').set(newName)		
     },
 
-	componentDidUpdate: function(){
-		this.selectFirstProject()
-	},
-
-    selectFirstProject: function() {
-        if (!this.state.selectedProjectID){
-            var newSelectedProject = this.state.sortedProjectArray[0];
-            this.setLocalSetting("selectedProjectID", newSelectedProject);
-            this.setState({
-                selectedProjectID: newSelectedProject
-            });
-        }
-    },
-
     handleCategoryClick: function(category, isOpen) {
         var newVisibility = _.cloneDeep(this.state.categoryVisibility);
         newVisibility[category] = !isOpen;
@@ -440,66 +492,7 @@ var IOConsole = React.createClass({
             
             this.updateDataSources(payload)
         }
-        console.log("closing");
     	this.cancelModal(modalName)
-    },
-
-    updateDataSources: function(payload){
-        if (payload.projectsSrc != this.state.projectsSrc){           
-            this.firebaseProjectsRef.off();
-            this.firebaseProjectsRef = new Firebase(payload.projectsSrc);
-
-            //check for existance of seed data (at least)
-            this.firebaseProjectsRef.once("value", function(snapshot) {
-                var isSeeded = snapshot.exists() && snapshot.val() !== true;
-                if (!isSeeded){
-                    //add seed data to location
-                    this.firebaseProjectsRef.set(projectsSeed);
-                }
-            }.bind(this));
-
-            //add event handler for data change  
-            this.firebaseProjectsRef.on("value", function(dataSnapshot) {
-                this.handleFirebaseProjects(dataSnapshot)
-            }.bind(this));
-
-            this.setLocalSetting("projectsSrc", payload.projectsSrc);
-            window.localStorage.removeItem("selectedProjectID");
-
-            console.log(this.state.projectsSrc);
-        
-            this.setState({
-                projectsSrc: payload.projectsSrc,
-                selectedProjectID: false
-            });
-
-            console.log(this.state.projectsSrc);
-        }
-
-        if (payload.modulesSrc != this.state.modulesSrc){
-            this.firebaseModulesRef.off();
-            this.firebaseModulesRef = new Firebase(payload.modulesSrc);
-
-            //check for existance of seed data (at least)
-            this.firebaseModulesRef.once("value", function(snapshot) {
-                var isSeeded = snapshot.exists() && snapshot.child("data").exists() && snapshot.child("shared").exists();
-                if (!isSeeded){
-                    //add seed data to location
-                    this.firebaseModulesRef.set(modulesSeed);
-                }
-            }.bind(this));
-
-            //add event handler for data change    
-            this.firebaseModulesRef.on("value", function(dataSnapshot) {
-                this.handleFirebaseModules(dataSnapshot)
-            }.bind(this));
-
-            this.setLocalSetting("modulesSrc", payload.modulesSrc);
-
-            this.setState({
-                modulesSrc: payload.modulesSrc
-            }); 
-        }
     },
 
     setLocalSetting: function(settingName, newObject){
@@ -808,7 +801,6 @@ var ProjectSection = React.createClass({
 	},
 
 	render: function() {
-        console.log(this.props.selectedProjectID);
 		var projectsObject = this.props.projects;
 		var sortedProjectArray = this.props.sortedProjectArray;
 		if (projectsObject){
