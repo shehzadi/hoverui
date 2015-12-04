@@ -128,7 +128,7 @@ var LibrariesForm = React.createClass({
 		if (this.state.modulesSrc == this.state.projectsSrc) {
 			invalidClassString = "invalid";
 			buttonClassString += " disabled";
-			validationMessageString = "Project and IO Module locations must be different"
+			validationMessageString = "Locations for Projects and IO Modules must be different"
 		}
 		return (
 		<form id="librariesForm">
@@ -137,13 +137,13 @@ var LibrariesForm = React.createClass({
 				<button onClick={this.cancel}>&times;</button>
 			</header>
 			<main>
-				<p>Provide locations for IO Modules (usually shared) and Projects (usually personal).</p>
+				<p>Provide locations for Projects and IO Modules.</p>
 				<div>Projects</div>
 				<input className={invalidClassString} type="text" name="projectsSrc" value={this.state.projectsSrc} onChange={this.onFormChange}/>
-				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;users&#47;jdoe&#47;projects</p>
+				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;development&#47;users&#47;jdoe&#47;projects</p>
 				<div>IO Modules</div>
 				<input className={invalidClassString} type="text" name="moduleSrc" value={this.state.modulesSrc} onChange={this.onFormChange}/>
-				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;modules</p>
+				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;development&#47;modules</p>
 			</main>
 			<footer>
 				<span className="validationMessage">{validationMessageString}</span>

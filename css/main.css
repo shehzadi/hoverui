@@ -147,6 +147,8 @@ body::-webkit-scrollbar {
   font-size: 12px;
   padding: 3px 8px;
   color: #737373;
+  -webkit-user-select: text;
+  cursor: text;
 }
 
 .modalContainer label {

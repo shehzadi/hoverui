@@ -204,6 +204,8 @@ body::-webkit-scrollbar {
 		font-size: 12px;
 		padding: 3px 8px;
 		color: hsl(0, 0%, 45%);
+		-webkit-user-select: text;
+		cursor: text;
 	}
 
 	label {
