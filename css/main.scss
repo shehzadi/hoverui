@@ -256,6 +256,12 @@ body::-webkit-scrollbar {
 		height: 50px;
 		justify-content: flex-end;
 		padding: 0 9px;
+		.validationMessage {
+			font-size: 13px;
+    		margin-right: 6px;
+    		margin-top: 2px;
+    		color: $primary-brand-color;
+		}
 	}
 
 	textarea {

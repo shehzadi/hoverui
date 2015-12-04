@@ -206,6 +206,13 @@ body::-webkit-scrollbar {
   padding: 0 9px;
 }
 
+.modalContainer footer .validationMessage {
+  font-size: 13px;
+  margin-right: 6px;
+  margin-top: 2px;
+  color: #d0113d;
+}
+
 .modalContainer textarea {
   width: 350px;
   height: 100px;

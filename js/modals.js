@@ -109,11 +109,27 @@ var LibrariesForm = React.createClass({
 
 	onFormChange: function(event) {
 		var elementName = event.target.attributes.name.value;
-		if (elementName == "moduleSrc"){this.setState({modulesSrc: event.target.value})}
-		else if (elementName == "projectsSrc"){this.setState({projectsSrc: event.target.value})}
+		if (elementName == "moduleSrc"){
+			this.setState({
+				modulesSrc: event.target.value
+			})
+		}
+		else if (elementName == "projectsSrc"){
+			this.setState({
+				projectsSrc: event.target.value
+			})
+		}
 	},
 
 	render: function() {
+		var invalidClassString = "";
+		var buttonClassString = "affirmative";
+		var validationMessageString = "";
+		if (this.state.modulesSrc == this.state.projectsSrc) {
+			invalidClassString = "invalid";
+			buttonClassString += " disabled";
+			validationMessageString = "Project and IO Module locations must be different"
+		}
 		return (
 		<form id="librariesForm">
 			<header>
@@ -122,17 +138,17 @@ var LibrariesForm = React.createClass({
 			</header>
 			<main>
 				<p>Provide locations for IO Modules (usually shared) and Projects (usually personal).</p>
-				<p>The locations must be different.</p>
 				<div>Projects</div>
-				<input type="text" name="projectsSrc" value={this.state.projectsSrc} onChange={this.onFormChange}/>
+				<input className={invalidClassString} type="text" name="projectsSrc" value={this.state.projectsSrc} onChange={this.onFormChange}/>
 				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;users&#47;jdoe&#47;projects</p>
 				<div>IO Modules</div>
-				<input type="text" name="moduleSrc" value={this.state.modulesSrc} onChange={this.onFormChange}/>
+				<input className={invalidClassString} type="text" name="moduleSrc" value={this.state.modulesSrc} onChange={this.onFormChange}/>
 				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;modules</p>
 			</main>
 			<footer>
+				<span className="validationMessage">{validationMessageString}</span>
 				<input type="button" onClick={this.cancel} value="Cancel"/>
-				<input type="button" className="affirmative"  onClick={this.submit} value="Save"/>
+				<input type="button" className={buttonClassString}  onClick={this.submit} value="Save"/>
 			</footer>
 		</form>
 		)
