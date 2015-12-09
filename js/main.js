@@ -14,6 +14,7 @@ var IOConsole = React.createClass({
     		mouseDown: false,
     		dragging: false,
     		modalArray: [], 
+            popoverTarget: false, 
     		startX: 0,
     		startY: 0,
     		cursorX: 0,
@@ -47,23 +48,17 @@ var IOConsole = React.createClass({
     },
 
     componentDidUpdate: function(){
-        console.log('did update: ' + this.state.selectedProjectID);
-        console.log('project array: ' + this.state.sortedProjectArray);
         if (_.indexOf(this.state.sortedProjectArray, this.state.selectedProjectID) == -1){ //todo - 
             this.selectFirstProject()
         }
     },
 
     selectFirstProject: function() {
-        console.log (this.state.selectedProjectID);
-        console.log (this.state.sortedProjectArray);
-        
         var newSelectedProject = this.state.sortedProjectArray[0];
         this.setLocalSetting("selectedProjectID", newSelectedProject);
         this.setState({
             selectedProjectID: newSelectedProject
-        });
-        
+        });      
     },
 
     updateDataSources: function(payload){
@@ -77,7 +72,6 @@ var IOConsole = React.createClass({
                 var isSeeded = dataSnapshot.exists() && dataSnapshot.val() !== true;
                 if (!isSeeded){
                     this.firebaseProjectsRef.set(projectsSeed);
-                   // this.handleFirebaseProjects(dataSnapshot)
                 }
                 else {
                     this.handleFirebaseProjects(dataSnapshot)
@@ -171,6 +165,13 @@ var IOConsole = React.createClass({
 
     openSettings: function(){
         console.log("open settings")
+    },
+
+    handleActions: function(event){
+        var eventName = event.target.name;
+        if (eventName == "newProject"){this.createNewProject(projectTemplate)}
+        if (eventName == "repositories"){this.openModal("librariesSettings")}
+        
     },
 
    	deleteWires: function(refEndPoint) {
@@ -345,12 +346,11 @@ var IOConsole = React.createClass({
 
 	createNewProject: function(projectTemplate) {
 		var newProjectsObject = _.cloneDeep(this.state.projectsObject);	
-
         var newProjectID = "project-" + guid();
 
         newProjectsObject[newProjectID] = projectTemplate;
-        this.firebaseProjectsRef.set(newProjectsObject);
 
+        this.firebaseProjectsRef.set(newProjectsObject);
         this.setState({
             selectedProjectID: newProjectID
         });
@@ -359,8 +359,7 @@ var IOConsole = React.createClass({
 
    	deleteProject: function() {
    		var confirmProjectDeletion = confirm("Delete all versions of " + this.state.projectsObject[this.state.selectedProjectID].name + "?");
-		if (confirmProjectDeletion == true) {
-		    
+		if (confirmProjectDeletion == true) {	    
 			var indexOfSelectedProject = _.indexOf(this.state.sortedProjectArray, this.state.selectedProjectID);
 			
 			var newSelectedProjectIndex = indexOfSelectedProject - 1;
@@ -373,8 +372,7 @@ var IOConsole = React.createClass({
 			this.setState({
                 selectedProjectID: newSelectedProject
             });
-            this.setLocalSetting("selectedProjectID", newSelectedProject);
-			
+            this.setLocalSetting("selectedProjectID", newSelectedProject);		
 		}
     },
 
@@ -400,10 +398,8 @@ var IOConsole = React.createClass({
         } 
     },
 
-	onModuleMouseDown: function(thisModule){
-		
+	onModuleMouseDown: function(thisModule){		
 		if (event.button == 0){	
-			
 			event.stopPropagation();
 			this.addDocumentEvents();
 
@@ -466,6 +462,19 @@ var IOConsole = React.createClass({
     	document.removeEventListener('mousemove', this.onMouseMove);
     	document.removeEventListener('mouseup', this.onMouseUp);
 	},
+
+    closePopover: function() {
+        this.setState({
+            popoverTarget: false,
+        }); 
+    },
+
+    openPopover: function(event) {
+        console.log(event.target);
+        this.setState({
+            popoverTarget: event.target,
+        }); 
+    },
 
     openModal: function(modalName) {
     	var newArray = _.cloneDeep(this.state.modalArray);
@@ -628,14 +637,22 @@ var IOConsole = React.createClass({
     		});
 		}
 
-		//console.log(this.state.categoriesObject);
+        var popover = null;
+        if (this.state.popoverTarget != false){
+            popover = (
+                <Popover
+                    handleActions = {this.handleActions} 
+                    closePopover = {this.closePopover} 
+                    popoverTarget = {this.state.popoverTarget}/>
+            );
+        }
 
 		return (
 			<div id="IOConsole">
 				<div id="navigation">
 					<Home 
-						createNewProject = {this.createNewProject}
-                        openModal = {this.openModal}/>
+                        popoverTarget = {this.state.popoverTarget} 
+                        openPopover = {this.openPopover}/>
 					<PrimaryNav 
 						onProjectClick = {this.handleProjectClick} 
 						onCategoryClick = {this.handleCategoryClick} 
@@ -647,7 +664,6 @@ var IOConsole = React.createClass({
 						categories = {this.state.categoriesObject} 
 						categoryVisibility = {this.state.categoryVisibility} 
 						selectedProjectID = {this.state.selectedProjectID}/>
-
 				</div>
 				<div id="main">
 					<div id="header">
@@ -672,6 +688,7 @@ var IOConsole = React.createClass({
 				</div>
 				{componentInProgress}
 				{modalDialogues}
+                {popover}
 			</div>
 		);
 	},
@@ -702,62 +719,27 @@ var ComponentInProgress = React.createClass({
 });
 
 var Home = React.createClass({
-	getDefaultProps: function() {
-    	return {
-    		projectTemplate: {
-    			name: "Untitled Project",
-    			version: "0.0.1",
-    			topology: {
-    				host_interfaces: {
-    					"host_interface-1": {
-    						mode: "output",
-    						protocol: "protocol-1"
-    					},
-    					"host_interface-2": {
-    						mode: "output",
-    						protocol: "protocol-2"
-    					},
-    					"host_interface-3": {
-    						mode: "bidirectional",
-    						protocol: "protocol-3"
-    					}
-    				},
-    				components: null,
-    				wires: null
-    			},
-    			view: {
-    				"host_interface-1": {
-    					x: 20,
-    					y: headerHeight + 15
-    				},
-    				"host_interface-2": {
-    					x: 130,
-    					y: headerHeight + 15
-    				},
-    				"host_interface-3": {
-    					x: 240,
-    					y: headerHeight + 15
-    				}
-    			}
-    		}
-    	};
+	openPopover: function(event){
+		this.props.openPopover(event)
 	},
 
-	handleNewProjectClick: function(){
-		this.props.createNewProject(this.props.projectTemplate)
-	},
+	render: function() {
+        var addObjectClass = "add";
+        var homeActionsClass = "app-actions";
+        var openPopoverClass = " isOpenPopover"
 
-    handleMenuControlClick: function(){
-        this.props.openModal("librariesSettings")
-    },
-
-	render: function() {	
+        if (this.props.popoverTarget.name == "homeActions"){
+            homeActionsClass += openPopoverClass
+        }
+        if (this.props.popoverTarget.name == "addObject"){
+            addObjectClass += openPopoverClass
+        }
 		return (
 			<div className="home">
 				<img className="logo" src="img/logo.png"/>
 				<h1>IO Visor Console</h1>
-				<button className="add" onClick={this.handleNewProjectClick}>+</button>
-				<button className="app-actions" onClick={this.handleMenuControlClick}></button>
+				<button className={addObjectClass} name="addObject" onClick={this.openPopover}>+</button>
+				<button className={homeActionsClass} name="homeActions" onClick={this.openPopover}></button>
 			</div>
 		);
 	},

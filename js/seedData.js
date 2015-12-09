@@ -1,3 +1,5 @@
+var headerHeight = 40;
+
 var projectsSeed = {
   "project-00001" : {
     "name" : "Project 1",
@@ -274,6 +276,43 @@ var modulesSeed = {
         "hue" : 300,
         "name" : "TCP-IP"
       }
+    }
+  }
+}
+
+var projectTemplate = {
+  "name": "Untitled Project",
+  "version": "0.0.1",
+  "topology": {
+    "host_interfaces": {
+      "host_interface-1": {
+        "mode": "output",
+        "protocol": "protocol-1"
+      },
+      "host_interface-2": {
+        "mode": "output",
+        "protocol": "protocol-2"
+      },
+      "host_interface-3": {
+        "mode": "bidirectional",
+        "protocol": "protocol-3"
+      }
+    },
+    "components": null,
+    "wires": null
+  },
+  "view": {
+    "host_interface-1": {
+      "x": 20,
+      "y": headerHeight + 15
+    },
+    "host_interface-2": {
+      "x": 130,
+      "y": headerHeight + 15
+    },
+    "host_interface-3": {
+      "x": 240,
+      "y": headerHeight + 15
     }
   }
 }

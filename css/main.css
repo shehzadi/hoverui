@@ -120,6 +120,53 @@ body::-webkit-scrollbar {
 }
 
 /* Element styling */
+#popoverBackground {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.isOpenPopover {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+.popoverContainer {
+  background-color: #cccccc;
+  padding-bottom: 5px;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.4);
+  position: absolute;
+}
+
+.popoverContent .menuSection {
+  padding: 3px 10px;
+  margin-top: 5px;
+  font-size: 11px;
+  color: #666666;
+  border-top: 1px solid #a6a6a6;
+}
+
+.popoverContent li {
+  list-style: none;
+}
+
+.popoverContent li:first-of-type {
+  margin-top: 3px;
+  border: none;
+}
+
+.popoverContent li a {
+  display: block;
+  padding: 2px 50px 2px 25px;
+  font-size: 14px;
+}
+
+.popoverContent li a:hover {
+  background-color: #e6e6e6;
+}
+
 .modalContainer {
   background-color: #bfbfbf;
   border: 1px solid #333333;
@@ -234,8 +281,8 @@ body::-webkit-scrollbar {
   padding: 4px 12px;
   min-width: 90px;
   margin: 4px;
-  background-color: #9c9c9c;
-  border: 1px solid #8c8c8c;
+  background-color: #949494;
+  border: 1px solid #878787;
   border-radius: 3px;
   white-space: nowrap;
   font-size: 14px;
@@ -246,18 +293,18 @@ body::-webkit-scrollbar {
 }
 
 .modalContainer input[type=button]:hover:not(.disabled) {
-  background-color: #969696;
-  border: 1px solid #878787;
+  background-color: #9c9c9c;
+  border: 1px solid #8c8c8c;
 }
 
 .modalContainer input.affirmative {
-  background-color: #8f8f8f;
-  border: 1px solid #7a7a7a;
+  background-color: #d9d9d9;
+  border: 1px solid #e6e6e6;
 }
 
 .modalContainer input.affirmative:hover:not(.disabled) {
-  background-color: #8a8a8a;
-  border: 1px solid #7d7d7d;
+  background-color: #e6e6e6;
+  border: 1px solid white;
 }
 
 .componentInProgress {
@@ -376,7 +423,7 @@ body::-webkit-scrollbar {
 }
 
 .disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   pointer-events: none;
 }
 
@@ -402,7 +449,7 @@ body::-webkit-scrollbar {
 
 #navigation .add:hover:not(.disabled), #navigation .app-actions:hover:not(.disabled) {
   color: rgba(255, 255, 255, 0.9);
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .home {
