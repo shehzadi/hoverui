@@ -64,7 +64,6 @@ var IOConsole = React.createClass({
     updateDataSources: function(payload){
         if (payload.projectsSrc != this.state.projectsSrc){           
             this.firebaseProjectsRef.off();
-            console.log(payload.projectsSrc);
             this.firebaseProjectsRef = new Firebase(payload.projectsSrc);
 
             this.firebaseProjectsRef.on("value", function(dataSnapshot) {
@@ -80,12 +79,10 @@ var IOConsole = React.createClass({
 
             this.setLocalSetting("projectsSrc", payload.projectsSrc);
             this.setLocalSetting("selectedProjectID", false);
-            console.log("should be false: " + this.getLocalSetting("selectedProjectID"));
             this.setState({
                 projectsSrc: payload.projectsSrc,
                 selectedProjectID: false
             });
-            console.log('set state and removed local setting for selected project ID')       
         }
 
         if (payload.modulesSrc != this.state.modulesSrc){
@@ -470,7 +467,6 @@ var IOConsole = React.createClass({
     },
 
     openPopover: function(event) {
-        console.log(event.target);
         this.setState({
             popoverTarget: event.target,
         }); 
@@ -682,8 +678,7 @@ var IOConsole = React.createClass({
 							handleWireDrop = {this.handleNewWireDrop} 
 							deleteWires = {this.deleteWires} 
 							protocols = {this.state.protocolsObject} 
-							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]} 
-							modules = {this.state.modulesObject}/>
+							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]}/>
 					</div>
 				</div>
 				{componentInProgress}
