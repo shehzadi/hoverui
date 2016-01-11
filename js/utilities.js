@@ -45,42 +45,36 @@ function convertToGroup(componentID, interfaceID, selectedProjectView){
 	}		
 };
 
-function getOtherWireGroupEndpoint(componentID, interfaceGroupID, selectedProject){
+function getOtherEndOfWire(componentID, interfaceID, selectedProject){
 	var returnValue = false;
 
 	if (componentID.indexOf('host') == 0){ //is an attachment wire
-		var refInterface = {
+		var interfaceObject = {
 			component: componentID,
 			ifc: "interface-1"
 		};
 	}
 
 	else {
-		var refInterfaceID = Object.keys(selectedProject.view[componentID].groups[interfaceGroupID])[0];
-		var refInterface = {
+		//var refInterfaceID = Object.keys(selectedProject.view[componentID].groups[interfaceGroupID])[0];
+		var interfaceObject = {
 			component: componentID,
-			ifc: refInterfaceID
+			ifc: interfaceID
 		};
 	}
 	
 	var wiresObject = selectedProject.topology.wires;
 	for (var wire in wiresObject){
-		var endpoint1 = wiresObject[wire]["endpoint-1"];
-		var endpoint2 = wiresObject[wire]["endpoint-2"];
+		var endpoint1 = wiresObject[wire][0];
+		var endpoint2 = wiresObject[wire][1];
 
-		if (_.isEqual(refInterface, endpoint1)){
-			returnValue = {
-				component: endpoint2.component,
-				interfaceGroup: convertToGroup(endpoint2.component, endpoint2.ifc, selectedProject.view)
-			};
+		if (_.isEqual(interfaceObject, endpoint1)){
+			returnValue = endpoint2
 			break;
 		}
 
-		if (_.isEqual(refInterface, endpoint2)){
-			returnValue = {
-				component: endpoint1.component,
-				interfaceGroup: convertToGroup(endpoint1.component, endpoint1.ifc, selectedProject.view)
-			};
+		if (_.isEqual(interfaceObject, endpoint2)){
+			returnValue = endpoint1
 			break;
 		}
 	}
