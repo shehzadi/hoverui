@@ -45,18 +45,18 @@ var InterfaceGroup = React.createClass({
 		*/
 
 		//var centerPoint = 
-		var leftCenterPoint = this.props.componentData[this.props.componentID]["interfaceGroups"][this.props.interfaceGroupID].left;
-		var topCenterPoint = this.props.componentData[this.props.componentID]["interfaceGroups"][this.props.interfaceGroupID].top;
+		var leftCenterPoint = this.props.tokenObject.left;
+		var topCenterPoint = this.props.tokenObject.top;
 		
 		var growthW = 0;
 		var growthH = 0;
-		if ((this.state.isHover && !this.props.isInvalid) || this.props.isStartOfNewWire){
+		if ((this.state.isHover && !this.props.tokenObject.isInvalid) || this.props.tokenObject.isStartOfNewWire){
 			growthW = 5;
 			growthH = 9;
 		}
 
 		var thisOpacity = 1;
-		if (this.props.isInvalid && !this.props.isStartOfNewWire){
+		if (this.props.tokenObject.isInvalid && !this.props.tokenObject.isStartOfNewWire){
 			thisOpacity = 0.2
 		}
 
@@ -82,12 +82,12 @@ var InterfaceGroup = React.createClass({
 			opacity: thisOpacity
 		}
 
-		var nInterfaceGroups = Object.keys(this.props.interfaceIDObject).length;
+		var capacity = this.props.tokenObject.capacity;
 		//console.log(nInterfaceGroups);
 
 		var text = "";
-		if (nInterfaceGroups > 1){
-			text = "" + nInterfaceGroups
+		if (capacity > 1){
+			text = "" + capacity
 		}
 		var textX = polygon.left + (polygon.width / 2);
 		var textY = polygon.top - 7;
@@ -137,7 +137,7 @@ var InterfaceGroup = React.createClass({
 				<polygon 
 					className = "interface" 
 					style = {style} 
-					nInerfaces = {nInterfaceGroups} 
+					capacity = {capacity} 
 					points = {points} 
 					onMouseEnter = {this.onMouseEnter} 
 					onMouseLeave = {this.onMouseLeave} 

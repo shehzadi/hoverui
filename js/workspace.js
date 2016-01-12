@@ -858,11 +858,8 @@ var Workspace = React.createClass({
 
 				var thisKey = "" + componentID + i;
 
-				console.log(thisInterfaceTokenObject);
 				ifcs.push(
 					<InterfaceGroup 
-						isInvalid = {thisInterfaceTokenObject.isInvalid} 
-						isStartOfNewWire = {thisInterfaceTokenObject.isStartOfNewWire} 
 						isPendingDeletion = {this.isPendingDeletion} 
 						key = {thisKey} 
 						onMouseEnter = {this.ifcMouseEnter} 
@@ -878,8 +875,7 @@ var Workspace = React.createClass({
 						componentData = {this.componentData} 
 						componentHeight = {this.props.component.height} 
 						componentWidth = {this.props.component.width} 
-						interfaceGroupID = {thisInterfaceTokenObject.id} 
-						interfaceIDObject = {thisInterfaceTokenObject} 
+						tokenObject = {thisInterfaceTokenObject} 
 						componentID = {componentID}/>				
 				);
 
@@ -901,7 +897,6 @@ var Workspace = React.createClass({
 
 		for (var wire in wiresObject) {
 			var thisWire = wiresObject[wire];
-			console.log(thisWire);
 			var thisProtocol = this.getProtocol(thisWire[0].component, thisWire[0].ifc);
 			var wireClass = "";
 			if (this.state.isWireInProgress){
@@ -935,7 +930,6 @@ var Workspace = React.createClass({
 			if (!isWireExists) {
 				localGroupArray.push(thisWire[0]);
 				localGroupArray.push(thisWire[1]);
-				console.log(this.componentData);
 				wires.push(
 					<WireGroup
 						key = {wire} 
