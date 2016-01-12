@@ -43,7 +43,22 @@ function convertToGroup(componentID, interfaceID, selectedProjectView){
 			}		
 		}
 	}		
-};
+}
+
+function getInterfaceCoords (data, ifc){
+	thisIfcArray = data.interfaceTokens;
+	var returnValue = {};
+	for (var i = 0; i < thisIfcArray.length; i++) {
+		thisIfc = thisIfcArray[i];
+		if (thisIfc.id == ifc){
+			returnValue = {
+				x: thisIfc.left,
+				y: thisIfc.top
+			}
+		}
+	}
+	return returnValue
+}
 
 function getOtherEndOfWire(componentID, interfaceID, selectedProject){
 	var returnValue = false;

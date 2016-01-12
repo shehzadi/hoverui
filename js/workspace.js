@@ -625,6 +625,7 @@ var Workspace = React.createClass({
 						"protocol": thisInterface.protocol,
 						"wire": wireID
 					}
+					interfaceTokenArray.push(interfaceToken)
 				}
 
 				// decrement capacity for matching mode & protocol
@@ -637,7 +638,7 @@ var Workspace = React.createClass({
 				    }
 				}
 
-				interfaceTokenArray.push(interfaceToken)
+				
 			}
 
 
@@ -857,7 +858,7 @@ var Workspace = React.createClass({
 
 				var thisKey = "" + componentID + i;
 
-
+				console.log(thisInterfaceTokenObject);
 				ifcs.push(
 					<InterfaceGroup 
 						isInvalid = {thisInterfaceTokenObject.isInvalid} 
@@ -934,7 +935,7 @@ var Workspace = React.createClass({
 			if (!isWireExists) {
 				localGroupArray.push(thisWire[0]);
 				localGroupArray.push(thisWire[1]);
-				//console.log(endpoints);
+				console.log(this.componentData);
 				wires.push(
 					<WireGroup
 						key = {wire} 

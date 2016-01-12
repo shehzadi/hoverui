@@ -37,6 +37,14 @@ var InterfaceGroup = React.createClass({
 	},
 
 	render: function() {
+		/*
+		var end1Comp = this.props.endpoints[0].component;
+		var end1Ifc = this.props.endpoints[0].ifc;
+		var end1CompData = this.props.componentData[end1Comp];
+		var end1Coords = getInterfaceCoords(end1CompData, end1Ifc);
+		*/
+
+		//var centerPoint = 
 		var leftCenterPoint = this.props.componentData[this.props.componentID]["interfaceGroups"][this.props.interfaceGroupID].left;
 		var topCenterPoint = this.props.componentData[this.props.componentID]["interfaceGroups"][this.props.interfaceGroupID].top;
 		

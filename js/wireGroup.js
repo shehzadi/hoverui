@@ -18,12 +18,15 @@ var WireGroup = React.createClass({
 	},
 
 	render: function() {
-		console.log(this.props.endpoints);
 		var end1Comp = this.props.endpoints[0].component;
-		var end1Group = this.props.endpoints[0].ifc;
-		
+		var end1Ifc = this.props.endpoints[0].ifc;
+		var end1CompData = this.props.componentData[end1Comp];
+		var end1Coords = getInterfaceCoords(end1CompData, end1Ifc);
+
 		var end2Comp = this.props.endpoints[1].component;
-		var end2Group = this.props.endpoints[1].ifc;
+		var end2Ifc = this.props.endpoints[1].ifc;
+		var end2CompData = this.props.componentData[end2Comp];
+		var end2Coords = getInterfaceCoords(end2CompData, end2Ifc);
 
 		var growth = 0;
 		if (this.state.isHover){
@@ -52,16 +55,16 @@ var WireGroup = React.createClass({
 			strokeWidth: this.props.stroke + growth
 			//visibility: svgVisibility
 		};
-console.log(this.props.componentData[end1Comp]);
+
 		return (
 			<line 
 				className = {className} 
 				onMouseEnter={this.onMouseEnter} 
 				onMouseLeave={this.onMouseLeave} 
-				x1 = {this.props.componentData[end1Comp].interfaceTokens[end1Group].left} 
-				y1 = {this.props.componentData[end1Comp].interfaceTokens[end1Group].top} 
-				x2 = {this.props.componentData[end2Comp].interfaceTokens[end2Group].left} 
-				y2 = {this.props.componentData[end2Comp].interfaceTokens[end2Group].top} 
+				x1 = {end1Coords.x} 
+				y1 = {end1Coords.y} 
+				x2 = {end2Coords.x} 
+				y2 = {end2Coords.y} 
 				style = {componentStyle}/>
 		);
 	}
