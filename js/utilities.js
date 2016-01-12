@@ -97,7 +97,7 @@ function getOtherEndOfWire(componentID, interfaceID, selectedProject){
 	return returnValue
 }
 
-function defineSvgSize(interfaceGroupCoordinates, cursorX, cursorY){
+function defineSvgSize(componentsObject, cursorX, cursorY){
 	var svgExtents = {
 		width: 0,
 		height: 0
@@ -106,15 +106,13 @@ function defineSvgSize(interfaceGroupCoordinates, cursorX, cursorY){
 	var leftArray = [];
 	var topArray = [];
 
-	for(var component in interfaceGroupCoordinates) {
-		var thisComponentInterfaceGroups = interfaceGroupCoordinates[component].interfaceGroups;
+	for(var component in componentsObject) {
+		var componentInterfaceTokens = componentsObject[component].interfaceTokens;
 		
-		
-		for(var group in thisComponentInterfaceGroups) {
-			var thisGroup = thisComponentInterfaceGroups[group];
-			leftArray.push(thisGroup.left);
-			topArray.push(thisGroup.top);
-		}
+		_.forEach(componentInterfaceTokens, function(thisToken, index) {
+			leftArray.push(thisToken.left);
+			topArray.push(thisToken.top);
+		})
 	}
 
 	leftArray.push(cursorX);
