@@ -63,10 +63,10 @@ var HostPort = React.createClass({
 
 		var inputPointer = "";
 		var outputPointer = "";
-		if (this.props.mode == "input" || this.props.mode == "bidirectional"){
+		if (this.props.mode == "in" || this.props.mode == "bi"){
 			inputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top - this.props.apex);
 		}
-		if (this.props.mode == "output" || this.props.mode == "bidirectional"){
+		if (this.props.mode == "out" || this.props.mode == "bi"){
 			outputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top  + polygon.height + this.props.apex)
 		}
 

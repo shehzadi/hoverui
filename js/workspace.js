@@ -600,97 +600,114 @@ var Workspace = React.createClass({
 		for (var componentID in componentsObject) {
 
 			var componentObject = componentsObject[componentID];
+			var thisComponentData = this.componentData[componentID];
 
-  			var refModuleID = componentObject.module;
+			var refModuleID = componentObject.module;
 			var refModuleObject = dependentModulesObject[refModuleID];
 
-			var interfaceTokenArray = refModuleObject.interfaces.slice(0);
-
-			if (componentObject.interfaces){ //component has wired interfaces
-				for (var interfaceID in componentObject.interfaces) {
-					//find wire ID
-					var wireID = null;
-					for (var thisWire in selectedProjectObject.topology.wires) {
-						var endpoint1 = selectedProjectObject.topology.wires[thisWire][0];
-						var endpoint2 = selectedProjectObject.topology.wires[thisWire][1];
-						if (endpoint1 == interfaceID || endpoint2 == interfaceID){
-							wireID = thisWire
-						}
-					}
-					var thisInterface = componentObject.interfaces[interfaceID];
-					var interfaceToken = {
-						"capacity": 1,
-						"id": interfaceID,
-						"mode": thisInterface.mode,
-						"protocol": thisInterface.protocol,
-						"wire": wireID
-					}
-					interfaceTokenArray.push(interfaceToken)
-				}
-
-				// decrement capacity for matching mode & protocol
-
-				for (var i = 0; i < interfaceTokenArray.length; i++) {
-				    if (interfaceToken.mode == interfaceTokenArray[i].mode && interfaceToken.protocol == interfaceTokenArray[i].protocol){
-				    	if (!interfaceTokenArray[i].id){
-				    		interfaceTokenArray[i].capacity -= 1
-				    	}
-				    }
-				}
-
-				
+			thisComponentData["faceN"] = {
+				top: 0,
+				right: 0,
+				bottom: refModuleObject.interfaces.length,
+				left: 0
 			}
 
 
 
 
+			this.componentData[componentID]["interfaceTokens"] = refModuleObject.interfaces.slice(0);//add unwired tokens
 
-  			
-	  		//var interfacesObject = componentModuleObject.interfaces;
+			var interfaceTokenArray = thisComponentData["interfaceTokens"];
+
+			//var interfaceTokenArray = refModuleObject.interfaces.slice(0); //copy of module to establish non-wired tokens
+
+			if (componentObject.interfaces){ //component has wired interfaces so add these to the token array
+				for (var interfaceID in componentObject.interfaces) {
+					//find wire ID
+					var thisEndpoint = {
+						"component": componentID,
+						"ifc": interfaceID
+					}
+					var wireID = null;
+					var otherEnd = null;
+					var vectorToOtherEndComponent = null;
+					var interfaceSide = null;
+					for (var thisWire in selectedProjectObject.topology.wires) {
+						var endpoint1 = selectedProjectObject.topology.wires[thisWire][0];
+						var endpoint2 = selectedProjectObject.topology.wires[thisWire][1];
+
+						if (_.isEqual(endpoint1, thisEndpoint)) {
+							wireID = thisWire;
+							otherEnd = endpoint2
+						}
+						if (_.isEqual(endpoint2, thisEndpoint)) {
+							wireID = thisWire;
+							otherEnd = endpoint1
+						}
+					}
+
+					if (otherEnd){
+						vectorToOtherEndComponent = {
+							x: this.componentData[otherEnd.component].left - this.componentData[componentID].left,
+							y: this.componentData[otherEnd.component].top - this.componentData[componentID].top
+						}
+						var refVector = this.props.component.height / this.props.component.width;
+						interfaceSide = getFaceString(vectorToOtherEndComponent, refVector);
+						console.log(interfaceSide);
+						if (interfaceSide == "top"){thisComponentData.faceN.top += 1}
+						if (interfaceSide == "right"){thisComponentData.faceN.right += 1}
+						if (interfaceSide == "bottom"){thisComponentData.faceN.bottom += 1}
+						if (interfaceSide == "left"){thisComponentData.faceN.left += 1}
+					}
+
+					var interfaceToken = {
+						"capacity": 1,
+						"id": interfaceID,
+						"mode": componentObject.interfaces[interfaceID].mode,
+						"protocol": componentObject.interfaces[interfaceID].protocol,
+						"wire": wireID,
+						"otherEnd": otherEnd,
+						"face": interfaceSide,
+					}
+					interfaceTokenArray.push(interfaceToken)
+				}
+				
+			}
+
+			
+			//debugger;
 
 
-	  		//var interfaceGroups = componentViewData.groups;
-	  		this.componentData[componentID]["interfaceTokens"] = [];
-
-	  		var thisComponentX = this.componentData[componentID].left;
-	  		var thisComponentY = this.componentData[componentID].top;
+	  		//var thisComponentX = thisComponentData.left;
+	  		//var thisComponentY = thisComponentData.top;
 
 
 			//loop through internal interface groups and get coordinates of other end components
 
-			var nRight = 0; 
-			var nLeft = 0;
-			var nTop = 0;
-			var nBottom = interfaceTokenArray.length;
-			
-			//chnge this loop from for-in to for(array)
-			for (var i = 0; i < interfaceTokenArray.length; i++) {
+			//var nRight = 0; 
+			//var nLeft = 0;
+			//var nTop = 0;
+			var that = this;
+			//var nBottom = interfaceTokenArray.length;
+			_.forEach(interfaceTokenArray, function(thisToken) {
+			//for (var i = 0; i < interfaceTokenArray.length; i++) {
 			//for (var groupID in interfaceGroups) {
 
-				//var thisGroupID = groupID;
-			    var thisInterfaceTokenObject = interfaceTokenArray[i];
-			    var otherEndOfWire = false;
-
-			    if (thisInterfaceTokenObject.id){ //has other end
-			    	var thisInterfaceID = thisInterfaceTokenObject.id;	    	
-			    	otherEndOfWire = getOtherEndOfWire(componentID, thisInterfaceID, selectedProjectObject);
-			    }
+				
 			    
 
 				
-				var vectorToOtherEndComponent = null;
-				var interfaceSide = null;
+				//var vectorToOtherEndComponent = null;
+				//var interfaceSide = null;
 
 				//get number of interfaces in group
-				var tokenCapacity = thisInterfaceTokenObject.capacity;
+				//var tokenCapacity = thisInterfaceTokenObject.capacity;
 				//get protocol and mode
 				//var referenceInterface = Object.keys(thisInterfaceGroup)[0];
-				var tokenProtocol = thisInterfaceTokenObject.protocol;
-				var tokenMode = thisInterfaceTokenObject.mode;
-
+				//var tokenProtocol = thisInterfaceTokenObject.protocol;
 			
 		
-				if (otherEndOfWire){
+				/*if (otherEndOfWire){
 					vectorToOtherEndComponent = {
 						x: this.componentData[otherEndOfWire.component].left - this.componentData[componentID].left,
 						y: this.componentData[otherEndOfWire.component].top - this.componentData[componentID].top
@@ -701,33 +718,33 @@ var Workspace = React.createClass({
 				else {
 					interfaceSide = "default"					
 				}
+				*/
 
 				//calculate start-of-new-wire & validity
 				var isInvalid = false;
 				var isStartOfNewWire = false;
 
-				if (this.state.isWireInProgress){ //test for mode, protocol and number of interfaces	
+				if (that.state.isWireInProgress){ //test for mode, protocol and number of interfaces	
 					isInvalid = true;
 
-					if ((tokenMode != this.thisWireInProgressStartMode || tokenMode == "bidirectional")
-						&& (tokenProtocol == this.thisWireInProgressProtocol)
-						&& (this.thisWireInProgressN == tokenCapacity)) {
+					if ((thisToken.mode != this.thisWireInProgressStartMode || thisToken.mode == "bi")
+						&& (thisToken.protocol == this.thisWireInProgressProtocol)) {
 						isInvalid = false;
 					}
 
-					if (componentID == this.state.componentID) { //other interfaces on same component
-						isInvalid = true;
-					}
+					//if (componentID == this.state.componentID) { //other interfaces on same component
+					//	isInvalid = true;
+					//}
 
 					// test for existing wire
-					var thisRefEndpoint = {
-						"component": componentID,
-						"ifc": referenceInterface
-					};
+					//var thisRefEndpoint = {
+					//	"component": componentID,
+					//	"ifc": referenceInterface
+					//};
 
-					if (isExistingWire(thisRefEndpoint, wiresObject)){
-						isInvalid = true;
-					}
+					//if (isExistingWire(thisRefEndpoint, wiresObject)){
+					//	isInvalid = true;
+					//}
 
 					//test for self
 					if (componentID == this.state.componentID && thisGroupID == this.state.interfaceGroupID) { //source interface
@@ -740,12 +757,16 @@ var Workspace = React.createClass({
 					}
 				}
 
-				var interfaceTokenObject = {
-					capacity: thisInterfaceTokenObject.capacity,
-					mode: thisInterfaceTokenObject.mode,
-					protocol: thisInterfaceTokenObject.protocol,
-					id: thisInterfaceTokenObject.id,
-					wire: thisInterfaceTokenObject.wire,
+				thisToken["isInvalid"] = isInvalid;
+				thisToken["isStartOfNewWire"] = isStartOfNewWire;
+				console.log(interfaceTokenArray);
+
+				/*{
+					capacity: thisToken.capacity,
+					mode: thisToken.mode,
+					protocol: thisToken.protocol,
+					id: thisToken.id,
+					wire: thisToken.wire,
 					face: interfaceSide,
 					top: null,
 					left: null,
@@ -754,11 +775,13 @@ var Workspace = React.createClass({
 					wireTo: otherEndOfWire,
 					vector: vectorToOtherEndComponent
 				}
-
-				this.componentData[componentID]["interfaceTokens"].push(interfaceTokenObject);
+				console.log(interfaceTokenArray);
+				interfaceTokenArray.push(interfaceTokenObject);
+				console.log(interfaceTokenArray);
+				*/
 
 				var updatedFace = null;
-				if (this.state.isWireInProgress){ 				
+				if (that.state.isWireInProgress){ 				
 					if (!this.componentData[componentID]["interfaceTokens"][groupID].isInvalid){ //this is a valid interface
 						var vectorToOtherEndComponent = null;
 		
@@ -784,15 +807,8 @@ var Workspace = React.createClass({
 					}
 				}
 
-				// update N
-
-				//var thisFace = this.componentData[componentID]["interfaceTokens"][groupID].face;
-				var thisFace = interfaceSide;
-				if (thisFace == "top"){nTop += 1; nBottom -= 1}
-				if (thisFace == "left"){nLeft += 1; nBottom -= 1}
-				if (thisFace == "right"){nRight += 1; nBottom -= 1}
 			
-			};
+			});
 
 //--------
 
@@ -802,85 +818,88 @@ var Workspace = React.createClass({
 			var topIndex = 0;
 			var bottomIndex = 0;
 
-			for (var i = 0; i < this.componentData[componentID]["interfaceTokens"].length; i++) {
+			//for (var i = 0; i < this.componentData[componentID]["interfaceTokens"].length; i++) {
+			var that = this;
+			_.forEach(interfaceTokenArray, function(thisToken, i) {
 			//for (var groupID in interfaceGroups) {
 
 				//var thisGroupID = groupID;
-			    var thisInterfaceTokenObject = this.componentData[componentID]["interfaceTokens"][i];
+			    //var thisInterfaceTokenObject = this.componentData[componentID]["interfaceTokens"][i];
 
 
 				//get number of interfaces for token
 				//var nInterfacesInGroup = thisInterfaceTokenObject.capacity;
-				var tokenCapacity = thisInterfaceTokenObject.capacity;
+				//var tokenCapacity = thisToken.capacity;
 
 
 				//get protocol and mode
 				//var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
 				//var interfaceGroupMode = interfacesObject[referenceInterface].mode;
-				var tokenProtocol = thisInterfaceTokenObject.protocol;
-				var tokenMode = thisInterfaceTokenObject.mode;
+				//var tokenProtocol = thisInterfaceTokenObject.protocol;
+				//var tokenMode = thisInterfaceTokenObject.mode;
 
 				//calculate location
 				//get face
 
-				var tokenFace = thisInterfaceTokenObject.face;
-				if (tokenFace == "top"){
-					var leftDatum = (0.5 * this.props.component.width) - (0.5 * (nTop - 1) * (this.props.ifc.width + this.props.ifc.margin));
-					var thisLeft = thisComponentX + leftDatum + (topIndex * (this.props.ifc.width + this.props.ifc.margin));
-					var thisTop = thisComponentY ;
+				//var tokenFace = thisInterfaceTokenObject.face;
+				console.log(thisComponentData);
+				if (thisToken.face == "top"){
+					var leftDatum = (0.5 * that.props.component.width) - (0.5 * (thisComponentData.faceN.top - 1) * (that.props.ifc.width + that.props.ifc.margin));
+					var thisLeft = thisComponentData.left + leftDatum + (topIndex * (that.props.ifc.width + that.props.ifc.margin));
+					var thisTop = thisComponentData.top ;
 					topIndex += 1
 				}
-				if (tokenFace == "right"){
-					var topDatum = (0.5 * this.props.component.height) - (0.5 * (nRight - 1) * (this.props.ifc.width + this.props.ifc.margin));
-					var thisTop = thisComponentY + topDatum + (rightIndex * (this.props.ifc.width + this.props.ifc.margin));
-					var thisLeft = thisComponentX + this.props.component.width - (this.props.ifc.height / 2) + 1;
+				if (thisToken.face == "right"){
+					var topDatum = (0.5 * that.props.component.height) - (0.5 * (thisComponentData.faceN.right - 1) * (that.props.ifc.width + that.props.ifc.margin));
+					var thisTop = thisComponentData.top + topDatum + (rightIndex * (that.props.ifc.width + that.props.ifc.margin));
+					var thisLeft = thisComponentData.left + that.props.component.width - (that.props.ifc.height / 2) + 1;
 					rightIndex += 1
 				}
-				if (tokenFace == "bottom" || thisFace == "default"){
-					var leftDatum = (0.5 * this.props.component.width) - (0.5 * (nBottom - 1) * (this.props.ifc.width + this.props.ifc.margin));
-					var thisLeft = thisComponentX + leftDatum + (bottomIndex * (this.props.ifc.width + this.props.ifc.margin));
-					var thisTop = thisComponentY + this.props.component.height;
+				if (thisToken.face == "bottom" || !thisToken.face){
+					var leftDatum = (0.5 * that.props.component.width) - (0.5 * (thisComponentData.faceN.bottom - 1) * (that.props.ifc.width + that.props.ifc.margin));
+					var thisLeft = thisComponentData.left + leftDatum + (bottomIndex * (that.props.ifc.width + that.props.ifc.margin));
+					var thisTop = thisComponentData.top + that.props.component.height;
 					bottomIndex += 1
 				}
-				if (tokenFace == "left"){
-					var topDatum = (0.5 * this.props.component.height) - (0.5 * (nLeft - 1) * (this.props.ifc.width + this.props.ifc.margin));
-					var thisTop = thisComponentY + topDatum + (leftIndex * (this.props.ifc.width + this.props.ifc.margin));
-					var thisLeft = thisComponentX - (this.props.ifc.height / 2) + 1;
+				if (thisToken.face == "left"){
+					var topDatum = (0.5 * that.props.component.height) - (0.5 * (thisComponentData.faceN.left - 1) * (that.props.ifc.width + that.props.ifc.margin));
+					var thisTop = thisComponentData.top + topDatum + (leftIndex * (that.props.ifc.width + that.props.ifc.margin));
+					var thisLeft = thisComponentData.left - (that.props.ifc.height / 2) + 1;
 					leftIndex += 1
 				}
 
 
-				thisInterfaceTokenObject["top"] = thisTop;
-				thisInterfaceTokenObject["left"] = thisLeft;
+				thisToken["top"] = thisTop;
+				thisToken["left"] = thisLeft;
 
-				var thisFillColor = getHSL(this.props.protocols[tokenProtocol].hue);
-				var thisBorderColor = getHSL(this.props.protocols[tokenProtocol].hue, true);
+				var thisFillColor = getHSL(that.props.protocols[thisToken.protocol].hue);
+				var thisBorderColor = getHSL(that.props.protocols[thisToken.protocol].hue, true);
 
 				var thisKey = "" + componentID + i;
 
 				ifcs.push(
-					<InterfaceGroup 
-						isPendingDeletion = {this.isPendingDeletion} 
+					<InterfaceToken 
+						isPendingDeletion = {that.isPendingDeletion} 
 						key = {thisKey} 
-						onMouseEnter = {this.ifcMouseEnter} 
-						onMouseLeave = {this.ifcMouseLeave} 
-						onMouseDown = {this.onMouseDown} 
-						onMouseUp = {this.onInterfaceMouseUp} 
-						interfaceMode = {tokenMode} 
-						face = {thisFace} 
+						onMouseEnter = {that.ifcMouseEnter} 
+						onMouseLeave = {that.ifcMouseLeave} 
+						onMouseDown = {that.onMouseDown} 
+						onMouseUp = {that.onInterfaceMouseUp} 
+						interfaceMode = {thisToken.mode} 
+						face = {thisToken.face} 
 						color = {thisFillColor} 
 						border = {thisBorderColor} 
-						width = {this.props.ifc.width} 
-						height = {this.props.ifc.height} 
-						componentData = {this.componentData} 
-						componentHeight = {this.props.component.height} 
-						componentWidth = {this.props.component.width} 
-						tokenObject = {thisInterfaceTokenObject} 
+						width = {that.props.ifc.width} 
+						height = {that.props.ifc.height} 
+						componentData = {that.componentData} 
+						componentHeight = {that.props.component.height} 
+						componentWidth = {that.props.component.width} 
+						tokenObject = {thisToken} 
 						componentID = {componentID}/>				
 				);
 
 				groupIndex += 1;
-			};
+			});
 		};
 
 

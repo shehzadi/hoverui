@@ -1,4 +1,4 @@
-var InterfaceGroup = React.createClass({
+var InterfaceToken = React.createClass({
 	getInitialState: function() {
 		return {
 			isHover: false,
@@ -94,11 +94,11 @@ var InterfaceGroup = React.createClass({
 
 		var inputPointer = "";
 		var outputPointer = "";
-		if (this.props.interfaceMode == "input" || this.props.interfaceMode == "bidirectional"){
+		if (this.props.interfaceMode == "in" || this.props.interfaceMode == "bi"){
 			inputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top - this.props.arrow);
 			textY = textY - this.props.arrow;
 		}
-		if (this.props.interfaceMode == "output" || this.props.interfaceMode == "bidirectional"){
+		if (this.props.interfaceMode == "out" || this.props.interfaceMode == "bi"){
 			outputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top  + polygon.height + this.props.arrow)
 		}
 
