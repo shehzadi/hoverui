@@ -81,7 +81,7 @@ var Workspace = React.createClass({
 				else {//mouse down on attachment interface
 					var thisRefEndpoint = {
 						"component": componentID,
-						"ifc": "interface-1"
+						"ifc": "ifc-1"
 					};
 
 					this.thisWireInProgressN = 1;
@@ -325,35 +325,6 @@ var Workspace = React.createClass({
     		}
 		}
 
-		var getFaceString = function(vector, refVector){
-			var refMultiplier = refVector;
-			var interfaceSide = "";
-
-			if ((vector.x * refMultiplier) <= vector.y){
-				if ((vector.x * -refMultiplier) < vector.y){
-					interfaceSide = "bottom";
-				}
-				else {
-					interfaceSide = "left";
-					//nLeft += 1;
-					//nBottom -= 1
-				}
-			}
-
-			else {
-				if ((vector.x * -refMultiplier) > vector.y){
-					interfaceSide = "top";
-					//nTop += 1;
-					//nBottom -= 1
-				}
-				else {
-					interfaceSide = "right";
-					//nRight += 1;
-					//nBottom -= 1
-				}
-			}
-			return interfaceSide
-		}
 
 		this.isPendingDeletion = false;
 
@@ -469,43 +440,16 @@ var Workspace = React.createClass({
 
 			// host interface ports
 			// figure out component at other end, vector, face etc.
-			var otherEndOfWire = getOtherEndOfWire(hostInterface, "interface-1", selectedProjectObject);
-			//console.log(otherEndOfWire);
-			var vectorToOtherEndComponent = null;
-			var interfaceSide = null;
-
+			//console.log(hostInterface);
+			var otherEndOfWire = getOtherEndOfWire(hostInterface, null, selectedProjectObject);
+			var interfaceSide = "default";
 			if (otherEndOfWire){
-				var verticalDist = this.componentData[otherEndOfWire.component].top - this.componentData[hostInterface].top;
-				var horizontalDist = this.componentData[otherEndOfWire.component].left - this.componentData[hostInterface].left;
-
-				vectorToOtherEndComponent = {
-					x: horizontalDist,
-					y: verticalDist
+				var vectorToOtherEndComponent = {
+					x: (this.componentData[otherEndOfWire.component].left + (0.5 * this.props.component.width)) - (this.componentData[hostInterface].left + (0.5*this.props.hostInterface.width)),
+					y: (this.componentData[otherEndOfWire.component].top + (0.5* this.props.component.height)) - (this.componentData[hostInterface].top + (0.5*this.props.hostInterface.height))
 				}
-
-				var refMultiplier = this.props.hostInterface.height / this.props.hostInterface.width;
-
-				if ((vectorToOtherEndComponent.x * refMultiplier) <= vectorToOtherEndComponent.y){
-					if ((vectorToOtherEndComponent.x * -refMultiplier) < vectorToOtherEndComponent.y){
-						interfaceSide = "bottom";
-					}
-					else {
-						interfaceSide = "left";
-					}
-				}
-
-				else {
-					if ((vectorToOtherEndComponent.x * -refMultiplier) > vectorToOtherEndComponent.y){
-						interfaceSide = "top";
-					}
-					else {
-						interfaceSide = "right";
-					}
-				}
-			}
-
-			else {
-				interfaceSide = "default"
+				var refVector = this.props.component.height / this.props.component.width;
+				interfaceSide = getFaceString(vectorToOtherEndComponent, refVector)
 			}
 
 			var updatedFace = null;
@@ -553,17 +497,13 @@ var Workspace = React.createClass({
 			}
 
 
-			this.componentData[hostInterface]["interfaceGroups"] = {};
-			this.componentData[hostInterface].interfaceGroups = {
-				"interface-1": {
-					//top: ifcY + (this.props.attachmentInterface.height / 2),
-					//left: ifcX + (this.props.attachmentInterface.width / 2),
-					top: thisTop,
-					left: thisLeft,
-					face: interfaceSide,
-					wireTo: otherEndOfWire,
-					vector: vectorToOtherEndComponent
-				}
+			this.componentData[hostInterface]["interfaceTokens"] = [];
+			this.componentData[hostInterface]["interfaceTokens"][0] = {
+				top: thisTop,
+				left: thisLeft,
+				face: interfaceSide,
+				wireTo: otherEndOfWire,
+				vector: vectorToOtherEndComponent	
 			};
 			var thisFillColor = getHSL(0);
 			var thisBorderColor = getHSL(0, true);
@@ -630,7 +570,7 @@ var Workspace = React.createClass({
 					}
 					var wireID = null;
 					var otherEnd = null;
-					var vectorToOtherEndComponent = null;
+					
 					var interfaceSide = null;
 					for (var thisWire in selectedProjectObject.topology.wires) {
 						var endpoint1 = selectedProjectObject.topology.wires[thisWire][0];
@@ -647,13 +587,23 @@ var Workspace = React.createClass({
 					}
 
 					if (otherEnd){
-						vectorToOtherEndComponent = {
-							x: this.componentData[otherEnd.component].left - this.componentData[componentID].left,
-							y: this.componentData[otherEnd.component].top - this.componentData[componentID].top
+						if (otherEnd.component.indexOf('host') == 0){ //is a host interface
+							var vectorToOtherEndComponent = {
+								x: (this.componentData[otherEnd.component].left + (0.5 * this.props.hostInterface.width)) - (this.componentData[componentID].left + (0.5*this.props.component.width)),
+								y: (this.componentData[otherEnd.component].top + (0.5* this.props.hostInterface.height)) - (this.componentData[componentID].top + (0.5*this.props.component.height))
+							}
 						}
+						else {
+							var vectorToOtherEndComponent = {
+								x: this.componentData[otherEnd.component].left - this.componentData[componentID].left,
+								y: this.componentData[otherEnd.component].top - this.componentData[componentID].top
+							}
+						}
+						
 						var refVector = this.props.component.height / this.props.component.width;
+
 						interfaceSide = getFaceString(vectorToOtherEndComponent, refVector);
-						console.log(interfaceSide);
+
 						if (interfaceSide == "top"){thisComponentData.faceN.top += 1}
 						if (interfaceSide == "right"){thisComponentData.faceN.right += 1}
 						if (interfaceSide == "bottom"){thisComponentData.faceN.bottom += 1}
@@ -759,7 +709,6 @@ var Workspace = React.createClass({
 
 				thisToken["isInvalid"] = isInvalid;
 				thisToken["isStartOfNewWire"] = isStartOfNewWire;
-				console.log(interfaceTokenArray);
 
 				/*{
 					capacity: thisToken.capacity,
@@ -812,37 +761,17 @@ var Workspace = React.createClass({
 
 //--------
 
-			var groupIndex = 0;
+
+
+
+			//Figure out token positions and define component
 			var rightIndex = 0; 
 			var leftIndex = 0;
 			var topIndex = 0;
 			var bottomIndex = 0;
-
-			//for (var i = 0; i < this.componentData[componentID]["interfaceTokens"].length; i++) {
 			var that = this;
 			_.forEach(interfaceTokenArray, function(thisToken, i) {
-			//for (var groupID in interfaceGroups) {
-
-				//var thisGroupID = groupID;
-			    //var thisInterfaceTokenObject = this.componentData[componentID]["interfaceTokens"][i];
-
-
-				//get number of interfaces for token
-				//var nInterfacesInGroup = thisInterfaceTokenObject.capacity;
-				//var tokenCapacity = thisToken.capacity;
-
-
-				//get protocol and mode
-				//var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
-				//var interfaceGroupMode = interfacesObject[referenceInterface].mode;
-				//var tokenProtocol = thisInterfaceTokenObject.protocol;
-				//var tokenMode = thisInterfaceTokenObject.mode;
-
-				//calculate location
-				//get face
-
-				//var tokenFace = thisInterfaceTokenObject.face;
-				console.log(thisComponentData);
+			
 				if (thisToken.face == "top"){
 					var leftDatum = (0.5 * that.props.component.width) - (0.5 * (thisComponentData.faceN.top - 1) * (that.props.ifc.width + that.props.ifc.margin));
 					var thisLeft = thisComponentData.left + leftDatum + (topIndex * (that.props.ifc.width + that.props.ifc.margin));
@@ -872,33 +801,25 @@ var Workspace = React.createClass({
 				thisToken["top"] = thisTop;
 				thisToken["left"] = thisLeft;
 
-				var thisFillColor = getHSL(that.props.protocols[thisToken.protocol].hue);
-				var thisBorderColor = getHSL(that.props.protocols[thisToken.protocol].hue, true);
-
 				var thisKey = "" + componentID + i;
 
 				ifcs.push(
 					<InterfaceToken 
-						isPendingDeletion = {that.isPendingDeletion} 
+						tokenObject = {thisToken} 
 						key = {thisKey} 
+						isPendingDeletion = {that.isPendingDeletion} 
 						onMouseEnter = {that.ifcMouseEnter} 
 						onMouseLeave = {that.ifcMouseLeave} 
 						onMouseDown = {that.onMouseDown} 
 						onMouseUp = {that.onInterfaceMouseUp} 
-						interfaceMode = {thisToken.mode} 
-						face = {thisToken.face} 
-						color = {thisFillColor} 
-						border = {thisBorderColor} 
-						width = {that.props.ifc.width} 
-						height = {that.props.ifc.height} 
-						componentData = {that.componentData} 
-						componentHeight = {that.props.component.height} 
-						componentWidth = {that.props.component.width} 
-						tokenObject = {thisToken} 
-						componentID = {componentID}/>				
+						protocols = {that.props.protocols} 	
+						ifcDims = {that.props.ifc}/>
+						//color = {thisFillColor} 
+						//border = {thisBorderColor} 
+						//componentData = {that.componentData} 
+						//compDims = {that.props.component} 
+						//componentID = {componentID}				
 				);
-
-				groupIndex += 1;
 			});
 		};
 
@@ -950,7 +871,7 @@ var Workspace = React.createClass({
 				localGroupArray.push(thisWire[0]);
 				localGroupArray.push(thisWire[1]);
 				wires.push(
-					<WireGroup
+					<Wire
 						key = {wire} 
 						isPendingDeletion = {this.isPendingDeletion} 
 						wireClass = {wireClass} 

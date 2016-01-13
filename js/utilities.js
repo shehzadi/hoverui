@@ -60,13 +60,37 @@ function getInterfaceCoords (data, ifc){
 	return returnValue
 }
 
+function getFaceString(vector, refVector){
+	//console.log(vector.y / vector.x, refVector);
+	var refMultiplier = refVector;
+	var interfaceSide = "";
+
+	if ((vector.x * refMultiplier) <= vector.y){
+		if ((vector.x * -refMultiplier) < vector.y){
+			interfaceSide = "bottom";
+		}
+		else {
+			interfaceSide = "left";
+		}
+	}
+
+	else {
+		if ((vector.x * -refMultiplier) > vector.y){
+			interfaceSide = "top";
+		}
+		else {
+			interfaceSide = "right";
+		}
+	}
+	return interfaceSide
+}
+
 function getOtherEndOfWire(componentID, interfaceID, selectedProject){
 	var returnValue = false;
 
 	if (componentID.indexOf('host') == 0){ //is an attachment wire
 		var interfaceObject = {
-			component: componentID,
-			ifc: "interface-1"
+			component: componentID
 		};
 	}
 

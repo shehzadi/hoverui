@@ -1,4 +1,4 @@
-var WireGroup = React.createClass({
+var Wire = React.createClass({
 	getInitialState: function() {
 		return {
 			isHover: false,
@@ -18,6 +18,7 @@ var WireGroup = React.createClass({
 	},
 
 	render: function() {
+		//console.log(this.props.endpoints);
 		var end1Comp = this.props.endpoints[0].component;
 		var end1Ifc = this.props.endpoints[0].ifc;
 		var end1CompData = this.props.componentData[end1Comp];
@@ -26,6 +27,7 @@ var WireGroup = React.createClass({
 		var end2Comp = this.props.endpoints[1].component;
 		var end2Ifc = this.props.endpoints[1].ifc;
 		var end2CompData = this.props.componentData[end2Comp];
+		//console.log(end2CompData, end2Ifc);
 		var end2Coords = getInterfaceCoords(end2CompData, end2Ifc);
 
 		var growth = 0;

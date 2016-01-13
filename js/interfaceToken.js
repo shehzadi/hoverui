@@ -65,20 +65,23 @@ var InterfaceToken = React.createClass({
 		}
 //this.componentData[componentID]["interfaceGroups"][thisGroupID].top
 		var polygon = {	
-			width: this.props.width + growthW,
-			height: this.props.height + growthH,
-			left: leftCenterPoint - (this.props.width/2) - growthW/2,
-			top: topCenterPoint - (this.props.height/2) - growthH/2 
+			width: this.props.ifcDims.width + growthW,
+			height: this.props.ifcDims.height + growthH,
+			left: leftCenterPoint - (this.props.ifcDims.width/2) - growthW/2,
+			top: topCenterPoint - (this.props.ifcDims.height/2) - growthH/2 
 		};
 
+		var fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue);
+		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, true);
+
 		var style = {
-			fill: this.props.color,
-			stroke: this.props.border,
+			fill: fillColor,
+			stroke: borderColor,
 			opacity: thisOpacity
 		}
 
 		var textStyle = {
-			fill: this.props.border,
+			fill: borderColor,
 			opacity: thisOpacity
 		}
 
@@ -94,11 +97,11 @@ var InterfaceToken = React.createClass({
 
 		var inputPointer = "";
 		var outputPointer = "";
-		if (this.props.interfaceMode == "in" || this.props.interfaceMode == "bi"){
+		if (this.props.tokenObject.mode == "in" || this.props.tokenObject.mode == "bi"){
 			inputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top - this.props.arrow);
 			textY = textY - this.props.arrow;
 		}
-		if (this.props.interfaceMode == "out" || this.props.interfaceMode == "bi"){
+		if (this.props.tokenObject.mode == "out" || this.props.tokenObject.mode == "bi"){
 			outputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top  + polygon.height + this.props.arrow)
 		}
 
@@ -112,15 +115,15 @@ var InterfaceToken = React.createClass({
 		//rotation
 		var rotation = 0;
 
-		if (this.props.face == "right"){
+		if (this.props.tokenObject.face == "right"){
 			rotation = -90
 		}
 
-		if (this.props.face == "left"){
+		if (this.props.tokenObject.face == "left"){
 			rotation = 90
 		}
 
-		if (this.props.face == "top"){
+		if (this.props.tokenObject.face == "top"){
 			rotation = 180;
 		}
 
