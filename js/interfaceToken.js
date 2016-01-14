@@ -12,39 +12,31 @@ var InterfaceToken = React.createClass({
 	},
 
 	onMouseEnter: function() {	
-		this.props.onMouseEnter(this.props.componentID, this.props.interfaceGroupID, this.props.isInvalid);
+		this.props.onMouseEnter(this.props.componentID, this.props.tokenObject);
 		this.setState({
 			isHover: true
     	});
 	},
 
 	onMouseLeave: function() {	
-		this.props.onMouseLeave(this.props.componentID, this.props.interfaceGroupID, this.props.isInvalid);
+		this.props.onMouseLeave(this.props.componentID, this.props.tokenObject);
 		this.setState({
 			isHover: false
     	});
 	},
 
 	onMouseDown: function() {	
-		this.props.onMouseDown(this.props.componentID, this.props.interfaceGroupID, this.props.interfaceIDObject)
+		this.props.onMouseDown(this.props.componentID, this.props.tokenObject)
 	},
 
 	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.componentID, this.props.interfaceGroupID, this.props.isInvalid);
+		this.props.onMouseUp(this.props.componentID, this.props.tokenObject);
 		this.setState({
 			isHover: false
     	});
 	},
 
 	render: function() {
-		/*
-		var end1Comp = this.props.endpoints[0].component;
-		var end1Ifc = this.props.endpoints[0].ifc;
-		var end1CompData = this.props.componentData[end1Comp];
-		var end1Coords = getInterfaceCoords(end1CompData, end1Ifc);
-		*/
-
-		//var centerPoint = 
 		var leftCenterPoint = this.props.tokenObject.left;
 		var topCenterPoint = this.props.tokenObject.top;
 		
@@ -63,7 +55,7 @@ var InterfaceToken = React.createClass({
 		if (this.props.isPendingDeletion == this.props.componentID){
 			thisOpacity = 0
 		}
-//this.componentData[componentID]["interfaceGroups"][thisGroupID].top
+
 		var polygon = {	
 			width: this.props.ifcDims.width + growthW,
 			height: this.props.ifcDims.height + growthH,
@@ -89,7 +81,6 @@ var InterfaceToken = React.createClass({
 		if (this.props.tokenObject.used){
 			available = available - this.props.tokenObject.used
 		}
-		//console.log(nInterfaceGroups);
 
 		var text = "";
 		if (Number.isInteger(available)){
@@ -132,10 +123,6 @@ var InterfaceToken = React.createClass({
 
 		var transformString = "rotate(" + rotation + " " + leftCenterPoint + " " + topCenterPoint + ")";
 		var textTransformString = "rotate(" + (-rotation) + " " + textX + " " + textY + ")";
-
-
-		//<text x="100" y="50" text-anchor="middle" dominant-baseline="central" transform="rotate(0, 100, 50)"></text>
-
  
 		return (
 			<g
