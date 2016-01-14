@@ -85,12 +85,15 @@ var InterfaceToken = React.createClass({
 			opacity: thisOpacity
 		}
 
-		var capacity = this.props.tokenObject.capacity;
+		var available = this.props.tokenObject.capacity;
+		if (this.props.tokenObject.used){
+			available = available - this.props.tokenObject.used
+		}
 		//console.log(nInterfaceGroups);
 
 		var text = "";
-		if (capacity > 1){
-			text = "" + capacity
+		if (Number.isInteger(available)){
+			text = "" + available
 		}
 		var textX = polygon.left + (polygon.width / 2);
 		var textY = polygon.top - 7;
@@ -140,7 +143,7 @@ var InterfaceToken = React.createClass({
 				<polygon 
 					className = "interface" 
 					style = {style} 
-					capacity = {capacity} 
+					available = {available} 
 					points = {points} 
 					onMouseEnter = {this.onMouseEnter} 
 					onMouseLeave = {this.onMouseLeave} 

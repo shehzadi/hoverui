@@ -338,7 +338,6 @@ var Workspace = React.createClass({
 			var componentModuleObject = dependentModulesObject[componentModuleID];
 
 			var componentViewData = selectedProjectObject.view[componentID];
-			//console.log(componentViewData);
 
 			var componentX = componentViewData.x;
 			var componentY = componentViewData.y;
@@ -362,12 +361,10 @@ var Workspace = React.createClass({
 					key = {componentID} 
 					isPendingDeletion = {this.isPendingDeletion} 
 					onMouseDown = {this.onMouseDown} 
-					width = {this.props.component.width} 
-					height = {this.props.component.height} 
-					thisModule = {componentModuleObject} 
-					thisComponentX = {componentX} 
-					thisComponentY = {componentY} 
-					thisComponentID = {componentID}/>
+					compDims = {this.props.component}
+					module = {componentModuleObject} 
+					componentData = {this.componentData} 
+					componentID = {componentID}/>
   			);
 		};
 
@@ -555,9 +552,9 @@ var Workspace = React.createClass({
 
 
 
-			this.componentData[componentID]["interfaceTokens"] = refModuleObject.interfaces.slice(0);//add unwired tokens
+			this.componentData[componentID]["interfaceTokens"] = _.cloneDeep(refModuleObject.interfaces);//add unwired tokens
 
-			var interfaceTokenArray = thisComponentData["interfaceTokens"];
+			var thisTokenArray = thisComponentData["interfaceTokens"];
 
 			//var interfaceTokenArray = refModuleObject.interfaces.slice(0); //copy of module to establish non-wired tokens
 
@@ -611,7 +608,6 @@ var Workspace = React.createClass({
 					}
 
 					var interfaceToken = {
-						"capacity": 1,
 						"id": interfaceID,
 						"mode": componentObject.interfaces[interfaceID].mode,
 						"protocol": componentObject.interfaces[interfaceID].protocol,
@@ -619,7 +615,25 @@ var Workspace = React.createClass({
 						"otherEnd": otherEnd,
 						"face": interfaceSide,
 					}
-					interfaceTokenArray.push(interfaceToken)
+					thisTokenArray.push(interfaceToken);
+					
+
+					//add "used" property to appropriate token
+					//hello
+
+					_.forEach(thisTokenArray, function(thisToken) {
+						if (thisToken.mode == interfaceToken.mode && thisToken.protocol == interfaceToken.protocol){
+							if (thisToken.used){
+								thisToken.used += 1
+							}
+							else {
+								thisToken["used"] = 1
+							}
+						}
+					});
+					
+
+					console.log(thisTokenArray);
 				}
 				
 			}
@@ -639,7 +653,7 @@ var Workspace = React.createClass({
 			//var nTop = 0;
 			var that = this;
 			//var nBottom = interfaceTokenArray.length;
-			_.forEach(interfaceTokenArray, function(thisToken) {
+			_.forEach(thisTokenArray, function(thisToken) {
 			//for (var i = 0; i < interfaceTokenArray.length; i++) {
 			//for (var groupID in interfaceGroups) {
 
@@ -770,7 +784,7 @@ var Workspace = React.createClass({
 			var topIndex = 0;
 			var bottomIndex = 0;
 			var that = this;
-			_.forEach(interfaceTokenArray, function(thisToken, i) {
+			_.forEach(thisTokenArray, function(thisToken, i) {
 			
 				if (thisToken.face == "top"){
 					var leftDatum = (0.5 * that.props.component.width) - (0.5 * (thisComponentData.faceN.top - 1) * (that.props.ifc.width + that.props.ifc.margin));
@@ -802,7 +816,7 @@ var Workspace = React.createClass({
 				thisToken["left"] = thisLeft;
 
 				var thisKey = "" + componentID + i;
-
+				console.log(thisToken);
 				ifcs.push(
 					<InterfaceToken 
 						tokenObject = {thisToken} 
@@ -955,19 +969,20 @@ var HostInterface = React.createClass({
 
 var Component = React.createClass({
 	handleMouseDown: function(){
-		this.props.onMouseDown(this.props.thisComponentID)
+		this.props.onMouseDown(this.props.componentID)
 	},
 
 	render: function() {
+		var componentData = this.props.componentData[this.props.componentID];
 		var componentStyle = {
-			width: this.props.width,
-			height: this.props.height,
-			top: this.props.thisComponentY,
-			left: this.props.thisComponentX
+			width: this.props.compDims.width,
+			height: this.props.compDims.height,
+			top: componentData.top,
+			left: componentData.left
 		};
 
 		var classString = "component";
-		if (this.props.isPendingDeletion == this.props.thisComponentID){
+		if (this.props.isPendingDeletion == this.props.componentID){
 			classString += " pendingDeletion"
 		}
 
@@ -977,10 +992,10 @@ var Component = React.createClass({
 				onMouseDown = {this.handleMouseDown}  
 				style = {componentStyle}>
   				<div className="componentName">
-  					{this.props.thisModule.name}
+  					{this.props.module.name}
   				</div>
   				<div className="componentVersion">
-  					{this.props.thisModule.version}
+  					{this.props.module.version}
   				</div>	
   			</div>
 		);
