@@ -1,4 +1,4 @@
-var HostPort = React.createClass({
+var HostInterface = React.createClass({
 	getInitialState: function() {
 		return {
 			isHover: false,
@@ -6,25 +6,25 @@ var HostPort = React.createClass({
 	},
 
 	onMouseEnter: function() {	
-		this.props.onMouseEnter(this.props.componentID, this.props.interfaceID, this.props.isInvalid);
+		this.props.onMouseEnter(this.props.tokenObject, this.props.isInvalid);
 		this.setState({
 			isHover: true
     	});
 	},
 
 	onMouseLeave: function() {	
-		this.props.onMouseLeave(this.props.componentID, this.props.interfaceID, this.props.isInvalid);
+		this.props.onMouseLeave(this.props.tokenObject, this.props.isInvalid);
 		this.setState({
 			isHover: false
     	});
 	},
 
 	onMouseDown: function() {	
-		this.props.onMouseDown(this.props.componentID, "interface-1")
+		this.props.onMouseDown(this.props.tokenObject)
 	},
 
 	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.componentID, "interface-1", this.props.isInvalid);
+		this.props.onMouseUp(this.props.tokenObject, this.props.isInvalid);
 		this.setState({
 			isHover: false
     	});
@@ -103,7 +103,7 @@ var HostPort = React.createClass({
 
 		return (
 			<polygon 
-				className = "attachmentInterface" 
+				className = "hostInterface" 
 				style = {interfaceStyle} 
 				points = {points} 
 				transform = {transformString} 

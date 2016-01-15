@@ -12,25 +12,25 @@ var InterfaceToken = React.createClass({
 	},
 
 	onMouseEnter: function() {	
-		this.props.onMouseEnter(this.props.componentID, this.props.tokenObject);
+		this.props.onMouseEnter(this.props.tokenObject);
 		this.setState({
 			isHover: true
     	});
 	},
 
 	onMouseLeave: function() {	
-		this.props.onMouseLeave(this.props.componentID, this.props.tokenObject);
+		this.props.onMouseLeave(this.props.tokenObject);
 		this.setState({
 			isHover: false
     	});
 	},
 
 	onMouseDown: function() {	
-		this.props.onMouseDown(this.props.componentID, this.props.tokenObject)
+		this.props.onMouseDown(this.props.tokenObject)
 	},
 
 	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.componentID, this.props.tokenObject);
+		this.props.onMouseUp(this.props.tokenObject);
 		this.setState({
 			isHover: false
     	});
@@ -52,7 +52,7 @@ var InterfaceToken = React.createClass({
 			thisOpacity = 0.2
 		}
 
-		if (this.props.isPendingDeletion == this.props.componentID){
+		if (this.props.isPendingDeletion == this.props.tokenObject.componentID){
 			thisOpacity = 0
 		}
 

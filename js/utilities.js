@@ -46,17 +46,23 @@ function convertToGroup(componentID, interfaceID, selectedProjectView){
 }
 
 function getInterfaceCoords (data, ifc){
-	thisIfcArray = data.interfaceTokens;
 	var returnValue = {};
-	for (var i = 0; i < thisIfcArray.length; i++) {
-		thisIfc = thisIfcArray[i];
-		if (thisIfc.id == ifc){
-			returnValue = {
-				x: thisIfc.left,
-				y: thisIfc.top
+	_.forEach(data.interfaceTokens, function(thisToken) {
+		if (ifc){
+			if (thisToken.id == ifc){
+				returnValue = {
+					x: thisToken.left,
+					y: thisToken.top
+				}
 			}
 		}
-	}
+		else {
+			returnValue = {
+				x: thisToken.left,
+				y: thisToken.top
+			}
+		}
+	})
 	return returnValue
 }
 

@@ -18,17 +18,13 @@ var Wire = React.createClass({
 	},
 
 	render: function() {
-		//console.log(this.props.endpoints);
-		var end1Comp = this.props.endpoints[0].component;
-		var end1Ifc = this.props.endpoints[0].ifc;
-		var end1CompData = this.props.componentData[end1Comp];
-		var end1Coords = getInterfaceCoords(end1CompData, end1Ifc);
+		var end1 = this.props.wire[0];
+		var end1Data = this.props.componentData[end1.component];
+		var end1Coords = getInterfaceCoords(end1Data, end1.ifc);
 
-		var end2Comp = this.props.endpoints[1].component;
-		var end2Ifc = this.props.endpoints[1].ifc;
-		var end2CompData = this.props.componentData[end2Comp];
-		//console.log(end2CompData, end2Ifc);
-		var end2Coords = getInterfaceCoords(end2CompData, end2Ifc);
+		var end2 = this.props.wire[1];
+		var end2Data = this.props.componentData[end2.component];
+		var end2Coords = getInterfaceCoords(end2Data, end2.ifc);
 
 		var growth = 0;
 		if (this.state.isHover){
@@ -37,8 +33,8 @@ var Wire = React.createClass({
 
 		var dashArray = "";
 		var className = "wire";
-		if ((this.props.isPendingDeletion == end1Comp || this.props.isPendingDeletion == end2Comp) 
-			|| (_.isEqual(this.props.existingWireEndpoint, this.props.endpoints[0]) || _.isEqual(this.props.existingWireEndpoint, this.props.endpoints[1]))) {
+		if ((this.props.isPendingDeletion == end1.component || this.props.isPendingDeletion == end2.component) 
+			|| (_.isEqual(this.props.existingWireEndpoint, end1) || _.isEqual(this.props.existingWireEndpoint, end2))) {
 			dashArray = "3,3";
 			growth = -1;
 		}
