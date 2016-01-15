@@ -395,12 +395,14 @@ var Workspace = React.createClass({
 			var otherEndOfWire = getOtherEndOfWire(hostComponent, null, selectedProjectObject);
 			var interfaceSide = "default";
 			if (otherEndOfWire){
-				console.log(otherEndOfWire);
+				
 				var vectorToOtherEndComponent = {
 					x: (this.componentData[otherEndOfWire.component].left + (0.5 * this.props.component.width)) - (this.componentData[hostComponent].left + (0.5*this.props.hostComponent.width)),
 					y: (this.componentData[otherEndOfWire.component].top + (0.5* this.props.component.height)) - (this.componentData[hostComponent].top + (0.5*this.props.hostComponent.height))
 				}
+				
 				var refVector = this.props.component.height / this.props.component.width;
+				console.log(vectorToOtherEndComponent.y / vectorToOtherEndComponent.x, refVector);
 				interfaceSide = getFaceString(vectorToOtherEndComponent, refVector)
 			}
 
@@ -540,11 +542,11 @@ var Workspace = React.createClass({
 					}
 
 					if (otherEnd){
-						console.log(otherEnd);
+						//console.log(otherEnd);
 						if (otherEnd.component.indexOf('host') == 0){ //is a host interface
 							var vectorToOtherEndComponent = {
-								x: (this.componentData[otherEnd.component].left + (0.5 * this.props.hostInterface.width)) - (this.componentData[componentID].left + (0.5*this.props.component.width)),
-								y: (this.componentData[otherEnd.component].top + (0.5* this.props.hostInterface.height)) - (this.componentData[componentID].top + (0.5*this.props.component.height))
+								x: (this.componentData[otherEnd.component].left + (0.5 * this.props.hostComponent.width)) - (this.componentData[componentID].left + (0.5*this.props.component.width)),
+								y: (this.componentData[otherEnd.component].top + (0.5* this.props.hostComponent.height)) - (this.componentData[componentID].top + (0.5*this.props.component.height))
 							}
 						}
 						else {
