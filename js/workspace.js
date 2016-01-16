@@ -223,7 +223,6 @@ var Workspace = React.createClass({
 
 		this.removeDocumentEvents();
 
-
 		if (this.state.dragging){
 			if (typeof this.state.dragging == "string"){ //dropping component
 				this.props.handleComponentDrop(this.state.dragging, deltaX, deltaY);
@@ -242,7 +241,7 @@ var Workspace = React.createClass({
 		};
 
 		this.setState({
-    		mouseDown: false,
+    		mouseDown: false
     		//componentID: null,
     		//interfaceGroupID: null,
     		//interfaceIDObject: null
@@ -402,7 +401,6 @@ var Workspace = React.createClass({
 				}
 				
 				var refVector = this.props.component.height / this.props.component.width;
-				console.log(vectorToOtherEndComponent.y / vectorToOtherEndComponent.x, refVector);
 				interfaceSide = getFaceString(vectorToOtherEndComponent, refVector)
 			}
 
@@ -476,21 +474,13 @@ var Workspace = React.createClass({
 					tokenObject = {thisToken} 
 					isInvalid = {isInvalid} 
 					isStartOfNewWire = {isStartOfNewWire} 
-					mode = {thisMode} 
 					onMouseEnter = {this.ifcMouseEnter} 
 					onMouseLeave = {this.ifcMouseLeave} 
 					onMouseDown = {this.ifcMouseDown} 
 					onMouseUp = {this.ifcMouseUp} 
 					color = {thisFillColor} 
-					face = {interfaceSide} 
 					border = {thisBorderColor} 
-					width = {this.props.hostInterface.width} 
-					height = {this.props.hostInterface.height} 
-					left = {thisLeft} 
-					top = {thisTop} 
-					apex = {this.props.hostInterface.apex} 
-					interfaceID = "interface-1" 
-					componentID = {hostComponent}/>				
+					ifcDims = {this.props.hostInterface}/>				
 			);
 		};
 
