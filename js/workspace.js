@@ -57,6 +57,7 @@ var Workspace = React.createClass({
 			this.workspaceOriginY = workspaceBox.top;
 			this.startX = event.pageX - this.workspaceOriginX;
     		this.startY = event.pageY - this.workspaceOriginY;
+    		console.log("Mouse down on interface: ", tokenObject);
 			
     		this.setState({
     			mouseDown: tokenObject
@@ -141,6 +142,8 @@ var Workspace = React.createClass({
 				dragging: this.state.mouseDown,
 			});
 
+			/*
+
 			if (this.state.interfaceGroupID){ //dragging from interface
 						
 				if (this.state.startFromExistingWire){ //drag starts from existing wire so update
@@ -186,6 +189,7 @@ var Workspace = React.createClass({
 				//	dragComponentID: this.state.componentID
 				//});
 			}
+			*/
 		}
 
 		if (this.state.dragging){	
@@ -258,231 +262,183 @@ var Workspace = React.createClass({
     	document.removeEventListener('mouseup', this.onMouseUp);
 	},
 
+	componentWillMount: function() {
+		console.log("Will Mount: " , this.props)
+  		this.prepData(this.props);
+	},
+
+	prepData: function(props) {
+		//console.log("Prep props: " , props);
+		var selectedProject = props.selectedProject;
+		var dependenciesObject = selectedProject.dependencies || {} ;
+		var componentsObject = selectedProject.topology.components || {};
+		var wiresObject = selectedProject.topology.wires || {};
+		var hostComponentsObject = selectedProject.topology.host_interfaces || {};
+
+		this.componentData = {};
+		for (var componentID in componentsObject) {
+			var thisComponent = componentsObject[componentID];
+			var moduleID = thisComponent.module;
+			var componentViewData = selectedProject.view[componentID];
+
+			var interfaces = {};
+
+			if (thisComponent.interfaces){
+				for (var interfaceID in thisComponent.interfaces) {
+					thisInterface = thisComponent.interfaces[interfaceID];
+					interfaces[interfaceID] = {
+						mode: thisInterface.mode,
+						protocol: thisInterface.protocol
+					}
+				}
+			}
+			var componentInterfaces = thisComponent.interfaces
+
+			this.componentData[componentID] = {
+				left: componentViewData.x, 
+				top: componentViewData.y, 
+				width: this.props.component.width, 
+				height: this.props.component.height, 
+				moduleID: moduleID, 
+				module: dependenciesObject[moduleID], 
+				interfaces: interfaces
+			};
+		};
+
+		this.hostComponentData = {};
+		for (var hostComponentID in hostComponentsObject) {
+			var thisHostComponent = hostComponentsObject[hostComponentID];
+			var hostComponentViewData = selectedProject.view[hostComponentID];
+			this.hostComponentData[hostComponentID] = {
+				left: hostComponentViewData.x,
+				top: hostComponentViewData.y,
+				width: this.props.hostComponent.width, 
+				height: this.props.hostComponent.height, 
+				mode: thisHostComponent.mode,
+				protocol: thisHostComponent.protocol
+			};
+		};
+
+		//add io capability data
+		for (var componentID in this.componentData) {
+			var thisComponent = this.componentData[componentID];
+			var thisComponentInterfaces = thisComponent.interfaces;
+			var moduleInterfaces = thisComponent.module.interfaces;
+
+			var ioCapability = [];
+
+			_.forEach(moduleInterfaces, function(interface){
+				var thisCapability = {
+					mode: interface.mode,
+					protocol: interface.protocol,
+					capacity: interface.capacity
+				};
+				ioCapability.push(thisCapability)
+			});
+
+			this.componentData[componentID]["ioCapability"] = ioCapability;	
+		};
+
+		//add data from wire data
+		for (var wire in wiresObject) {
+			var thisWire = wiresObject[wire];
+			var endpoint1 = thisWire[0];
+			var endpoint2 = thisWire[1];
+			console.log(thisWire);
+			var that = this;
+			_.forEach(thisWire, function(thisEnd, i){
+				if (i == 0){
+					var otherEnd = thisWire[1]
+				}
+				else {
+					var otherEnd = thisWire[0]
+				}
+
+				if (thisEnd.ifc){//thisEnd is component, not host
+					var thisComponent = that.componentData[thisEnd.component];
+					var writeLocation = thisComponent.interfaces[thisEnd.ifc]
+				}
+				else {//thisEnd is a host
+					var thisComponent = that.hostComponentData[thisEnd.component];
+					var writeLocation = thisComponent
+				}
+
+				writeLocation["wireTo"] = {
+					component: otherEnd.component,
+					ifc: otherEnd.ifc || null
+				}
+
+				//get vector, face etc.
+				if (otherEnd.ifc){//otherEnd is component, not host
+					var otherComponent = that.componentData[otherEnd.component];
+				}
+				else {//otherEnd is a host
+					var otherComponent = that.hostComponentData[otherEnd.component];
+				}
+
+				var vectorBetweenComponents = getVector(thisComponent, otherComponent);
+
+//hello
+
+				writeLocation["face"] = null
+			});
+		};
+
+
+		console.log("Prep props: " , props, this.componentData, this.hostComponentData)
+		
+	},
+
+	componentWillReceiveProps: function(nextProps) {
+		console.log("Will Receive Props: " , nextProps);
+  		this.prepData(nextProps)
+	},
+
 	render: function() {
-		var selectedProjectObject = this.props.selectedProject;
-		if (selectedProjectObject){
-			var dependentModulesObject = {};
-			if (selectedProjectObject.dependencies){
-				dependentModulesObject = selectedProjectObject.dependencies;
-    		}
-
-			var componentsObject = {};
-			var wiresObject = {};
-			var hostComponentsObject = {};
-			if (selectedProjectObject.topology){
-				componentsObject = selectedProjectObject.topology.components;
-    			wiresObject = selectedProjectObject.topology.wires;
-    			if (selectedProjectObject.topology.host_interfaces){
-    				hostComponentsObject = selectedProjectObject.topology.host_interfaces;
-    			}
-    		}
-		}
-
 
 		this.isPendingDeletion = false;
 
-		this.componentData = {};
 
 		var components = [];
-		for (var componentID in componentsObject) {
-			this.componentData[componentID] = {};
+		var ifcs = [];
 
-			var componentModuleID = componentsObject[componentID].module;
-			var componentModuleObject = dependentModulesObject[componentModuleID];
+		for (var componentID in this.componentData) {
+			var thisComponent = this.componentData[componentID];
 
-			var componentViewData = selectedProjectObject.view[componentID];
-
-			var componentX = componentViewData.x;
-			var componentY = componentViewData.y;
-
+			/////// Components
 			if (componentID == this.state.dragging){ //component is being dragged
-				componentX = componentX + this.state.cursorX - this.startX;
-				componentY = componentY + this.state.cursorY - this.startY;
+				thisComponent.left += this.state.cursorX - this.startX;
+				thisComponent.top += this.state.cursorY - this.startY;
 			}
 			
-			if (componentX <= 0 || componentY <= headerHeight) { //component is outside of canvas, e.g. during drag operation
+			if (thisComponent.left <= 0 || thisComponent.top <= headerHeight) { //component is outside of canvas, e.g. during drag operation
 				this.isPendingDeletion = componentID
 			}
-
-			this.componentData[componentID] = {
-				left: componentX,
-				top: componentY
-			};
 			
   			components.push(
   				<Component
 					key = {componentID} 
 					isPendingDeletion = {this.isPendingDeletion} 
 					onMouseDown = {this.componentMouseDown} 
-					compDims = {this.props.component}
-					module = {componentModuleObject} 
-					componentData = {this.componentData} 
+					compDims = {this.props.component} 
+					componentData = {thisComponent} 
 					componentID = {componentID}/>
   			);
+
+  			/////// Interfaces
+
 		};
 
-		var hostComponentsArray = [];
-		var hostIfcArray = [];
-		for (var hostComponent in hostComponentsObject) {
-			var thisProtocol = hostComponentsObject[hostComponent].protocol;
-			var thisMode = hostComponentsObject[hostComponent].mode;
-			var thisViewData = selectedProjectObject.view[hostComponent];
 
-			var hostCompX = thisViewData.x;
-			var hostCompY = thisViewData.y;
 
-			if (hostComponent == this.state.dragging){
-				hostCompX = hostCompX + this.state.cursorX - this.startX;
-				hostCompY = hostCompY + this.state.cursorY - this.startY;
-				if (hostCompX <= 0){hostCompX = 0}
-				if (hostCompY <= headerHeight + 1){hostCompY = headerHeight + 1}
-			};
 
-			this.componentData[hostComponent] = {
-				left: hostCompX,
-				top: hostCompY,
-				mode: thisMode,
-				protocol: thisProtocol
-			};
 
-			hostComponentsArray.push(
-				<HostComponent
-					key = {hostComponent} 
-					protocol = {thisProtocol} 
-					mode = {thisMode} 
-					onMouseDown = {this.componentMouseDown} 
-					onMouseUp = {this.ifcMouseUp} 
-					width = {this.props.hostComponent.width} 
-					height = {this.props.hostComponent.height} 		
-					posX = {hostCompX} 
-					posY = {hostCompY} 
-					ifcWidth = {this.props.hostComponent.width} 
-					ifcHeight = {this.props.hostComponent.height} 
-					componentID = {hostComponent}/>
-			);
 
-			var isInvalid = false;
-			var isStartOfNewWire = false;
-			if (this.state.isWireInProgress){
-				isInvalid = true;
-				if ((thisMode != this.thisWireInProgressStartMode || thisMode == "bidirectional")
-						&& (thisProtocol == this.thisWireInProgressProtocol)
-						&& (this.thisWireInProgressN == 1)) {
-					isInvalid = false;
-				}
 
-				var thisRefEndpoint = {
-					"component": hostComponent,
-					"ifc": hostComponent
-				};
 
-				if (isExistingWire(thisRefEndpoint, wiresObject)){
-					isInvalid = true;
-				}
 
-				if (hostInterface == this.state.componentID) { //source interface
-					isInvalid = true;
-					isStartOfNewWire = true;
-				}
-				else if (_.isEqual(this.state.startFromExistingWire, thisRefEndpoint)){
-					isInvalid = false;
-				}
-			}
 
-			// host interface ports
-			// figure out component at other end, vector, face etc.
-			var otherEndOfWire = getOtherEndOfWire(hostComponent, null, selectedProjectObject);
-			var interfaceSide = "default";
-			if (otherEndOfWire){
-				
-				var vectorToOtherEndComponent = {
-					x: (this.componentData[otherEndOfWire.component].left + (0.5 * this.props.component.width)) - (this.componentData[hostComponent].left + (0.5*this.props.hostComponent.width)),
-					y: (this.componentData[otherEndOfWire.component].top + (0.5* this.props.component.height)) - (this.componentData[hostComponent].top + (0.5*this.props.hostComponent.height))
-				}
-				
-				var refVector = this.props.component.height / this.props.component.width;
-				interfaceSide = getFaceString(vectorToOtherEndComponent, refVector)
-			}
 
-			var updatedFace = null;
-			if (this.state.isWireInProgress){ 				
-				if (!isInvalid){ //this is a valid interface
-					var vectorToOtherEndComponent = null;
-	
-					vectorToOtherEndComponent = {
-						x: this.componentData[this.state.componentID].left - this.componentData[hostComponent].left,
-						y: this.componentData[this.state.componentID].top - this.componentData[hostComponent].top
-					}
-					var refVector = this.props.hostComponent.height / this.props.hostComponent.width;
-					updatedFace = getFaceString(vectorToOtherEndComponent, refVector);
-					interfaceSide = updatedFace
-				}
-
-				else if (this.state.componentID == hostComponent){
-					var vectorToCursor = null;
-	
-					vectorToCursor = {
-						x: this.state.cursorX - (this.props.hostComponent.width/2) - this.componentData[hostComponent].left,
-						y: this.state.cursorY - (this.props.hostComponent.height/2) - this.componentData[hostComponent].top
-					}
-					var refVector = this.props.hostComponent.height / this.props.hostComponent.width;
-					updatedFace = getFaceString(vectorToCursor, refVector);
-					interfaceSide = updatedFace
-				}
-			}
-			
-			if (interfaceSide == "top"){
-				var thisLeft = hostCompX + (this.props.hostComponent.width / 2);
-				var thisTop = hostCompY ;
-			}
-			if (interfaceSide == "right"){
-				var thisTop = hostCompY + ((this.props.hostComponent.height / 2));
-				var thisLeft = hostCompX + this.props.hostComponent.width;
-			}
-			if (interfaceSide == "bottom" || interfaceSide == "default"){
-				var thisLeft = hostCompX + (this.props.hostComponent.width / 2);
-				var thisTop = hostCompY + this.props.hostComponent.height;
-			}
-			if (interfaceSide == "left"){
-				var thisTop = hostCompY + ((this.props.hostComponent.height / 2));
-				var thisLeft = hostCompX;
-			}
-
-			this.componentData[hostComponent]["interfaceTokens"] = [];
-			this.componentData[hostComponent]["interfaceTokens"][0] = {
-				id: hostComponent,
-				mode: thisMode,
-				protocol: thisProtocol,
-				top: thisTop,
-				left: thisLeft,
-				face: interfaceSide,
-				wireTo: otherEndOfWire,
-				vector: vectorToOtherEndComponent	
-			};
-
-			var thisToken = this.componentData[hostComponent]["interfaceTokens"][0];
-
-			var thisFillColor = getHSL(0);
-			var thisBorderColor = getHSL(0, true);
-			
-			thisFillColor = getHSL(this.props.protocols[thisProtocol].hue);
-			thisBorderColor = getHSL(this.props.protocols[thisProtocol].hue, true);
-			
-			hostIfcArray.push(
-				<HostInterface 
-					key = {hostComponent + "interface-1"} 
-					tokenObject = {thisToken} 
-					isInvalid = {isInvalid} 
-					isStartOfNewWire = {isStartOfNewWire} 
-					onMouseEnter = {this.ifcMouseEnter} 
-					onMouseLeave = {this.ifcMouseLeave} 
-					onMouseDown = {this.ifcMouseDown} 
-					onMouseUp = {this.ifcMouseUp} 
-					color = {thisFillColor} 
-					border = {thisBorderColor} 
-					ifcDims = {this.props.hostInterface}/>				
-			);
-		};
 
 
 		//interfaces
@@ -690,6 +646,184 @@ var Workspace = React.createClass({
 		};
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		var hostComponentsArray = [];
+		var hostIfcArray = [];
+		for (var hostComponentID in this.hostComponentData) {
+			var thisHostComponent = this.hostComponentData[hostComponentID];
+
+			var hostCompX = thisHostComponent.left;
+			var hostCompY = thisHostComponent.top;
+
+			if (hostComponentID == this.state.dragging){
+				hostCompX += this.state.cursorX - this.startX;
+				hostCompY += this.state.cursorY - this.startY;
+				if (hostCompX <= 0){hostCompX = 0}
+				if (hostCompY <= headerHeight + 1){hostCompY = headerHeight + 1}
+			};
+
+			hostComponentsArray.push(
+				<HostComponent
+					key = {hostComponentID} 
+					onMouseDown = {this.componentMouseDown} 
+					onMouseUp = {this.ifcMouseUp} 
+					hostCompDims = {this.props.hostComponent} 
+					hostComponentData = {thisHostComponent} 
+					hostComponentID = {hostComponentID}/>
+			);
+
+			var isInvalid = false;
+			var isStartOfNewWire = false;
+			if (this.state.isWireInProgress){
+				isInvalid = true;
+				if ((thisMode != this.thisWireInProgressStartMode || thisMode == "bidirectional")
+						&& (thisProtocol == this.thisWireInProgressProtocol)
+						&& (this.thisWireInProgressN == 1)) {
+					isInvalid = false;
+				}
+
+				var thisRefEndpoint = {
+					"component": hostComponent,
+					"ifc": hostComponent
+				};
+
+				if (isExistingWire(thisRefEndpoint, wiresObject)){
+					isInvalid = true;
+				}
+
+				if (hostInterface == this.state.componentID) { //source interface
+					isInvalid = true;
+					isStartOfNewWire = true;
+				}
+				else if (_.isEqual(this.state.startFromExistingWire, thisRefEndpoint)){
+					isInvalid = false;
+				}
+			}
+
+			// host interface ports
+			// figure out component at other end, vector, face etc.
+			var otherEndOfWire = getOtherEndOfWire(hostComponent, null, selectedProjectObject);
+			var interfaceSide = "default";
+			if (otherEndOfWire){
+				
+				var vectorToOtherEndComponent = {
+					x: (this.componentData[otherEndOfWire.component].left + (0.5 * this.props.component.width)) - (this.componentData[hostComponent].left + (0.5*this.props.hostComponent.width)),
+					y: (this.componentData[otherEndOfWire.component].top + (0.5* this.props.component.height)) - (this.componentData[hostComponent].top + (0.5*this.props.hostComponent.height))
+				}
+				
+				var refVector = this.props.component.height / this.props.component.width;
+				interfaceSide = getFaceString(vectorToOtherEndComponent, refVector)
+			}
+
+			var updatedFace = null;
+			if (this.state.isWireInProgress){ 				
+				if (!isInvalid){ //this is a valid interface
+					var vectorToOtherEndComponent = null;
+	
+					vectorToOtherEndComponent = {
+						x: this.componentData[this.state.componentID].left - this.componentData[hostComponent].left,
+						y: this.componentData[this.state.componentID].top - this.componentData[hostComponent].top
+					}
+					var refVector = this.props.hostComponent.height / this.props.hostComponent.width;
+					updatedFace = getFaceString(vectorToOtherEndComponent, refVector);
+					interfaceSide = updatedFace
+				}
+
+				else if (this.state.componentID == hostComponent){
+					var vectorToCursor = null;
+	
+					vectorToCursor = {
+						x: this.state.cursorX - (this.props.hostComponent.width/2) - this.componentData[hostComponent].left,
+						y: this.state.cursorY - (this.props.hostComponent.height/2) - this.componentData[hostComponent].top
+					}
+					var refVector = this.props.hostComponent.height / this.props.hostComponent.width;
+					updatedFace = getFaceString(vectorToCursor, refVector);
+					interfaceSide = updatedFace
+				}
+			}
+			
+			if (interfaceSide == "top"){
+				var thisLeft = hostCompX + (this.props.hostComponent.width / 2);
+				var thisTop = hostCompY ;
+			}
+			if (interfaceSide == "right"){
+				var thisTop = hostCompY + ((this.props.hostComponent.height / 2));
+				var thisLeft = hostCompX + this.props.hostComponent.width;
+			}
+			if (interfaceSide == "bottom" || interfaceSide == "default"){
+				var thisLeft = hostCompX + (this.props.hostComponent.width / 2);
+				var thisTop = hostCompY + this.props.hostComponent.height;
+			}
+			if (interfaceSide == "left"){
+				var thisTop = hostCompY + ((this.props.hostComponent.height / 2));
+				var thisLeft = hostCompX;
+			}
+
+			this.componentData[hostComponent]["interfaceTokens"] = [];
+			this.componentData[hostComponent]["interfaceTokens"][0] = {
+				id: hostComponent,
+				mode: thisMode,
+				protocol: thisProtocol,
+				top: thisTop,
+				left: thisLeft,
+				face: interfaceSide,
+				wireTo: otherEndOfWire,
+				vector: vectorToOtherEndComponent	
+			};
+
+			var thisToken = this.componentData[hostComponent]["interfaceTokens"][0];
+
+			var thisFillColor = getHSL(0);
+			var thisBorderColor = getHSL(0, true);
+			
+			thisFillColor = getHSL(this.props.protocols[thisProtocol].hue);
+			thisBorderColor = getHSL(this.props.protocols[thisProtocol].hue, true);
+			
+			hostIfcArray.push(
+				<HostInterface 
+					key = {hostComponent + "interface-1"} 
+					tokenObject = {thisToken} 
+					isInvalid = {isInvalid} 
+					isStartOfNewWire = {isStartOfNewWire} 
+					onMouseEnter = {this.ifcMouseEnter} 
+					onMouseLeave = {this.ifcMouseLeave} 
+					onMouseDown = {this.ifcMouseDown} 
+					onMouseUp = {this.ifcMouseUp} 
+					color = {thisFillColor} 
+					border = {thisBorderColor} 
+					ifcDims = {this.props.hostInterface}/>				
+			);
+		};
+
+
 		var wires = [];
 		var localGroupArray = [];
 
@@ -804,40 +938,6 @@ var HostComponent = React.createClass({
 	}
 });
 
-var Component = React.createClass({
-	handleMouseDown: function(){
-		this.props.onMouseDown(this.props.componentID)
-	},
-
-	render: function() {
-		var componentData = this.props.componentData[this.props.componentID];
-		var componentStyle = {
-			width: this.props.compDims.width,
-			height: this.props.compDims.height,
-			top: componentData.top,
-			left: componentData.left
-		};
-
-		var classString = "component";
-		if (this.props.isPendingDeletion == this.props.componentID){
-			classString += " pendingDeletion"
-		}
-
-		return (
-			<div 
-				className = {classString} 
-				onMouseDown = {this.handleMouseDown}  
-				style = {componentStyle}>
-  				<div className="componentName">
-  					{this.props.module.name}
-  				</div>
-  				<div className="componentVersion">
-  					{this.props.module.version}
-  				</div>	
-  			</div>
-		);
-	}
-});
 
 var WireInProgress = React.createClass({
 	render: function() {
