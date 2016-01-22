@@ -66,13 +66,73 @@ function getInterfaceCoords (data, ifc){
 	return returnValue
 }
 
-function getFaceString(vector, refVector){
+function sortTokenArrays(tokenArrays){
+	for (var tokenArray in tokenArrays) {
+		thisTokenArray = tokenArrays[tokenArray];
+		thisTokenArray.sort(function (x, y) {
+		    var n = x.protocol.localeCompare(y.protocol);
+		    if (n !== 0) {
+		        return n;
+		    }
+		    return x.mode.localeCompare(y.mode);
+		});
+	}
+	return tokenArrays
+}
+
+function positionTokens(tokenArrays){
+	//for (var tokenArray in tokenArrays) {
+	//	thisTokenArray = tokenArrays[tokenArray];
+	//	if (tokenArray == "top"){
+	//	}
+	//		
+	//}
+	//return tokenArrays
+		
+
+/*
+	if (thisToken.face == "top"){
+		var leftDatum = (0.5 * that.props.component.width) - (0.5 * (thisComponentData.faceN.top - 1) * (that.props.ifc.width + that.props.ifc.margin));
+		var thisLeft = thisComponentData.left + leftDatum + (topIndex * (that.props.ifc.width + that.props.ifc.margin));
+		var thisTop = thisComponentData.top ;
+		topIndex += 1
+	}
+	if (thisToken.face == "right"){
+		var topDatum = (0.5 * that.props.component.height) - (0.5 * (thisComponentData.faceN.right - 1) * (that.props.ifc.width + that.props.ifc.margin));
+		var thisTop = thisComponentData.top + topDatum + (rightIndex * (that.props.ifc.width + that.props.ifc.margin));
+		var thisLeft = thisComponentData.left + that.props.component.width - (that.props.ifc.height / 2) + 1;
+		rightIndex += 1
+	}
+	if (thisToken.face == "bottom" || !thisToken.face){
+		var leftDatum = (0.5 * that.props.component.width) - (0.5 * (thisComponentData.faceN.bottom - 1) * (that.props.ifc.width + that.props.ifc.margin));
+		var thisLeft = thisComponentData.left + leftDatum + (bottomIndex * (that.props.ifc.width + that.props.ifc.margin));
+		var thisTop = thisComponentData.top + that.props.component.height;
+		bottomIndex += 1
+	}
+	if (thisToken.face == "left"){
+		var topDatum = (0.5 * that.props.component.height) - (0.5 * (thisComponentData.faceN.left - 1) * (that.props.ifc.width + that.props.ifc.margin));
+		var thisTop = thisComponentData.top + topDatum + (leftIndex * (that.props.ifc.width + that.props.ifc.margin));
+		var thisLeft = thisComponentData.left - (that.props.ifc.height / 2) + 1;
+		leftIndex += 1
+	}
+
+	thisToken["top"] = thisTop;
+	thisToken["left"] = thisLeft;
+*/
+}
+
+function getFaceString(firstObject, secondObject){
 	//console.log(vector.y / vector.x, refVector);
-	var refMultiplier = refVector;
+	var refAngle = firstObject.height / firstObject.width;
+	var vector = {
+		x: (secondObject.left + (0.5 * secondObject.width)) - (firstObject.left + (0.5 * firstObject.width)),
+		y: (secondObject.top + (0.5 * secondObject.height)) - (firstObject.top + (0.5 * firstObject.height)),
+	}
+
 	var interfaceSide = "";
 
-	if ((vector.x * refMultiplier) <= vector.y){
-		if ((vector.x * -refMultiplier) < vector.y){
+	if ((vector.x * refAngle) <= vector.y){
+		if ((vector.x * -refAngle) < vector.y){
 			interfaceSide = "bottom";
 		}
 		else {
@@ -81,7 +141,7 @@ function getFaceString(vector, refVector){
 	}
 
 	else {
-		if ((vector.x * -refMultiplier) > vector.y){
+		if ((vector.x * -refAngle) > vector.y){
 			interfaceSide = "top";
 		}
 		else {

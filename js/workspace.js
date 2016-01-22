@@ -344,7 +344,6 @@ var Workspace = React.createClass({
 			var thisWire = wiresObject[wire];
 			var endpoint1 = thisWire[0];
 			var endpoint2 = thisWire[1];
-			console.log(thisWire);
 			var that = this;
 			_.forEach(thisWire, function(thisEnd, i){
 				if (i == 0){
@@ -376,12 +375,49 @@ var Workspace = React.createClass({
 					var otherComponent = that.hostComponentData[otherEnd.component];
 				}
 
-				var vectorBetweenComponents = getVector(thisComponent, otherComponent);
+				var faceString = getFaceString(thisComponent, otherComponent);
 
-//hello
-
-				writeLocation["face"] = null
+				writeLocation["face"] = faceString;
+				writeLocation["wire"] = wire;
 			});
+		};
+
+		// create token arrays
+		
+
+		for (var componentID in this.componentData) {
+			var thisComponent = this.componentData[componentID];
+			var tokenArrays = {
+				"top": [],
+				"right": [],
+				"bottom": [],
+				"left": []
+  			}
+
+  			_.forEach(thisComponent.ioCapability, function(thisToken) {
+  				tokenArrays.bottom.push(thisToken)
+  			})
+
+  			if (thisComponent.interfaces){
+				for (var interfaceID in thisComponent.interfaces){
+					thisInterface = thisComponent.interfaces[interfaceID];
+					thisInterfaceFace = thisInterface.face;
+					if (thisInterfaceFace == "top"){tokenArrays.top.push(thisInterface)}
+					if (thisInterfaceFace == "right"){tokenArrays.right.push(thisInterface)}
+					if (thisInterfaceFace == "bottom"){tokenArrays.bottom.push(thisInterface)}
+					if (thisInterfaceFace == "left"){tokenArrays.left.push(thisInterface)}
+				}
+  			}
+
+  			// sort arrays by protocol and mode
+  			tokenArrays = sortTokenArrays(tokenArrays);
+
+  			// calculate locations of interface tokens
+
+  			tokenArrays = positionTokens(tokenArrays);
+
+  			thisComponent["tokenArrays"] = tokenArrays
+
 		};
 
 
@@ -426,6 +462,7 @@ var Workspace = React.createClass({
   			);
 
   			/////// Interfaces
+ 
 
 		};
 
@@ -488,7 +525,6 @@ var Workspace = React.createClass({
 					}
 
 					if (otherEnd){
-						//console.log(otherEnd);
 						if (otherEnd.component.indexOf('host') == 0){ //is a host interface
 							var vectorToOtherEndComponent = {
 								x: (this.componentData[otherEnd.component].left + (0.5 * this.props.hostComponent.width)) - (this.componentData[componentID].left + (0.5*this.props.component.width)),
