@@ -80,45 +80,45 @@ function sortTokenArrays(tokenArrays){
 	return tokenArrays
 }
 
-function positionTokens(tokenArrays){
-	//for (var tokenArray in tokenArrays) {
-	//	thisTokenArray = tokenArrays[tokenArray];
-	//	if (tokenArray == "top"){
-	//	}
-	//		
-	//}
-	//return tokenArrays
-		
+function positionTokens(component, ifcProps){
+	var pitch = ifcProps.width + ifcProps.margin;
+	var tokenArrays = component.tokenArrays;
+	for (var tokenArray in tokenArrays) {
+		thisTokenArray = tokenArrays[tokenArray];
+		var faceCenter = {};
+		var isHorizontal = true;
+		var startPoint = ((thisTokenArray.length - 1) * pitch * -1) / 2;
+		if (tokenArray == "top"){
+			faceCenter.x = component.left + (component.width / 2);
+			faceCenter.y = component.top;
+		}
+		if (tokenArray == "right"){
+			faceCenter.x = component.left + component.width;
+			faceCenter.y = component.top + (component.height / 2);
+			isHorizontal = false;
+		}
+		if (tokenArray == "bottom"){
+			faceCenter.x = component.left + (component.width / 2);
+			faceCenter.y = component.top + component.height;
+		}
+		if (tokenArray == "left"){
+			faceCenter.x = component.left;
+			faceCenter.y = component.top + (component.height / 2);
+			isHorizontal = false;
+		}
 
-/*
-	if (thisToken.face == "top"){
-		var leftDatum = (0.5 * that.props.component.width) - (0.5 * (thisComponentData.faceN.top - 1) * (that.props.ifc.width + that.props.ifc.margin));
-		var thisLeft = thisComponentData.left + leftDatum + (topIndex * (that.props.ifc.width + that.props.ifc.margin));
-		var thisTop = thisComponentData.top ;
-		topIndex += 1
+		_.forEach(thisTokenArray, function(thisToken, i) {
+			var nudgeFromCenter = startPoint + (i * pitch);
+			if (isHorizontal){
+				thisToken["left"] = faceCenter.x + nudgeFromCenter;
+				thisToken["top"] = faceCenter.y;
+			}
+			else {
+				thisToken["left"] = faceCenter.x;
+				thisToken["top"] = faceCenter.y + nudgeFromCenter;
+			}
+		})			
 	}
-	if (thisToken.face == "right"){
-		var topDatum = (0.5 * that.props.component.height) - (0.5 * (thisComponentData.faceN.right - 1) * (that.props.ifc.width + that.props.ifc.margin));
-		var thisTop = thisComponentData.top + topDatum + (rightIndex * (that.props.ifc.width + that.props.ifc.margin));
-		var thisLeft = thisComponentData.left + that.props.component.width - (that.props.ifc.height / 2) + 1;
-		rightIndex += 1
-	}
-	if (thisToken.face == "bottom" || !thisToken.face){
-		var leftDatum = (0.5 * that.props.component.width) - (0.5 * (thisComponentData.faceN.bottom - 1) * (that.props.ifc.width + that.props.ifc.margin));
-		var thisLeft = thisComponentData.left + leftDatum + (bottomIndex * (that.props.ifc.width + that.props.ifc.margin));
-		var thisTop = thisComponentData.top + that.props.component.height;
-		bottomIndex += 1
-	}
-	if (thisToken.face == "left"){
-		var topDatum = (0.5 * that.props.component.height) - (0.5 * (thisComponentData.faceN.left - 1) * (that.props.ifc.width + that.props.ifc.margin));
-		var thisTop = thisComponentData.top + topDatum + (leftIndex * (that.props.ifc.width + that.props.ifc.margin));
-		var thisLeft = thisComponentData.left - (that.props.ifc.height / 2) + 1;
-		leftIndex += 1
-	}
-
-	thisToken["top"] = thisTop;
-	thisToken["left"] = thisLeft;
-*/
 }
 
 function getFaceString(firstObject, secondObject){
