@@ -31,9 +31,10 @@ var HostInterface = React.createClass({
 	},
 
 	render: function() {
+		console.log(this.props.tokenObject);
 
-		var leftCenterPoint = this.props.tokenObject.left;
-		var topCenterPoint = this.props.tokenObject.top;
+		var leftCenterPoint = this.props.tokenObject.ifcLeft;
+		var topCenterPoint = this.props.tokenObject.ifcTop;
 
 
 		var growthW = 0;
@@ -47,17 +48,44 @@ var HostInterface = React.createClass({
 		if (this.props.isInvalid && !this.props.isStartOfNewWire){
 			thisOpacity = 0.2
 		}
+
+		var fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue);
+		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, true);
+
 		var interfaceStyle = {
-			fill: this.props.color,
-			stroke: this.props.border,
+			fill: fillColor,
+			stroke: borderColor,
 			opacity: thisOpacity
 		};
+
+
+		var rotation = 0;
+		//var left = leftCenterPoint + (this.props.hostCompDims.width / 2);
+		//var top = topCenterPoint + this.props.hostCompDims.height;
+		if (this.props.tokenObject.face == "right"){
+			rotation = -90;
+			//left = leftCenterPoint + this.props.hostCompDims.width;
+			//top = topCenterPoint + (this.props.hostCompDims.height / 2);
+		}
+		if (this.props.tokenObject.face == "left"){			
+			rotation = 90;
+			//left = leftCenterPoint;
+			//top = topCenterPoint + (this.props.hostCompDims.height / 2);
+		}
+		if (this.props.tokenObject.face == "top"){
+			rotation = 180;
+			//top = topCenterPoint;
+		}
+
+		var transformString = "rotate(" + rotation + " " + leftCenterPoint + " " + topCenterPoint + ")";
+
+
 
 		var polygon = {	
 			width: this.props.ifcDims.width + growthW,
 			height: this.props.ifcDims.height + growthH,
-			left: this.props.tokenObject.left - this.props.ifcDims.width/2 - growthW/2,
-			top: this.props.tokenObject.top - this.props.ifcDims.height/2 - growthH/2 + 1
+			left: this.props.tokenObject.ifcLeft - this.props.ifcDims.width/2 - growthW/2,
+			top: this.props.tokenObject.ifcTop - this.props.ifcDims.height/2 - growthH/2 + 1
 		};
 
 
@@ -81,23 +109,7 @@ var HostInterface = React.createClass({
 
 		//rotation
 
-		var rotation = 0;
-
-		if (this.props.tokenObject.face == "right"){
-			rotation = -90
-		}
-
-		if (this.props.tokenObject.face == "left"){
-			rotation = 90
-		}
-
-		if (this.props.tokenObject.face == "top"){
-			rotation = 180;
-		}
-
-		var transformString = "rotate(" + rotation + " " + leftCenterPoint + " " + topCenterPoint + ")";
-
-
+		
 
 
 

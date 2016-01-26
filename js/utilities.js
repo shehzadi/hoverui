@@ -81,7 +81,7 @@ function sortTokenArrays(tokenArrays){
 }
 
 function positionTokens(component, ifcProps){
-	var pitch = ifcProps.width + ifcProps.margin;
+	var pitch = ifcProps.pitch;
 	var tokenArrays = component.tokenArrays;
 	for (var tokenArray in tokenArrays) {
 		thisTokenArray = tokenArrays[tokenArray];
@@ -187,7 +187,7 @@ function getOtherEndOfWire(componentID, interfaceID, selectedProject){
 	return returnValue
 }
 
-function defineSvgSize(componentsObject, cursorX, cursorY){
+function defineSvgSize(componentData, hostComponentData, cursorX, cursorY){
 	var svgExtents = {
 		width: 0,
 		height: 0
@@ -196,13 +196,24 @@ function defineSvgSize(componentsObject, cursorX, cursorY){
 	var leftArray = [];
 	var topArray = [];
 
-	for(var component in componentsObject) {
-		var componentInterfaceTokens = componentsObject[component].interfaceTokens;
-		
-		_.forEach(componentInterfaceTokens, function(thisToken, index) {
-			leftArray.push(thisToken.left);
-			topArray.push(thisToken.top);
+	for(var component in componentData) {
+		var componentInterfaces = componentData[component].interfaces;		
+		_.forEach(componentInterfaces, function(thisInterface) {
+			leftArray.push(thisInterface.left);
+			topArray.push(thisInterface.top);
 		})
+
+		var otherInterfaces = componentData[component].ioCapability;		
+		_.forEach(otherInterfaces, function(thisInterface) {
+			leftArray.push(thisInterface.left);
+			topArray.push(thisInterface.top);
+		})
+	}
+console.log(hostComponentData);
+	for(var hostComponent in hostComponentData) {
+		var thisComponent = hostComponentData[hostComponent];
+		leftArray.push(thisComponent.ifcLeft);
+		topArray.push(thisComponent.ifcTop);
 	}
 
 	leftArray.push(cursorX);

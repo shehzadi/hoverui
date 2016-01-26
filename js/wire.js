@@ -5,6 +5,12 @@ var Wire = React.createClass({
 		};
 	},
 
+  	getDefaultProps: function() {
+    	return {
+    		width: 2
+    	};
+	},
+
 	onMouseEnter: function() {	
 		this.setState({
 			isHover: true
@@ -18,13 +24,42 @@ var Wire = React.createClass({
 	},
 
 	render: function() {
-		var end1 = this.props.wire[0];
-		var end1Data = this.props.componentData[end1.component];
-		var end1Coords = getInterfaceCoords(end1Data, end1.ifc);
+		//console.log(this.props.componentData);
+		//console.log(this.props.hostComponentData);
+		var wireCoordinates = {};
+		//var end1 = this.props.wire[0];
+		//var end1Data = this.props.componentData[end1.component];
+		//var end1Left = getInterfaceCoords(end1Data, end1.ifc);
 
-		var end2 = this.props.wire[1];
-		var end2Data = this.props.componentData[end2.component];
-		var end2Coords = getInterfaceCoords(end2Data, end2.ifc);
+		//var end2 = this.props.wire[1];
+		//var end2Data = this.props.componentData[end2.component];
+		//var end2Coords = getInterfaceCoords(end2Data, end2.ifc);
+
+
+
+		var that = this;
+		_.forEach(this.props.wire, function(endpoint, i){
+			var thisCoordinates = {};
+			if (endpoint.ifc){//endpoint is component NOT host
+				var root = that.props.componentData[endpoint.component].interfaces[endpoint.ifc];
+				thisCoordinates["left"] = root.left,
+				thisCoordinates["top"] = root.top
+			}
+			else {
+				var root = that.props.hostComponentData[endpoint.component];
+				thisCoordinates["left"] = root.ifcLeft,
+				thisCoordinates["top"] = root.ifcTop
+			}
+			wireCoordinates["end" + i] = thisCoordinates;
+		});
+
+
+
+		var thisProtocol = this.props.wire[0].protocol;
+		var thisStrokeColor = getHSL(this.props.protocols[thisProtocol].hue, true);
+
+
+
 
 		var growth = 0;
 		if (this.state.isHover){
@@ -33,6 +68,7 @@ var Wire = React.createClass({
 
 		var dashArray = "";
 		var className = "wire";
+		/*
 		if ((this.props.isPendingDeletion == end1.component || this.props.isPendingDeletion == end2.component) 
 			|| (_.isEqual(this.props.existingWireEndpoint, end1) || _.isEqual(this.props.existingWireEndpoint, end2))) {
 			dashArray = "3,3";
@@ -41,6 +77,7 @@ var Wire = React.createClass({
 		else {
 			className = "wire " + this.props.wireClass;
 		}
+		*/
 
 		//var svgVisibility = "visible";
 		//if (_.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-1"]) || _.isEqual(this.props.existingWireEndpoint, this.props.endpoints["endpoint-2"])){
@@ -48,9 +85,9 @@ var Wire = React.createClass({
 		//}
 
 		var componentStyle = {
-			stroke: this.props.color,
+			stroke: thisStrokeColor,
 			strokeDasharray: dashArray, 
-			strokeWidth: this.props.stroke + growth
+			strokeWidth: this.props.width + growth
 			//visibility: svgVisibility
 		};
 
@@ -59,10 +96,10 @@ var Wire = React.createClass({
 				className = {className} 
 				onMouseEnter={this.onMouseEnter} 
 				onMouseLeave={this.onMouseLeave} 
-				x1 = {end1Coords.x} 
-				y1 = {end1Coords.y} 
-				x2 = {end2Coords.x} 
-				y2 = {end2Coords.y} 
+				x1 = {wireCoordinates.end0.left} 
+				y1 = {wireCoordinates.end0.top} 
+				x2 = {wireCoordinates.end1.left} 
+				y2 = {wireCoordinates.end1.top} 
 				style = {componentStyle}/>
 		);
 	}

@@ -29,10 +29,7 @@ var Workspace = React.createClass({
     		ifc: {
     			width: 20,
     			height: 1,
-    			margin: 5
-    		},
-    		wire: {
-    			width: 2
+    			pitch: 25
     		},
     		hostComponent: {
     			width: 90,
@@ -322,7 +319,7 @@ var Workspace = React.createClass({
 		//add io capability data
 		for (var componentID in this.componentData) {
 			var thisComponent = this.componentData[componentID];
-			var thisComponentInterfaces = thisComponent.interfaces;
+			var componentInterfaces = thisComponent.interfaces;
 			var moduleInterfaces = thisComponent.module.interfaces;
 
 			var ioCapability = [];
@@ -331,8 +328,18 @@ var Workspace = React.createClass({
 				var thisCapability = {
 					mode: interface.mode,
 					protocol: interface.protocol,
-					capacity: interface.capacity
+					capacity: interface.capacity,
+					used: 0
 				};
+
+				// test for used capabilities
+				console.log(componentInterfaces);
+				var that = this;
+				_.forEach(componentInterfaces, function(interface){
+					if (interface.mode == thisCapability.mode && interface.protocol == thisCapability.protocol){
+						thisCapability.used += 1
+					}
+				});
 				ioCapability.push(thisCapability)
 			});
 
@@ -418,7 +425,7 @@ var Workspace = React.createClass({
 		//position host interfaces
 		for (var hostComponentID in this.hostComponentData) {
 			var thisHostComponent = this.hostComponentData[hostComponentID];
-			console.log(thisHostComponent);
+			var thisInterfaceFace = thisHostComponent.face;
 			
 			if (thisInterfaceFace == "top"){
 				thisHostComponent['ifcLeft'] = thisHostComponent.left + (thisHostComponent.width / 2);
@@ -440,8 +447,37 @@ var Workspace = React.createClass({
 		};
 
 
-		console.log("Prep props: " , props, this.componentData, this.hostComponentData)
-		
+		// Wire data
+		this.wireData = {};
+		for (var wireID in wiresObject) {
+
+			var thisWire = wiresObject[wireID];
+
+			this.wireData[wireID] = [];
+			var that = this;
+			_.forEach(thisWire, function(endpoint, i){
+				//console.log(endpoint);
+				var thisEndpoint = {};
+				if (endpoint.ifc){//endpoint is component NOT host
+					var thisProtocol = that.componentData[endpoint.component].interfaces[endpoint.ifc].protocol;
+					var thisMode = that.componentData[endpoint.component].interfaces[endpoint.ifc].mode;
+					var thisIfc = endpoint.ifc;
+				}
+				else {
+					var thisProtocol = that.hostComponentData[endpoint.component].protocol;
+					var thisMode = that.hostComponentData[endpoint.component].mode;
+					var thisIfc = null;
+				}
+				thisEndpoint = {
+					"component": endpoint.component,
+					"ifc": thisIfc,
+					"protocol": thisProtocol,
+					"mode": thisMode
+				}
+				that.wireData[wireID].push(thisEndpoint)
+
+			});
+		}
 	},
 
 	componentWillReceiveProps: function(nextProps) {
@@ -476,7 +512,7 @@ var Workspace = React.createClass({
 					isPendingDeletion = {this.isPendingDeletion} 
 					onMouseDown = {this.componentMouseDown} 
 					compDims = {this.props.component} 
-					componentData = {thisComponent} 
+					component = {thisComponent} 
 					componentID = {componentID}/>
   			);
 
@@ -584,10 +620,12 @@ var Workspace = React.createClass({
 			var that = this;
 			_.forEach(thisTokenArrays, function(thisTokenArray, i) {
 				_.forEach(thisTokenArray, function(thisToken, j) {
+					var key = "" + componentID + i + j;
+					console.log(key);
 					ifcs.push(
 					<InterfaceToken 
 						tokenObject = {thisToken} 
-						key = {i + "." + j} 
+						key = {key} 
 						isPendingDeletion = {that.isPendingDeletion} 
 						onMouseEnter = {that.ifcMouseEnter} 
 						onMouseLeave = {that.ifcMouseLeave} 
@@ -761,7 +799,7 @@ var Workspace = React.createClass({
 					onMouseDown = {this.componentMouseDown} 
 					onMouseUp = {this.ifcMouseUp} 
 					hostCompDims = {this.props.hostComponent} 
-					hostComponentData = {thisHostComponent} 
+					hostComponent = {thisHostComponent} 
 					hostComponentID = {hostComponentID}/>
 			);
 		/*
@@ -874,7 +912,7 @@ var Workspace = React.createClass({
 			thisBorderColor = getHSL(this.props.protocols[thisProtocol].hue, true);
 		*/
 
-			console.log(thisHostComponent);
+			//console.log(thisHostComponent);
 			if (thisHostComponent.wire){}
 			
 			hostIfcArray.push(
@@ -887,15 +925,17 @@ var Workspace = React.createClass({
 					onMouseLeave = {this.ifcMouseLeave} 
 					onMouseDown = {this.ifcMouseDown} 
 					onMouseUp = {this.ifcMouseUp} 
+					protocols = {that.props.protocols} 
 					//color = {thisFillColor} 
 					//border = {thisBorderColor} 
+					hostCompDims = {this.props.hostComponent} 
 					ifcDims = {this.props.hostInterface}/>				
 			);
 		};
 
 
 		var wires = [];
-		var localGroupArray = [];
+		//var localGroupArray = [];
 
 		this.existingWireEndpoint = false;
 		if (this.state.startFromExistingWire && this.state.dragging){
@@ -905,15 +945,20 @@ var Workspace = React.createClass({
 			};
 		};
 
-		for (var wire in wiresObject) {
-			var thisWire = wiresObject[wire];
-			var thisProtocol = this.getProtocol(thisWire[0].component, thisWire[0].ifc);
+		//var selectedProject = this.props.selectedProject;
+		//var wiresObject = selectedProject.topology.wires || {};
+
+
+		for (var wire in this.wireData) {
+			var thisWire = this.wireData[wire];
+			console.log(thisWire);
 			var wireClass = "";
 			if (this.state.isWireInProgress){
 				wireClass = "discreet"
 			};
 
     		var isWireExists = false;
+    		/*
     		_.forEach(localGroupArray, function(thisEndpoint) {
     			if (_.isEqual(thisEndpoint, thisWire[0])){
     				isWireExists = true;
@@ -921,18 +966,21 @@ var Workspace = React.createClass({
     		});
 
     		thisStrokeColor = getHSL(this.props.protocols[thisProtocol].hue, true);
+    		*/
 
 			if (!isWireExists) {
-				localGroupArray.push(thisWire[0]);
-				localGroupArray.push(thisWire[1]);
+			//	localGroupArray.push(thisWire[0]);
+			//	localGroupArray.push(thisWire[1]);
 				wires.push(
 					<Wire
 						key = {wire} 
 						isPendingDeletion = {this.isPendingDeletion} 
 						wireClass = {wireClass} 
-						color = {thisStrokeColor} 
-						stroke = {this.props.wire.width} 
+						//protocol = {thisWire[0].protocol} 
+						//stroke = {this.props.wire.width} 
+						protocols = {this.props.protocols} 
 						componentData = {this.componentData} 
+						hostComponentData = {this.hostComponentData} 
 						wire = {thisWire} 
 						existingWireEndpoint = {this.existingWireEndpoint}/>
 				);
@@ -963,7 +1011,7 @@ var Workspace = React.createClass({
 		}
 
 		//figure out size of svg container
-		this.svgExtents = defineSvgSize(this.componentData, this.state.cursorX, this.state.cursorY)
+		this.svgExtents = defineSvgSize(this.componentData, this.hostComponentData, this.state.cursorX, this.state.cursorY)
 
 		return (
 			<div className="ui-module workspace pattern">		
@@ -981,31 +1029,6 @@ var Workspace = React.createClass({
 			</div>
 		);
 	},
-});
-
-var HostComponent = React.createClass({
-	onMouseDown: function() {
-		this.props.onMouseDown(this.props.componentID)
-	},
-
-	render: function() {
-
-		var containerStyle = {
-			width: this.props.width,
-			height: this.props.height,
-			top: this.props.posY,
-			left: this.props.posX,
-		};
-
-		return (
-			<div 
-				className="hostComponent" 
-				style={containerStyle}
-				onMouseDown={this.onMouseDown}>
-				hostIfcName
-  			</div>
-		);
-	}
 });
 
 

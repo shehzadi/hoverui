@@ -4,12 +4,12 @@ var Component = React.createClass({
 	},
 
 	render: function() {
-		var componentData = this.props.componentData[this.props.componentID];
+		//var componentData = this.props.componentData[this.props.componentID];
 		var componentStyle = {
 			width: this.props.compDims.width,
 			height: this.props.compDims.height,
-			top: componentData.top,
-			left: componentData.left
+			top: this.props.component.top,
+			left: this.props.component.left
 		};
 
 		var classString = "component";
@@ -23,10 +23,10 @@ var Component = React.createClass({
 				onMouseDown = {this.handleMouseDown}  
 				style = {componentStyle}>
   				<div className="componentName">
-  					{componentData.module.name}
+  					{this.props.component.module.name}
   				</div>
   				<div className="componentVersion">
-  					{componentData.module.version}
+  					{this.props.component.module.version}
   				</div>	
   			</div>
 		);
