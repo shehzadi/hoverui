@@ -209,7 +209,7 @@ function defineSvgSize(componentData, hostComponentData, cursorX, cursorY){
 			topArray.push(thisInterface.top);
 		})
 	}
-console.log(hostComponentData);
+
 	for(var hostComponent in hostComponentData) {
 		var thisComponent = hostComponentData[hostComponent];
 		leftArray.push(thisComponent.ifcLeft);

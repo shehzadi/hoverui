@@ -34,11 +34,6 @@ var Workspace = React.createClass({
     		hostComponent: {
     			width: 90,
     			height: 44
-    		},
-    		hostInterface: {
-    			width: 26,
-    			height: 1,
-    			apex: 7
     		}	
     	};
 	},
@@ -59,24 +54,6 @@ var Workspace = React.createClass({
     		this.setState({
     			mouseDown: tokenObject
     		});
-		}
-	},
-
-	componentMouseDown: function(componentID) {
-		if (event.button == 0){	
-			event.stopPropagation();
-			this.addDocumentEvents();
-
-			var workspaceBox = React.findDOMNode(this).getBoundingClientRect();
-			this.workspaceOriginX = workspaceBox.left;
-			this.workspaceOriginY = workspaceBox.top;
-			this.startX = event.pageX - this.workspaceOriginX;
-			this.startY = event.pageY - this.workspaceOriginY;
-			var startFromExistingWire = false;
-
-			this.setState({
-				mouseDown: componentID
-			});
 		}
 	},
 
@@ -123,6 +100,33 @@ var Workspace = React.createClass({
 
 			this.setState({
 				isSnapping: snapObject,
+			});
+		}
+	},
+
+	componentMouseDown: function(componentID, componentType) {
+		if (event.button == 0){	
+			event.stopPropagation();
+			this.addDocumentEvents();
+
+			var workspaceBox = React.findDOMNode(this).getBoundingClientRect();
+			this.workspaceOriginX = workspaceBox.left;
+			this.workspaceOriginY = workspaceBox.top;
+			this.startX = event.pageX - this.workspaceOriginX;
+			this.startY = event.pageY - this.workspaceOriginY;
+			if (componentType == "component"){
+				this.dragStartX = this.componentData[componentID].left;
+				this.dragStartY = this.componentData[componentID].top;
+			}
+			else if (componentType == "hostComponent"){
+				this.dragStartX = this.hostComponentData[componentID].left;
+				this.dragStartY = this.hostComponentData[componentID].top;
+			}
+
+			//var startFromExistingWire = false;
+
+			this.setState({
+				mouseDown: componentID
 			});
 		}
 	},
@@ -260,18 +264,17 @@ var Workspace = React.createClass({
 	},
 
 	componentWillMount: function() {
-		console.log("Will Mount: " , this.props)
   		this.prepData(this.props);
 	},
 
 	prepData: function(props) {
-		//console.log("Prep props: " , props);
 		var selectedProject = props.selectedProject;
 		var dependenciesObject = selectedProject.dependencies || {} ;
 		var componentsObject = selectedProject.topology.components || {};
 		var wiresObject = selectedProject.topology.wires || {};
 		var hostComponentsObject = selectedProject.topology.host_interfaces || {};
 
+		//set up component data object
 		this.componentData = {};
 		for (var componentID in componentsObject) {
 			var thisComponent = componentsObject[componentID];
@@ -289,7 +292,7 @@ var Workspace = React.createClass({
 					}
 				}
 			}
-			var componentInterfaces = thisComponent.interfaces
+			var componentInterfaces = thisComponent.interfaces;
 
 			this.componentData[componentID] = {
 				left: componentViewData.x, 
@@ -302,6 +305,7 @@ var Workspace = React.createClass({
 			};
 		};
 
+		//set up host component data object
 		this.hostComponentData = {};
 		for (var hostComponentID in hostComponentsObject) {
 			var thisHostComponent = hostComponentsObject[hostComponentID];
@@ -333,7 +337,6 @@ var Workspace = React.createClass({
 				};
 
 				// test for used capabilities
-				console.log(componentInterfaces);
 				var that = this;
 				_.forEach(componentInterfaces, function(interface){
 					if (interface.mode == thisCapability.mode && interface.protocol == thisCapability.protocol){
@@ -346,11 +349,40 @@ var Workspace = React.createClass({
 			this.componentData[componentID]["ioCapability"] = ioCapability;	
 		};
 
+		//set up wire data object
+		this.wireData = {};
+		for (var wireID in wiresObject) {
+
+			var thisWire = wiresObject[wireID];
+
+			this.wireData[wireID] = [];
+			var that = this;
+			_.forEach(thisWire, function(endpoint, i){
+				//console.log(endpoint);
+				var thisEndpoint = {};
+				if (endpoint.ifc){//endpoint is component NOT host
+					var thisProtocol = that.componentData[endpoint.component].interfaces[endpoint.ifc].protocol;
+					var thisMode = that.componentData[endpoint.component].interfaces[endpoint.ifc].mode;
+					var thisIfc = endpoint.ifc;
+				}
+				else {
+					var thisProtocol = that.hostComponentData[endpoint.component].protocol;
+					var thisMode = that.hostComponentData[endpoint.component].mode;
+					var thisIfc = null;
+				}
+				thisEndpoint = {
+					"component": endpoint.component,
+					"ifc": thisIfc,
+					"protocol": thisProtocol,
+					"mode": thisMode
+				}
+				that.wireData[wireID].push(thisEndpoint)
+			});
+		}
+
 		//add data from wire data
-		for (var wire in wiresObject) {
-			var thisWire = wiresObject[wire];
-			var endpoint1 = thisWire[0];
-			var endpoint2 = thisWire[1];
+		for (var wire in this.wireData) {
+			var thisWire = this.wireData[wire];
 			var that = this;
 			_.forEach(thisWire, function(thisEnd, i){
 				if (i == 0){
@@ -373,8 +405,35 @@ var Workspace = React.createClass({
 					component: otherEnd.component,
 					ifc: otherEnd.ifc || null
 				}
+				writeLocation["wire"] = wire;
+			});
+		};
 
-				//get vector, face etc.
+		this.positionInterfaces();
+	},
+
+	positionInterfaces: function() {
+		//add positional and face data etc.
+		for (var wire in this.wireData) {
+			var thisWire = this.wireData[wire];
+			var that = this;
+			_.forEach(thisWire, function(thisEnd, i){
+				if (i == 0){
+					var otherEnd = thisWire[1]
+				}
+				else {
+					var otherEnd = thisWire[0]
+				}
+
+				if (thisEnd.ifc){//thisEnd is component, not host
+					var thisComponent = that.componentData[thisEnd.component];
+					var writeLocation = thisComponent.interfaces[thisEnd.ifc]
+				}
+				else {//thisEnd is a host
+					var thisComponent = that.hostComponentData[thisEnd.component];
+					var writeLocation = thisComponent
+				}
+				
 				if (otherEnd.ifc){//otherEnd is component, not host
 					var otherComponent = that.componentData[otherEnd.component];
 				}
@@ -385,11 +444,11 @@ var Workspace = React.createClass({
 				var faceString = getFaceString(thisComponent, otherComponent);
 
 				writeLocation["face"] = faceString;
-				writeLocation["wire"] = wire;
+				
 			});
 		};
 
-		// create token arrays
+		//create token arrays
 		for (var componentID in this.componentData) {
 			var thisComponent = this.componentData[componentID];
 			var tokenArrays = {
@@ -425,17 +484,16 @@ var Workspace = React.createClass({
 		//position host interfaces
 		for (var hostComponentID in this.hostComponentData) {
 			var thisHostComponent = this.hostComponentData[hostComponentID];
-			var thisInterfaceFace = thisHostComponent.face;
 			
-			if (thisInterfaceFace == "top"){
+			if (thisHostComponent.face == "top"){
 				thisHostComponent['ifcLeft'] = thisHostComponent.left + (thisHostComponent.width / 2);
 				thisHostComponent['ifcTop'] = thisHostComponent.top;
 			}
-			if (thisInterfaceFace == "right"){
-				thisHostComponent['ifcLeft'] = thisHostComponent.left + (thisHostComponent.width);
+			else if (thisHostComponent.face == "right"){
+				thisHostComponent['ifcLeft'] = thisHostComponent.left + thisHostComponent.width;
 				thisHostComponent['ifcTop'] = thisHostComponent.top + (thisHostComponent.height / 2);
 			}
-			if (thisInterfaceFace == "left"){
+			else if (thisHostComponent.face == "left"){
 				thisHostComponent['ifcLeft'] = thisHostComponent.left;
 				thisHostComponent['ifcTop'] = thisHostComponent.top + (thisHostComponent.height / 2);
 			}
@@ -443,65 +501,28 @@ var Workspace = React.createClass({
 				thisHostComponent['ifcLeft'] = thisHostComponent.left + (thisHostComponent.width / 2);
 				thisHostComponent['ifcTop'] = thisHostComponent.top + thisHostComponent.height;
 			}
-
 		};
 
-
-		// Wire data
-		this.wireData = {};
-		for (var wireID in wiresObject) {
-
-			var thisWire = wiresObject[wireID];
-
-			this.wireData[wireID] = [];
-			var that = this;
-			_.forEach(thisWire, function(endpoint, i){
-				//console.log(endpoint);
-				var thisEndpoint = {};
-				if (endpoint.ifc){//endpoint is component NOT host
-					var thisProtocol = that.componentData[endpoint.component].interfaces[endpoint.ifc].protocol;
-					var thisMode = that.componentData[endpoint.component].interfaces[endpoint.ifc].mode;
-					var thisIfc = endpoint.ifc;
-				}
-				else {
-					var thisProtocol = that.hostComponentData[endpoint.component].protocol;
-					var thisMode = that.hostComponentData[endpoint.component].mode;
-					var thisIfc = null;
-				}
-				thisEndpoint = {
-					"component": endpoint.component,
-					"ifc": thisIfc,
-					"protocol": thisProtocol,
-					"mode": thisMode
-				}
-				that.wireData[wireID].push(thisEndpoint)
-
-			});
-		}
 	},
 
 	componentWillReceiveProps: function(nextProps) {
-		console.log("Will Receive Props: " , nextProps);
   		this.prepData(nextProps)
 	},
 
 	render: function() {
-
 		this.isPendingDeletion = false;
 
-
+		//render components
 		var components = [];
-		//var ifcs = [];
-
 		for (var componentID in this.componentData) {
 			var thisComponent = this.componentData[componentID];
 
-			/////// Components
 			if (componentID == this.state.dragging){ //component is being dragged
-				thisComponent.left += this.state.cursorX - this.startX;
-				thisComponent.top += this.state.cursorY - this.startY;
+				thisComponent.left = this.dragStartX + this.state.cursorX - this.startX;
+				thisComponent.top = this.dragStartY + this.state.cursorY - this.startY;	
+				this.positionInterfaces();		
 			}
-			
+		
 			if (thisComponent.left <= 0 || thisComponent.top <= headerHeight) { //component is outside of canvas, e.g. during drag operation
 				this.isPendingDeletion = componentID
 			}
@@ -515,10 +536,6 @@ var Workspace = React.createClass({
 					component = {thisComponent} 
 					componentID = {componentID}/>
   			);
-
-  			/////// Interfaces
- 
-
 		};
 
 
@@ -621,7 +638,6 @@ var Workspace = React.createClass({
 			_.forEach(thisTokenArrays, function(thisTokenArray, i) {
 				_.forEach(thisTokenArray, function(thisToken, j) {
 					var key = "" + componentID + i + j;
-					console.log(key);
 					ifcs.push(
 					<InterfaceToken 
 						tokenObject = {thisToken} 
@@ -775,7 +791,7 @@ var Workspace = React.createClass({
 
 
 
-		var hostComponentsArray = [];
+		var hostComponents = [];
 		var hostIfcArray = [];
 		for (var hostComponentID in this.hostComponentData) {
 			var thisHostComponent = this.hostComponentData[hostComponentID];
@@ -793,7 +809,13 @@ var Workspace = React.createClass({
 
 		*/
 
-			hostComponentsArray.push(
+			if (hostComponentID == this.state.dragging){ //component is being dragged
+				thisHostComponent.left = this.dragStartX + this.state.cursorX - this.startX;
+				thisHostComponent.top = this.dragStartY + this.state.cursorY - this.startY;	
+				this.positionInterfaces();		
+			}
+
+			hostComponents.push(
 				<HostComponent
 					key = {hostComponentID} 
 					onMouseDown = {this.componentMouseDown} 
@@ -928,8 +950,7 @@ var Workspace = React.createClass({
 					protocols = {that.props.protocols} 
 					//color = {thisFillColor} 
 					//border = {thisBorderColor} 
-					hostCompDims = {this.props.hostComponent} 
-					ifcDims = {this.props.hostInterface}/>				
+					hostCompDims = {this.props.hostComponent}/>				
 			);
 		};
 
@@ -951,7 +972,6 @@ var Workspace = React.createClass({
 
 		for (var wire in this.wireData) {
 			var thisWire = this.wireData[wire];
-			console.log(thisWire);
 			var wireClass = "";
 			if (this.state.isWireInProgress){
 				wireClass = "discreet"
@@ -1020,7 +1040,7 @@ var Workspace = React.createClass({
 					{wireInProgress}
 				</svg>	
 				{components}
-				{hostComponentsArray}
+				{hostComponents}
 						
 				<svg className="ifcContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{ifcs}

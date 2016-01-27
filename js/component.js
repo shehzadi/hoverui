@@ -1,6 +1,6 @@
 var Component = React.createClass({
 	handleMouseDown: function(){
-		this.props.onMouseDown(this.props.componentID)
+		this.props.onMouseDown(this.props.componentID, "component")
 	},
 
 	render: function() {

@@ -296,7 +296,8 @@ var IOConsole = React.createClass({
 	},
 
 	handleComponentDrop: function(dropComponent, deltaX, deltaY) {
-        console.log(dropComponent);
+        console.log(this.state.projectsObject[this.state.selectedProjectID]);
+        
     	var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
 
     	newProjectObject.view[dropComponent].x += deltaX;

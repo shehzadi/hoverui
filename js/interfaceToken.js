@@ -7,7 +7,7 @@ var InterfaceToken = React.createClass({
 
 	getDefaultProps: function() {
 		return {
-			arrow: 5,
+			arrow: 5
 		};
 	},
 
@@ -37,6 +37,8 @@ var InterfaceToken = React.createClass({
 	},
 
 	render: function() {
+		//console.log(this.props);
+
 		var leftCenterPoint = this.props.tokenObject.left;
 		var topCenterPoint = this.props.tokenObject.top;
 		

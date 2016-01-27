@@ -5,6 +5,16 @@ var HostInterface = React.createClass({
 		};
 	},
 
+	getDefaultProps: function() {
+		return {
+			hostInterface: {
+				width: 26,
+				height: 1,
+				apex: 7
+    		}
+    	};
+	},
+
 	onMouseEnter: function() {	
 		this.props.onMouseEnter(this.props.tokenObject, this.props.isInvalid);
 		this.setState({
@@ -31,11 +41,8 @@ var HostInterface = React.createClass({
 	},
 
 	render: function() {
-		console.log(this.props.tokenObject);
-
 		var leftCenterPoint = this.props.tokenObject.ifcLeft;
 		var topCenterPoint = this.props.tokenObject.ifcTop;
-
 
 		var growthW = 0;
 		var growthH = 0;
@@ -57,7 +64,6 @@ var HostInterface = React.createClass({
 			stroke: borderColor,
 			opacity: thisOpacity
 		};
-
 
 		var rotation = 0;
 		//var left = leftCenterPoint + (this.props.hostCompDims.width / 2);
@@ -82,20 +88,20 @@ var HostInterface = React.createClass({
 
 
 		var polygon = {	
-			width: this.props.ifcDims.width + growthW,
-			height: this.props.ifcDims.height + growthH,
-			left: this.props.tokenObject.ifcLeft - this.props.ifcDims.width/2 - growthW/2,
-			top: this.props.tokenObject.ifcTop - this.props.ifcDims.height/2 - growthH/2 + 1
+			width: this.props.hostInterface.width + growthW,
+			height: this.props.hostInterface.height + growthH,
+			left: this.props.tokenObject.ifcLeft - this.props.hostInterface.width/2 - growthW/2,
+			top: this.props.tokenObject.ifcTop - this.props.hostInterface.height/2 - growthH/2 + 1
 		};
 
 
 		var inputPointer = "";
 		var outputPointer = "";
 		if (this.props.tokenObject.mode == "in" || this.props.tokenObject.mode == "bi"){
-			inputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top - this.props.ifcDims.apex);
+			inputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top - this.props.hostInterface.apex);
 		}
 		if (this.props.tokenObject.mode == "out" || this.props.tokenObject.mode == "bi"){
-			outputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top  + polygon.height + this.props.ifcDims.apex)
+			outputPointer = " " + (polygon.left + (polygon.width / 2)) + ", " + (polygon.top  + polygon.height + this.props.hostInterface.apex)
 		}
 
 		var points = "" + polygon.left + ", " + polygon.top; //top-left
@@ -107,7 +113,6 @@ var HostInterface = React.createClass({
 
 
 
-		//rotation
 
 		
 

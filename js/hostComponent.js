@@ -1,6 +1,6 @@
 var HostComponent = React.createClass({
 	onMouseDown: function() {
-		this.props.onMouseDown(this.props.componentID)
+		this.props.onMouseDown(this.props.hostComponentID, "hostComponent")
 	},
 
 	render: function() {
