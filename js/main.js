@@ -239,75 +239,44 @@ var IOConsole = React.createClass({
     },
 
 	handleNewComponentDrop: function(moduleID, posX, posY){
-     	var newProjectViewObject = {};
-     	if (this.state.projectsObject[this.state.selectedProjectID].view){
-     		newProjectViewObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].view);
-     	}
-
-    	var newProjectComponentsObject = {};
-    	if (this.state.projectsObject[this.state.selectedProjectID].topology.components){
-    		newProjectComponentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].topology.components);
-    	}
-    	var newComponentID = "component-" + ioid();
-
-    	var moduleInterfaces = this.state.modulesObject[moduleID].interfaces;
-
-    	var newInterfaceGroupsObject = {};
-    	var groupN = 1;
-    	for (thisInterface in moduleInterfaces){
-    		var thisInterfaceDetails = moduleInterfaces[thisInterface]; //mode & protocol
-
-    		//check for existing group with these details - return group ID or false
-    		var existingGroup = false;
-    		for (group in newInterfaceGroupsObject){
-    			var existingGroup = false;
-    			var existingGroupMemberID = Object.keys(newInterfaceGroupsObject[group])[0];
-    			var existingGroupMemberDetails = moduleInterfaces[existingGroupMemberID];
-    			if (_.isEqual(thisInterfaceDetails, existingGroupMemberDetails)){
-    				existingGroup = group;
-    				break
-    			}
-    		}
-
-    		
-    		if (existingGroup == false) {
-    			var interfaceGroup = {};
-    			interfaceGroup[thisInterface] = true;
-    			newInterfaceGroupsObject["group-" + ioid()] = interfaceGroup;
-    			groupN += 1
-    		}
-
-    		else {
-    			newInterfaceGroupsObject[existingGroup][thisInterface] = true;
-    		}  		
-    	}
-
-    	var newViewData = {
+     	var newProjectViewObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].view) || {};
+    	var newProjectComponentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].topology.components) || {};
+        var projectDependenciesObject = this.state.projectsObject[this.state.selectedProjectID].dependencies || {};
+        
+    	var newComponentID = "comp-" + ioid();
+        var newViewData = {
     		"x": posX,
-    		"y": posY,
-    		"groups": newInterfaceGroupsObject
-    	};
+    		"y": posY
+        };
+        var newComponentData = {
+            "module": moduleID
+        };
+
+        if (!projectDependenciesObject[moduleID]){ // module is NOT already a dependency
+            var newProjectDependenciesObject = _.cloneDeep(projectDependenciesObject) || {};
+            newProjectDependenciesObject[moduleID] = _.cloneDeep(this.state.modulesObject[moduleID]);
+            this.firebaseProjectsRef.child(this.state.selectedProjectID).child("dependencies").set(newProjectDependenciesObject)
+
+        }
 
     	newProjectViewObject[newComponentID] = newViewData;
     	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("view").set(newProjectViewObject)
 
-    	newProjectComponentsObject[newComponentID] = moduleID;
+    	newProjectComponentsObject[newComponentID] = newComponentData;
     	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("components").set(newProjectComponentsObject)
 	},
 
 	handleComponentDrop: function(dropComponent, deltaX, deltaY) {
-        console.log(this.state.projectsObject[this.state.selectedProjectID]);
-        
     	var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
 
     	newProjectObject.view[dropComponent].x += deltaX;
     	newProjectObject.view[dropComponent].y += deltaY;
 
     	if (dropComponent.indexOf('host') == 0){
-    		if (newProjectObject.view[dropComponent].x <= 0){
+    		if (newProjectObject.view[dropComponent].x <= 2){
 				newProjectObject.view[dropComponent].x = 2
 	    	}
-	    	if (newProjectObject.view[dropComponent].y <= headerHeight){
+	    	if (newProjectObject.view[dropComponent].y <= headerHeight + 2){
 				newProjectObject.view[dropComponent].y = headerHeight + 2	
 	    	}
 
@@ -328,18 +297,48 @@ var IOConsole = React.createClass({
 
    	deleteComponent: function(componentID) {
    		var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
-   		newProjectObject.view[componentID] = null;
-   		newProjectObject.topology.components[componentID] = null;
+        var moduleDependencyID = newProjectObject.topology.components[componentID].module;
+   		
+        //delete view data
+        newProjectObject.view[componentID] = null;
+
+        //delete component from topology
+   		newProjectObject.topology.components[componentID] = null; //delete component from topology
 
    		//find wires and delete them
    		if (newProjectObject.topology.wires){
 	   		for (var wire in newProjectObject.topology.wires){
 	   			var wireObject = newProjectObject.topology.wires[wire];
-	   			if (wireObject["endpoint-1"].component == componentID || wireObject["endpoint-2"].component == componentID){
-	   				newProjectObject.topology.wires[wire] = null
+	   			if (wireObject[0].component == componentID){
+	   				newProjectObject.topology.wires[wire] = null;
+                    //find interface on other component and delete
+                    if (newProjectObject.topology.components[wireObject[1].component]){
+                        newProjectObject.topology.components[wireObject[1].component].interfaces[wireObject[1].ifc] = null
+                    }
 	   			}
+                if (wireObject[1].component == componentID){
+                    newProjectObject.topology.wires[wire] = null;
+                    //find interface on other component and delete
+                    if (newProjectObject.topology.components[wireObject[0].component]){
+                        newProjectObject.topology.components[wireObject[0].component].interfaces[wireObject[0].ifc] = null
+                    }
+                }
 	   		}
    		}
+        //check dependencies and remove if possible
+        var existingDependency = _.find(newProjectObject.topology.components, function(component) {
+            if (component){
+                return component.module == moduleDependencyID;
+            }
+            else {
+                return false
+            }
+        });
+
+        if (!existingDependency){//delete dependent module
+            newProjectObject.dependencies[moduleDependencyID] = null;
+        }
+
    		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
     },
 

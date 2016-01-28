@@ -1,3 +1,5 @@
+var headerHeight = 40;
+
 function guid() {
   return randomStringOf4() + randomStringOf4() + '-' + randomStringOf4() + '-' + randomStringOf4() + '-' +
     randomStringOf4() + '-' + randomStringOf4() + randomStringOf4() + randomStringOf4();
@@ -11,10 +13,13 @@ function randomStringOf4() {
     return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 }
 
-function getHSL(hue, isDarker){
+function getHSL(hue, modification){
 	var lightness = "55%";
-	if (isDarker){
+	if (modification == "darker"){
 		lightness = "45%"
+	}
+	if (modification == "lighter"){
+		lightness = "65%"
 	}
 	return "hsl(" + hue + ", 70%," + lightness + ")"
 }

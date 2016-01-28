@@ -41,24 +41,23 @@ var Wire = React.createClass({
 		_.forEach(this.props.wire, function(endpoint, i){
 			var thisCoordinates = {};
 			if (endpoint.ifc){//endpoint is component NOT host
+				console.log(that.props.componentData[endpoint.component].interfaces);
 				var root = that.props.componentData[endpoint.component].interfaces[endpoint.ifc];
-				thisCoordinates["left"] = root.left,
-				thisCoordinates["top"] = root.top
+				thisCoordinates["left"] = root.left;
+				thisCoordinates["top"] = root.top;
+				//var thisWire = root.wire
 			}
 			else {
 				var root = that.props.hostComponentData[endpoint.component];
-				thisCoordinates["left"] = root.ifcLeft,
-				thisCoordinates["top"] = root.ifcTop
+				thisCoordinates["left"] = root.ifcLeft;
+				thisCoordinates["top"] = root.ifcTop;
 			}
 			wireCoordinates["end" + i] = thisCoordinates;
 		});
 
 
-
 		var thisProtocol = this.props.wire[0].protocol;
-		var thisStrokeColor = getHSL(this.props.protocols[thisProtocol].hue, true);
-
-
+		var thisStrokeColor = getHSL(this.props.protocols[thisProtocol].hue, "darker");
 
 
 		var growth = 0;
@@ -68,6 +67,20 @@ var Wire = React.createClass({
 
 		var dashArray = "";
 		var className = "wire";
+
+		if (this.props.wire[0].component == this.props.isPendingDeletion || this.props.wire[1].component == this.props.isPendingDeletion){
+			dashArray = "3,3";
+			growth = -1;		
+		}
+
+		if (this.props.wire[0].component == this.props.isPendingDeletion || this.props.wire[1].component == this.props.isPendingDeletion){
+			dashArray = "3,3";
+			growth = -1;		
+		}
+
+		if (this.props.isPendingUpdate == this.props.wire[0].wire){
+			dashArray = "3,3";
+		}
 		/*
 		if ((this.props.isPendingDeletion == end1.component || this.props.isPendingDeletion == end2.component) 
 			|| (_.isEqual(this.props.existingWireEndpoint, end1) || _.isEqual(this.props.existingWireEndpoint, end2))) {

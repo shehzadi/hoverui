@@ -57,7 +57,7 @@ var HostInterface = React.createClass({
 		}
 
 		var fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue);
-		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, true);
+		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "darker");
 
 		var interfaceStyle = {
 			fill: fillColor,

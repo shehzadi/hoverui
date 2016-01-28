@@ -54,8 +54,16 @@ var InterfaceToken = React.createClass({
 			thisOpacity = 0.2
 		}
 
-		if (this.props.isPendingDeletion == this.props.tokenObject.componentID){
-			thisOpacity = 0
+		var fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue);
+		var dashArray = "";
+		if (this.props.isPendingDeletion == this.props.componentID){
+			fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "lighter");
+			dashArray = "3,3";
+		}
+
+		if (this.props.tokenObject.wireTo && this.props.tokenObject.wireTo.component == this.props.isPendingDeletion){
+			fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "lighter");
+			dashArray = "3,3";
 		}
 
 		var polygon = {	
@@ -65,12 +73,13 @@ var InterfaceToken = React.createClass({
 			top: topCenterPoint - (this.props.ifcDims.height/2) - growthH/2 
 		};
 
-		var fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue);
-		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, true);
+		
+		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "darker");
 
 		var style = {
 			fill: fillColor,
 			stroke: borderColor,
+			strokeDasharray: dashArray,
 			opacity: thisOpacity
 		}
 
