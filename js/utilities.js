@@ -147,7 +147,6 @@ function positionTokens(component, ifcProps){
 }
 
 function getFaceString(firstObject, secondObject){
-	//console.log(vector.y / vector.x, refVector);
 	var refAngle = firstObject.height / firstObject.width;
 	var vector = {
 		x: (secondObject.left + (0.5 * secondObject.width)) - (firstObject.left + (0.5 * firstObject.width)),
@@ -199,7 +198,6 @@ function getOtherEndOfWire(componentID, interfaceID, selectedProject){
 	}
 
 	else {
-		//var refInterfaceID = Object.keys(selectedProject.view[componentID].groups[interfaceGroupID])[0];
 		var interfaceObject = {
 			component: componentID,
 			ifc: interfaceID

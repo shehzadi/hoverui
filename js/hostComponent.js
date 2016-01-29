@@ -4,7 +4,6 @@ var HostComponent = React.createClass({
 	},
 
 	render: function() {
-
 		var containerStyle = {
 			width: this.props.hostCompDims.width,
 			height: this.props.hostCompDims.height,

@@ -80,12 +80,9 @@ var InterfaceToken = React.createClass({
 				}
 			}
 
-
 			this.setState({
 				isValid: isValid
     		});
-
-	
 		}
 		else {
 			this.setState({
@@ -95,8 +92,6 @@ var InterfaceToken = React.createClass({
 	},
 
 	render: function() {
-		//console.log(this.props);
-
 		var leftCenterPoint = this.props.tokenObject.left;
 		var topCenterPoint = this.props.tokenObject.top;
 		
@@ -125,11 +120,6 @@ var InterfaceToken = React.createClass({
 		if (this.state.isValid == false){
 			thisOpacity = 0.2
 		}
-	
-
-		
-
-		
 
 		var polygon = {	
 			width: this.props.ifcDims.width + growthW,

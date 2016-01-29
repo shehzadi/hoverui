@@ -251,16 +251,20 @@ var projectTemplate = {
   "topology": {
     "host_interfaces": {
       "host-0001": {
-        "mode": "in",
+        "mode": "bi",
         "protocol": "protocol-3we4"
       },
       "host-0002": {
-        "mode": "out",
+        "mode": "bi",
         "protocol": "protocol-14rf"
       },
       "host-0003": {
         "mode": "bi",
         "protocol": "protocol-49iu"
+      },
+      "host-0004": {
+        "mode": "bi",
+        "protocol": "protocol-26tg"
       }
     }
   },
@@ -275,6 +279,10 @@ var projectTemplate = {
     },
     "host-0003": {
       "x": 240,
+      "y": headerHeight + 15
+    },
+    "host-0004": {
+      "x": 350,
       "y": headerHeight + 15
     }
   }

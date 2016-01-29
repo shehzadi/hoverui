@@ -34,17 +34,13 @@ var HostInterface = React.createClass({
 				isValid = true
 			}
 
-			
-				if (_.isEqual(this.props.tokenObject, this.props.mouseDown)){
-					isValid = true
-				}
+			if (_.isEqual(this.props.tokenObject, this.props.mouseDown)){
+				isValid = true
+			}
 						
-
 			this.setState({
 				isValid: isValid
     		});
-
-	
 		}
 		else {
 			this.setState({
@@ -103,17 +99,10 @@ var HostInterface = React.createClass({
 		
 
 		// validity for drop
-		//console.log(this.props.dragging);
-
 		if (this.state.isValid == false){
 			thisOpacity = 0.2
 		}
 	
-		
-
-		
-
-
 		var interfaceStyle = {
 			fill: fillColor,
 			stroke: borderColor,
@@ -121,29 +110,17 @@ var HostInterface = React.createClass({
 		};
 
 		var rotation = 0;
-		//var left = leftCenterPoint + (this.props.hostCompDims.width / 2);
-		//var top = topCenterPoint + this.props.hostCompDims.height;
 		if (this.props.tokenObject.face == "right"){
 			rotation = -90;
-			//left = leftCenterPoint + this.props.hostCompDims.width;
-			//top = topCenterPoint + (this.props.hostCompDims.height / 2);
 		}
 		if (this.props.tokenObject.face == "left"){			
 			rotation = 90;
-			//left = leftCenterPoint;
-			//top = topCenterPoint + (this.props.hostCompDims.height / 2);
 		}
 		if (this.props.tokenObject.face == "top"){
 			rotation = 180;
-			//top = topCenterPoint;
 		}
 
-
-
-
 		var transformString = "rotate(" + rotation + " " + leftCenterPoint + " " + topCenterPoint + ")";
-
-
 
 		var polygon = {	
 			width: this.props.hostInterface.width + growthW,
@@ -151,7 +128,6 @@ var HostInterface = React.createClass({
 			left: this.props.tokenObject.ifcLeft - this.props.hostInterface.width/2 - growthW/2,
 			top: this.props.tokenObject.ifcTop - this.props.hostInterface.height/2 - growthH/2 + 1
 		};
-
 
 		var inputPointer = "";
 		var outputPointer = "";
@@ -168,13 +144,6 @@ var HostInterface = React.createClass({
 		points += " " + (polygon.left + polygon.width) + ", " + (polygon.top + polygon.height); //bottom-right
 		points += outputPointer;
 		points += " " + polygon.left + ", " + (polygon.top + polygon.height); //bottom-left
-
-
-
-
-		
-
-
 
 		return (
 			<polygon 

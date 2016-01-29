@@ -4,7 +4,6 @@ var Component = React.createClass({
 	},
 
 	render: function() {
-		//var componentData = this.props.componentData[this.props.componentID];
 		var componentStyle = {
 			width: this.props.compDims.width,
 			height: this.props.compDims.height,
