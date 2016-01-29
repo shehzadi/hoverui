@@ -282,7 +282,7 @@ var Workspace = React.createClass({
 		for (var componentID in this.componentData) {
 			var thisComponent = this.componentData[componentID];
 			var componentInterfaces = thisComponent.interfaces;
-			var moduleInterfaces = thisComponent.module.interfaces;
+			var moduleInterfaces = thisComponent.module.topology.interfaces;
 
 			var ioCapability = [];
 
