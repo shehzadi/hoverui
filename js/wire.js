@@ -41,7 +41,7 @@ var Wire = React.createClass({
 		_.forEach(this.props.wire, function(endpoint, i){
 			var thisCoordinates = {};
 			if (endpoint.ifc){//endpoint is component NOT host
-				console.log(that.props.componentData[endpoint.component].interfaces);
+				//console.log(that.props.componentData[endpoint.component].interfaces);
 				var root = that.props.componentData[endpoint.component].interfaces[endpoint.ifc];
 				thisCoordinates["left"] = root.left;
 				thisCoordinates["top"] = root.top;
@@ -58,6 +58,7 @@ var Wire = React.createClass({
 
 		var thisProtocol = this.props.wire[0].protocol;
 		var thisStrokeColor = getHSL(this.props.protocols[thisProtocol].hue, "darker");
+		var thisOpacity = 1;
 
 
 		var growth = 0;
@@ -70,16 +71,15 @@ var Wire = React.createClass({
 
 		if (this.props.wire[0].component == this.props.isPendingDeletion || this.props.wire[1].component == this.props.isPendingDeletion){
 			dashArray = "3,3";
-			growth = -1;		
 		}
 
-		if (this.props.wire[0].component == this.props.isPendingDeletion || this.props.wire[1].component == this.props.isPendingDeletion){
-			dashArray = "3,3";
-			growth = -1;		
+		if (this.props.dragging.componentID || this.props.dragging.hostComponentID){ // wire is being dragged
+			thisOpacity = 0.2
 		}
 
 		if (this.props.isPendingUpdate == this.props.wire[0].wire){
 			dashArray = "3,3";
+			thisOpacity = 1
 		}
 		/*
 		if ((this.props.isPendingDeletion == end1.component || this.props.isPendingDeletion == end2.component) 
@@ -100,7 +100,8 @@ var Wire = React.createClass({
 		var componentStyle = {
 			stroke: thisStrokeColor,
 			strokeDasharray: dashArray, 
-			strokeWidth: this.props.width + growth
+			strokeWidth: this.props.width + growth,
+			opacity: thisOpacity
 			//visibility: svgVisibility
 		};
 

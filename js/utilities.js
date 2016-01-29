@@ -24,6 +24,26 @@ function getHSL(hue, modification){
 	return "hsl(" + hue + ", 70%," + lightness + ")"
 }
 
+function checkTypeValidity(protocol1, mode1, protocol2, mode2){
+	var isValid = false;
+	
+	if (protocol1 != protocol2){
+		isValid = false
+	}
+	else {
+		if (mode1 == "bi" || mode2 == "bi"){
+			isValid = true
+		}
+		else if (mode1 == "in" && mode2 == "out" || mode1 == "out" && mode2 == "in"){
+			isValid = true
+		}
+		else {
+			isValid = false
+		}
+	}
+	return isValid
+}
+
 function isExistingWire(thisEndpoint, wiresObject){
 	for (var wire in wiresObject) {
 		var endpoint1 = wiresObject[wire]["endpoint-1"];
@@ -154,6 +174,19 @@ function getFaceString(firstObject, secondObject){
 		}
 	}
 	return interfaceSide
+}
+
+function getTokenForOtherEnd(startToken, componentData, hostComponentData){
+	var startComponent = startToken.wireTo.component;
+	var startInterface = startToken.wireTo.ifc;
+	if (startInterface){
+		var endToken = componentData[startComponent].interfaces[startInterface];
+	}
+	else {
+		var endToken = hostComponentData[startComponent];
+	}
+	
+	return endToken
 }
 
 function getOtherEndOfWire(componentID, interfaceID, selectedProject){

@@ -17,7 +17,6 @@ var Workspace = React.createClass({
 			//startY: 0,
 			cursorX: 0,
 			cursorY: 0,
-			isWireInProgress: false,
 			isSnapping: false
 		};
 	},
@@ -51,7 +50,7 @@ var Workspace = React.createClass({
 			this.workspaceOriginY = workspaceBox.top;
 			this.startX = event.pageX - this.workspaceOriginX;
     		this.startY = event.pageY - this.workspaceOriginY;
-    		console.log("Mouse down on interface: ", tokenObject);
+    		//console.log("Mouse down on interface: ", tokenObject);
 			
     		this.setState({
     			mouseDown: tokenObject
@@ -85,23 +84,19 @@ var Workspace = React.createClass({
 		return thisMode
 	},
 
-	ifcMouseLeave: function(componentID, ifcTokenObject) {
-		if (this.state.isWireInProgress){
+	ifcMouseLeave: function(tokenObject) {
+		if (this.state.wireType){
 			this.setState({
 				isSnapping: false,
 			});
 		}
 	},
 
-	ifcMouseEnter: function(componentID, ifcTokenObject) {
-		if (this.state.isWireInProgress && ifcTokenObject.isInvalid == false){
-			var snapObject = {
-				component: componentID,
-				ifc: ifcTokenObject
-			}
-
+	ifcMouseEnter: function(tokenObject) {
+		//console.log(tokenObject);
+		if (this.state.wireType){
 			this.setState({
-				isSnapping: snapObject,
+				isSnapping: tokenObject,
 			});
 		}
 	},
@@ -134,6 +129,7 @@ var Workspace = React.createClass({
 	},
 
 	onMouseMove: function(event) { //captured on document
+		
 		var cursorX = event.pageX - this.workspaceOriginX;
 		var cursorY = event.pageY - this.workspaceOriginY;
 		var deltaX = cursorX - this.startX;
@@ -147,19 +143,27 @@ var Workspace = React.createClass({
 				if (this.state.mouseDown.wire){ //dragging drom exiting wired interface
 					var wireType = "existing";
 					var isPendingUpdate = this.state.mouseDown.wire;
+					var sourceObject = getTokenForOtherEnd(this.state.mouseDown, this.componentData, this.hostComponentData);
+
+					//console.log(this.state.mouseDown);
 				}
 				else {
 					var wireType = "new";
 					var isPendingUpdate = false;
+					var sourceObject = this.state.mouseDown;
 				}
 
-				if (this.state.mouseDown.capacity && this.state.mouseDown.capacity - this.state.mouseDown.used <= 0){//wire is from component, not host component
-					wireType = false;
-				}
+			}
+			else {
+				var sourceObject = this.state.mouseDown;
+				var isPendingUpdate = false;
+				var wireType = false;
 			}
 
+			//console.log(sourceObject);
+
 			this.setState({
-				dragging: this.state.mouseDown,
+				dragging: sourceObject,
 				wireType: wireType,
 				isPendingUpdate: isPendingUpdate
 			});
@@ -225,19 +229,20 @@ var Workspace = React.createClass({
 	ifcMouseUp: function(tokenObject) {
 		event.stopPropagation();
 		
-		if (_.isEqual(this.state.mouseDown, tokenObject)){
-			this.setState({
-				startFromExistingWire: false
-			});	
+		if (this.state.wireType == "existing") {
+			
+			if (!_.isEqual(this.state.mouseDown, this.state.isSnapping)){
+				//console.log("create wire");
+				this.props.handleWireDrop(this.state.dragging, this.state.isSnapping);
+			}
+
+			//this.props.handleWireDrop(componentID, interfaceGroupID, this.state.componentID, this.state.interfaceGroupID);
 		}
-
-		else if (!isInvalid && this.state.isWireInProgress) {
-			this.props.handleWireDrop(componentID, interfaceGroupID, this.state.componentID, this.state.interfaceGroupID);
-		};	
-
-		this.setState({
-			isSnapping: false
-		});		
+		else if (this.state.wireType == "new"){
+			//console.log("create wire");
+			this.props.handleWireDrop(this.state.dragging, this.state.isSnapping);
+		}	
+		
 	},
 
 	onMouseUp: function(event) {
@@ -254,8 +259,11 @@ var Workspace = React.createClass({
 				this.props.handleComponentDrop(this.state.dragging, deltaX, deltaY);
 			}
 
-			if (this.state.startFromExistingWire){ //dropping an existing wire (not on original interface)
-				this.props.deleteWires(this.state.startFromExistingWire)
+			if (this.state.wireType == "existing"){ //dropping an existing wire
+				if (!_.isEqual(this.state.mouseDown, this.state.isSnapping)){
+					this.props.deleteWire(this.state.mouseDown);
+					console.log("delete wire", this.state.mouseDown, this.state.isSnapping)
+				}	
 			}
 
 			this.setState({
@@ -269,7 +277,8 @@ var Workspace = React.createClass({
 		};
 
 		this.setState({
-    		mouseDown: false
+    		mouseDown: false,
+    		isSnapping: false
     		//componentID: null,
     		//interfaceGroupID: null,
     		//interfaceIDObject: null
@@ -310,6 +319,7 @@ var Workspace = React.createClass({
 				for (var interfaceID in thisComponent.interfaces) {
 					thisInterface = thisComponent.interfaces[interfaceID];
 					interfaces[interfaceID] = {
+						interfaceID: interfaceID,
 						componentID: componentID,
 						mode: thisInterface.mode,
 						protocol: thisInterface.protocol
@@ -677,6 +687,10 @@ var Workspace = React.createClass({
 						protocols = {that.props.protocols} 
 						componentID = {componentID} 
 						componentData = {that.componentData} 
+						dragging = {that.state.dragging} 
+						wireType = {that.state.wireType} 
+						mouseDown = {that.state.mouseDown}
+						isPendingUpdate = {that.state.isPendingUpdate}
 						ifcDims = {that.props.ifc}/>			
 					);
 				});
@@ -973,6 +987,10 @@ var Workspace = React.createClass({
 					tokenObject = {thisHostComponent} 
 					//isInvalid = {isInvalid} 
 					//isStartOfNewWire = {isStartOfNewWire} 
+					wireType = {this.state.wireType} 
+					mouseDown = {this.state.mouseDown}
+					dragging = {this.state.dragging} 
+					isPendingUpdate = {this.state.isPendingUpdate}
 					onMouseEnter = {this.ifcMouseEnter} 
 					onMouseLeave = {this.ifcMouseLeave} 
 					onMouseDown = {this.ifcMouseDown} 
@@ -1029,7 +1047,8 @@ var Workspace = React.createClass({
 						wireClass = {wireClass} 
 						//protocol = {thisWire[0].protocol} 
 						//stroke = {this.props.wire.width} 
-						isPendingUpdate = {this.state.isPendingUpdate}
+						isPendingUpdate = {this.state.isPendingUpdate} 
+						dragging = {this.state.dragging} 
 						wireID = {wire} 
 						protocols = {this.props.protocols} 
 						componentData = {this.componentData} 

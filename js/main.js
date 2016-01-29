@@ -171,9 +171,31 @@ var IOConsole = React.createClass({
         
     },
 
-   	deleteWires: function(refEndPoint) {
+   	deleteWire: function(interfaceToken) {
    		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
-   		var updatedProjectWiresObject = _.cloneDeep(selectedProject.topology.wires);
+   		var updatedProjectTopologyObject = _.cloneDeep(selectedProject.topology);
+
+        var thisWire = interfaceToken.wire;
+        var interface1Component = interfaceToken.componentID;
+        var interface1Interface = interfaceToken.interfaceID || null;
+
+        var interface2Component = interfaceToken.wireTo.component;
+        var interface2Interface = interfaceToken.wireTo.ifc || null;
+
+        //console.log("deleting wire", interfaceToken);
+
+        updatedProjectTopologyObject.wires[thisWire] = null;
+
+        if (interface1Interface){
+            updatedProjectTopologyObject.components[interface1Component].interfaces[interface1Interface] = null
+        }
+
+        if (interface2Interface){
+            updatedProjectTopologyObject.components[interface2Component].interfaces[interface2Interface] = null
+        }
+
+
+/*
    		var refGroupID = convertToGroup(refEndPoint.component, refEndPoint.ifc, selectedProject.view);
    		var refGroupObject;
    		if (refEndPoint.component.indexOf('host') == 0){ //is an attachment wire
@@ -196,45 +218,47 @@ var IOConsole = React.createClass({
    				}
    			}
    		}
+*/
+		this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").set(updatedProjectTopologyObject);
 
-		this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("wires").set(updatedProjectWiresObject);
     },
 
-	handleNewWireDrop: function(component1, interfaceGroup1, component2, interfaceGroup2) {
+	handleNewWireDrop: function(tokenObject1, tokenObject2) {
+        console.log("creating: ", tokenObject1, tokenObject2);
 		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
-    	var newProjectWiresObject = {};
-    	if (selectedProject.topology.wires){
-    		newProjectWiresObject = _.cloneDeep(selectedProject.topology.wires);
-    	}
+        var tokenArray = [tokenObject1, tokenObject2];
+debugger;
+		newProjectTopologyObject = _.cloneDeep(selectedProject.topology);
 
-		var group1InterfaceArray = ["interface-1"]; // for attachment wire
-    	if (component1.indexOf('host') != 0){ // is NOT an attachment wire  		
-    		var group1InterfaceObject = selectedProject.view[component1].groups[interfaceGroup1];
-    		group1InterfaceArray = Object.keys(group1InterfaceObject);
-    	}
+        var newWire = [];
 
-    	var group2InterfaceArray = ["interface-1"]; // for attachment wire
-    	if (component2.indexOf('host') != 0){ // is NOT an attachment wire	
-	    	var group2InterfaceObject = selectedProject.view[component2].groups[interfaceGroup2];
-	    	group2InterfaceArray = Object.keys(group2InterfaceObject);
-	    }
+        _.forEach(tokenArray, function(token) {
+            console.log(token);
+            var newInterface = {
+                "component": token.componentID || token.hostComponentID,
+                "ifc": null
+            }
+            if (token.componentID){
+                newInterface.ifc = "ifc-" + ioid();
+                if (!newProjectTopologyObject.components[token.componentID].interfaces){
+                    newProjectTopologyObject.components[token.componentID]["interfaces"] = {};
+                }
+                newProjectTopologyObject.components[token.componentID].interfaces[newInterface.ifc] = {
+                    "mode": token.mode,
+                    "protocol": token.protocol
+                }
+            }
+            newWire.push(newInterface)
+        });
 
-    	_.forEach(group1InterfaceArray, function(thisInterfaceID, index) {
- 			var newWireID = "wire-" + ioid();
-    		var newWire = {
-	    		"endpoint-1" : {
-	    			"component" : component1,
-	    			"ifc" : thisInterfaceID
-	    		},
-	    		"endpoint-2" : {
-	    			"component" : component2,
-	    			"ifc" : group2InterfaceArray[index]
-	    		},
-    		}
-    		newProjectWiresObject[newWireID] = newWire;
-		});
+        if (!newProjectTopologyObject.wires){
+            newProjectTopologyObject.wires = {};
+        }
 
-		this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("wires").set(newProjectWiresObject);
+        var newWireID = "wire-" + ioid();
+        newProjectTopologyObject.wires[newWireID] = newWire;
+
+		this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").set(newProjectTopologyObject);
 
     },
 
@@ -677,7 +701,7 @@ var IOConsole = React.createClass({
 							className = "ui-module workspace" 
 							handleComponentDrop = {this.handleComponentDrop} 
 							handleWireDrop = {this.handleNewWireDrop} 
-							deleteWires = {this.deleteWires} 
+							deleteWire= {this.deleteWire}
 							protocols = {this.state.protocolsObject} 
 							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]}/>
 					</div>

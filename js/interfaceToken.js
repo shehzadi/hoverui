@@ -2,38 +2,96 @@ var InterfaceToken = React.createClass({
 	getInitialState: function() {
 		return {
 			isHover: false,
+			isValid: true
 		};
 	},
 
 	getDefaultProps: function() {
 		return {
-			arrow: 5
+			arrow: 6
 		};
 	},
 
 	onMouseEnter: function() {	
-		this.props.onMouseEnter(this.props.tokenObject);
-		this.setState({
-			isHover: true
-    	});
+		if (this.state.isValid){
+			this.setState({
+				isHover: true
+	    	});
+	    	this.props.onMouseEnter(this.props.tokenObject);
+    	}
 	},
 
-	onMouseLeave: function() {	
-		this.props.onMouseLeave(this.props.tokenObject);
-		this.setState({
-			isHover: false
-    	});
+	onMouseLeave: function() {			
+		if (this.state.isValid){
+			this.setState({
+				isHover: false
+	    	});
+	    	this.props.onMouseLeave(this.props.tokenObject);
+    	}
 	},
 
 	onMouseDown: function() {	
-		this.props.onMouseDown(this.props.tokenObject)
+		if (!this.props.tokenObject.capacity|| this.props.tokenObject.capacity - this.props.tokenObject.used > 0){
+			this.props.onMouseDown(this.props.tokenObject)
+		}
 	},
 
 	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.tokenObject);
-		this.setState({
-			isHover: false
-    	});
+		if (this.state.isValid){
+			this.props.onMouseUp(this.props.tokenObject);
+			this.setState({
+				isHover: false
+	    	});
+		}
+	},
+
+	componentWillReceiveProps: function() {
+		if (this.props.dragging.componentID || this.props.dragging.hostComponentID){//dragging wire
+			var sourceProtocol = this.props.dragging.protocol;
+			var sourceMode = this.props.dragging.mode;
+			var thisProtocol = this.props.tokenObject.protocol;
+			var thisMode = this.props.tokenObject.mode;
+
+			var isThisValidType = checkTypeValidity(sourceProtocol, sourceMode, thisProtocol, thisMode);
+			var isValid = isThisValidType;
+		
+			if (this.props.tokenObject.wire){//existing wire
+				isValid = false
+			}
+
+			if (this.props.tokenObject.capacity - this.props.tokenObject.used <= 0){//empty wire
+				isValid = false
+			}
+
+			if (this.props.tokenObject.componentID == this.props.dragging.componentID){//all source interfaces
+				isValid = false
+			}
+
+			if (_.isEqual(this.props.tokenObject, this.props.dragging)){
+				isValid = true
+			}
+
+			if (this.props.wireType == "existing"){
+				if (this.props.tokenObject.componentID == this.props.mouseDown.componentID){//all source interfaces
+					isValid = false
+				}
+				if (_.isEqual(this.props.tokenObject, this.props.mouseDown)){
+					isValid = true
+				}
+			}
+
+
+			this.setState({
+				isValid: isValid
+    		});
+
+	
+		}
+		else {
+			this.setState({
+				isValid: true
+    		});
+		}
 	},
 
 	render: function() {
@@ -44,15 +102,12 @@ var InterfaceToken = React.createClass({
 		
 		var growthW = 0;
 		var growthH = 0;
-		if ((this.state.isHover && !this.props.tokenObject.isInvalid) || this.props.tokenObject.isStartOfNewWire){
+		if (this.state.isHover || _.isEqual(this.props.tokenObject, this.props.dragging)){
 			growthW = 5;
 			growthH = 9;
 		}
 
 		var thisOpacity = 1;
-		if (this.props.tokenObject.isInvalid && !this.props.tokenObject.isStartOfNewWire){
-			thisOpacity = 0.2
-		}
 
 		var fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue);
 		var dashArray = "";
@@ -65,6 +120,16 @@ var InterfaceToken = React.createClass({
 			fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "lighter");
 			dashArray = "3,3";
 		}
+
+		// validity for drop
+		if (this.state.isValid == false){
+			thisOpacity = 0.2
+		}
+	
+
+		
+
+		
 
 		var polygon = {	
 			width: this.props.ifcDims.width + growthW,

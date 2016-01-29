@@ -2,6 +2,7 @@ var HostInterface = React.createClass({
 	getInitialState: function() {
 		return {
 			isHover: false,
+			isValid: true
 		};
 	},
 
@@ -10,23 +11,64 @@ var HostInterface = React.createClass({
 			hostInterface: {
 				width: 26,
 				height: 1,
-				apex: 7
+				apex: 9
     		}
     	};
 	},
 
+	componentWillReceiveProps: function() {
+		if (this.props.dragging.componentID || this.props.dragging.hostComponentID){
+			var sourceProtocol = this.props.dragging.protocol;
+			var sourceMode = this.props.dragging.mode;
+			var thisProtocol = this.props.tokenObject.protocol;
+			var thisMode = this.props.tokenObject.mode;
+
+			var isThisValidType = checkTypeValidity(sourceProtocol, sourceMode, thisProtocol, thisMode);
+			var isValid = isThisValidType;
+		
+			if (this.props.tokenObject.wire){//existing wire
+				isValid = false
+			}
+
+			if (_.isEqual(this.props.tokenObject, this.props.dragging)){
+				isValid = true
+			}
+
+			
+				if (_.isEqual(this.props.tokenObject, this.props.mouseDown)){
+					isValid = true
+				}
+						
+
+			this.setState({
+				isValid: isValid
+    		});
+
+	
+		}
+		else {
+			this.setState({
+				isValid: true
+    		});
+		}
+	},
+
 	onMouseEnter: function() {	
-		this.props.onMouseEnter(this.props.tokenObject, this.props.isInvalid);
-		this.setState({
-			isHover: true
-    	});
+		if (this.state.isValid){			
+	    	this.props.onMouseEnter(this.props.tokenObject);
+	    	this.setState({
+				isHover: true
+	    	});
+    	}
 	},
 
 	onMouseLeave: function() {	
-		this.props.onMouseLeave(this.props.tokenObject, this.props.isInvalid);
-		this.setState({
-			isHover: false
-    	});
+		if (this.state.isValid){
+			this.props.onMouseLeave(this.props.tokenObject);
+			this.setState({
+				isHover: false
+    		});
+    	}
 	},
 
 	onMouseDown: function() {	
@@ -34,7 +76,7 @@ var HostInterface = React.createClass({
 	},
 
 	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.tokenObject, this.props.isInvalid);
+		this.props.onMouseUp(this.props.tokenObject);
 		this.setState({
 			isHover: false
     	});
@@ -46,7 +88,7 @@ var HostInterface = React.createClass({
 
 		var growthW = 0;
 		var growthH = 0;
-		if ((this.state.isHover && !this.props.isInvalid) || this.props.isStartOfNewWire){
+		if (this.state.isHover  || _.isEqual(this.props.tokenObject, this.props.dragging)){
 			growthW = 4;
 			growthH = 8;
 		}
@@ -58,6 +100,19 @@ var HostInterface = React.createClass({
 
 		var fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue);
 		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "darker");
+		
+
+		// validity for drop
+		//console.log(this.props.dragging);
+
+		if (this.state.isValid == false){
+			thisOpacity = 0.2
+		}
+	
+		
+
+		
+
 
 		var interfaceStyle = {
 			fill: fillColor,
@@ -82,6 +137,9 @@ var HostInterface = React.createClass({
 			rotation = 180;
 			//top = topCenterPoint;
 		}
+
+
+
 
 		var transformString = "rotate(" + rotation + " " + leftCenterPoint + " " + topCenterPoint + ")";
 
