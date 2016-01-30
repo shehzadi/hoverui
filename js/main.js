@@ -511,14 +511,18 @@ var IOConsole = React.createClass({
     saveAsModule: function(payload){
     	// get interfaces from wired host interfaces
     	// loop through wires and save component id if component is a host interface
-    	var projectTopology = this.state.projectsObject[this.state.selectedProjectID].topology;
+        var project = this.state.projectsObject[this.state.selectedProjectID];
+    	var projectTopology = project.topology;
+        var projectComponents = project.componennts;
     	var projectWires = projectTopology.wires;
     	var projectHostInterfaces = projectTopology.host_interfaces;
+        var projectDependencies = project.dependencies;
+
     	var hostInterfaceArray = [];
     	for (var wire in projectWires) {
     		thisWireObject = projectWires[wire];
-    		var component1 = thisWireObject["endpoint-1"].component;
-    		var component2 = thisWireObject["endpoint-2"].component;
+    		var component1 = thisWireObject[0].component;
+    		var component2 = thisWireObject[1].component;
     		if (component1.indexOf('host') == 0){ 
     			hostInterfaceArray.push(component1)
     		}
@@ -527,26 +531,29 @@ var IOConsole = React.createClass({
     		}
     	}
     	// get mode and protocol of host interface
-    	var interfaceObject = {};
+    	var newModuleInterfaceArray = [];
     	for (var i = 0; i < hostInterfaceArray.length; i++){
     		thisInterface = hostInterfaceArray[i];
     		thisInterfaceObject = projectHostInterfaces[thisInterface];
-    		var inverseMode = "bidirectional";
-    		if (thisInterfaceObject.mode == "output"){
-    			inverseMode = "input"
+    		var inverseMode = "bi";
+    		if (thisInterfaceObject.mode == "out"){
+    			inverseMode = "in"
     		}
-    		if (thisInterfaceObject.mode == "input"){
-    			inverseMode = "output"
+    		if (thisInterfaceObject.mode == "in"){
+    			inverseMode = "out"
     		}
-    		interfaceObject["interface-" + i] = {
-    			"mode": inverseMode,
-    			"protocol": thisInterfaceObject.protocol
-    		}
+    		newModuleInterfaceArray.push({
+                "capacity": 1,
+                "id": thisInterface,
+                "mode": inverseMode,
+                "protocol": thisInterfaceObject.protocol
+            });
     	}
 
-    	var moduleID = "module-" + guid();
+        console.log(newModuleInterfaceArray);
 
-        //add module to module object
+    	var newModuleID = "module-" + guid();
+
     	var categoriesObject = {};
 
         var isUncategorised = _.isEmpty(payload.categories);
@@ -561,29 +568,37 @@ var IOConsole = React.createClass({
             } 
         }
 
+        var topologyObject = {
+            "attachments": newModuleInterfaceArray,
+            "components": projectComponents,
+            "wires": projectWires
+        };
+
+
     	var moduleObject = {
     		name: payload.name,
     		description: payload.description,
     		categories: categoriesObject,
-    		interfaces: interfaceObject,
-    		version: "0.0.1"
+    		topology: topologyObject,
+    		version: "0.0.1",
+            dependencies: projectDependencies
     	}
 
         console.log(moduleObject);
 
-    	this.firebaseModulesRef.child('data').child(moduleID).set(moduleObject);
+    	////this.firebaseModulesRef.child('data').child(moduleID).set(moduleObject);
 
         //add module id to the relevant categories
         var categoryObject = {};
         if (isUncategorised){   
-            categoryObject[moduleID] = true;
-            this.firebaseModulesRef.child('shared').child('categories').child('uncategorised').child('modules').update(categoryObject);
+            categoryObject[newModuleID] = true;
+           //// this.firebaseModulesRef.child('shared').child('categories').child('uncategorised').child('modules').update(categoryObject);
         }
         else {
         	for (var category in payload.categories) {
         		var thisCategory = payload.categories[category];
-        		categoryObject[moduleID] = true;
-        		this.firebaseModulesRef.child('shared').child('categories').child(thisCategory).child('modules').update(categoryObject);
+        		categoryObject[newModuleID] = true;
+        	////	this.firebaseModulesRef.child('shared').child('categories').child(thisCategory).child('modules').update(categoryObject);
         	}
         }
     },

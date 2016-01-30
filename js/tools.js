@@ -75,7 +75,8 @@ var Tools = React.createClass({
 		var project = "";
 		var version = "";
 
-		selectedProjectObject = this.props.selectedProject;
+		var selectedProjectObject = this.props.selectedProject;
+		var wiresObject = selectedProjectObject.topology.wires || {};
 
 		if (selectedProjectObject){
 			project = selectedProjectObject.name;
@@ -100,9 +101,20 @@ var Tools = React.createClass({
 			)
 		}
 
-		var classString = "";
+		var deleteButtonClass = "";
 		if (this.props.nProjects == 1){
-			classString = "disabled"
+			deleteButtonClass = "disabled"
+		}
+
+		var publishModuleButtonClass = "";
+		var nWiresToHostInterfaces = 0;
+
+		isConnectionsToHostInterfaces = _.find(wiresObject, function(wire) {
+			return !wire[0].ifc || !wire[1].ifc;
+		});
+
+		if (!isConnectionsToHostInterfaces){
+			publishModuleButtonClass = "disabled"
 		}
 
 		return (
@@ -112,8 +124,8 @@ var Tools = React.createClass({
 				<button className="disabled">Save Version&hellip;</button>
 				<button className="disabled">Duplicate</button>
 				<button className="disabled">Export JSON</button>
-				<button onClick = {this.handleSaveAsProjectClick}>Publish as IO Module&hellip;</button>
-				<button className={classString} onClick = {this.handleDeleteProjectClick}>Delete Project</button>
+				<button className={publishModuleButtonClass} onClick = {this.handleSaveAsProjectClick}>Publish as IO Module&hellip;</button>
+				<button className={deleteButtonClass} onClick = {this.handleDeleteProjectClick}>Delete Project</button>
 				<div className="buttons">
 					<button className="disabled">Deploy to IO Visor&hellip;</button>
 				</div>
