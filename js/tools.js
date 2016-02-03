@@ -117,13 +117,15 @@ var Tools = React.createClass({
 			publishModuleButtonClass = "disabled"
 		}
 
+		var downloadData = "data: text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.props.selectedProject));
+
 		return (
 			<div className="tools">
 				{projectName}
 				<span className="version">{version}</span>
 				<button className="disabled">Save Version&hellip;</button>
 				<button className="disabled">Duplicate</button>
-				<button className="disabled">Export JSON</button>
+				<a href={downloadData} download={selectedProjectObject.name + " (" + selectedProjectObject.version + ").json"}>Download JSON</a>
 				<button className={publishModuleButtonClass} onClick = {this.handleSaveAsProjectClick}>Publish as IO Module&hellip;</button>
 				<button className={deleteButtonClass} onClick = {this.handleDeleteProjectClick}>Delete Project</button>
 				<div className="buttons">
