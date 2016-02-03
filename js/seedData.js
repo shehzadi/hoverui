@@ -1,243 +1,216 @@
-var projectsSeed = {
-  "project-00001" : projectTemplate
-}
-
 var modulesSeed = {
   "data" : {
-    "module-1" : {
-      "categories" : {
-        "translation" : true
-      },
-      "description" : "Packet Translator translates packets from one encapsulation format to another.",
-      "interfaces" : {
-        "interface-1" : {
-          "mode" : "bidirectional",
-          "protocol" : "protocol-1"
-        },
-        "interface-2" : {
-          "mode" : "bidirectional",
-          "protocol" : "protocol-2"
-        },
-        "interface-3" : {
-          "mode" : "bidirectional",
-          "protocol" : "protocol-3"
-        },
-        "interface-4" : {
-          "mode" : "bidirectional",
-          "protocol" : "protocol-4"
-        }
-      },
-      "name" : "Packet Translator",
-      "version" : "0.0.2"
-    },
-    "module-2" : {
+    "module-seed-0001" : {
       "categories" : {
         "routing" : true
       },
-      "description" : "Mirrorly mirrors traffic to up to 5 interfaces.",
-      "interfaces" : {
-        "interface-1" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-10" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-11" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-12" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-13" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-14" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-15" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-2" : {
-          "mode" : "input",
-          "protocol" : "protocol-4"
-        },
-        "interface-3" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-4" : {
-          "mode" : "bidirectional",
-          "protocol" : "protocol-3"
-        },
-        "interface-5" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-6" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-7" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-8" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-9" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        }
+      "description" : "Mirror flow to up to 8 interfaces.",
+      "name" : "Mirror-8",
+      "topology" : {
+        "interfaces" : [
+          {
+            "capacity" : 1,
+            "mode" : "in",
+            "protocol" : "protocol-3we4"
+          },
+          {
+            "capacity" : 8,
+            "mode" : "out",
+            "protocol" : "protocol-3we4"
+          }
+        ]
       },
-      "name" : "Mirrorly",
-      "version" : "0.3.1"
-    },
-    "module-3" : {
-      "categories" : {
-        "security" : true
-      },
-      "description" : "Throttles traffic to a defined rate.",
-      "interfaces" : {
-        "interface-1" : {
-          "mode" : "input",
-          "protocol" : "protocol-4"
-        },
-        "interface-2" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        },
-        "interface-3" : {
-          "mode" : "output",
-          "protocol" : "protocol-1"
-        },
-        "interface-4" : {
-          "mode" : "input",
-          "protocol" : "protocol-1"
-        }
-      },
-      "name" : "Throttle",
       "version" : "0.0.1"
     },
-    "module-4" : {
+    "module-seed-0002" : {
+      "categories" : {
+        "routing" : true
+      },
+      "description" : "Merge flows from up to 8 interfaces to a single interface.",
+      "name" : "Merge-8",
+      "topology" : {
+        "interfaces" : [
+          {
+            "capacity" : 1,
+            "mode" : "out",
+            "protocol" : "protocol-3we4"
+          },
+          {
+            "capacity" : 8,
+            "mode" : "in",
+            "protocol" : "protocol-3we4"
+          }
+        ]
+      },
+      "version" : "0.0.1"
+    },
+    "module-seed-0003" : {
+      "categories" : {
+        "routing" : true
+      },
+      "description" : "Divide bidirectional flow in to two bidirectional flows",
+      "name" : "Divide",
+      "topology" : {
+        "interfaces" : [
+          {
+            "capacity" : 1,
+            "mode" : "out",
+            "protocol" : "protocol-3we4"
+          },
+          {
+            "capacity" : 1,
+            "mode" : "in",
+            "protocol" : "protocol-3we4"
+          },
+          {
+            "capacity" : 1,
+            "mode" : "bi",
+            "protocol" : "protocol-3we4"
+          }
+        ]
+      },
+      "version" : "0.0.1"
+    },
+    "module-seed-0004" : {
+      "categories" : {
+        "translation" : true
+      },
+      "description" : "Translate <format1Name> to <format2Name>, <format3Name> or <format4Name> formats.",
+      "name" : "Translate",
+      "topology" : {
+        "interfaces" : [
+          {
+            "capacity" : 1,
+            "mode" : "in",
+            "protocol" : "protocol-3we4"
+          },
+          {
+            "capacity" : 1,
+            "mode" : "out",
+            "protocol" : "protocol-14rf"
+          },
+          {
+            "capacity" : 1,
+            "mode" : "out",
+            "protocol" : "protocol-26tg"
+          },
+          {
+            "capacity" : 1,
+            "mode" : "out",
+            "protocol" : "protocol-49iu"
+          }
+        ]
+      },
+      "version" : "0.0.1"
+    },
+    "module-seed-0005" : {
+      "categories" : {
+        "security" : true,
+        "translation" : true
+      },
+      "description" : "Filter event streams.",
+      "name" : "Filter",
+      "topology" : {
+        "interfaces" : [
+          {
+            "capacity" : 1,
+            "mode" : "in",
+            "protocol" : "protocol-3we4"
+          },
+          {
+            "capacity" : 1,
+            "mode" : "out",
+            "protocol" : "protocol-3we4"
+          },
+          {
+            "capacity" : 1,
+            "mode" : "out",
+            "protocol" : "protocol-26tg"
+          }
+        ]
+      },
+      "version" : "0.0.1"
+    },
+    "module-seed-0006" : {
       "categories" : {
         "analysis" : true
       },
-      "description" : "Graphs traffic by type.",
-      "interfaces" : {
-        "interface-1" : {
-          "mode" : "output",
-          "protocol" : "protocol-2"
-        },
-        "interface-2" : {
-          "mode" : "bidirectional",
-          "protocol" : "protocol-3"
-        },
-        "interface-3" : {
-          "mode" : "input",
-          "protocol" : "protocol-4"
-        },
-        "interface-4" : {
-          "mode" : "output",
-          "protocol" : "protocol-4"
-        }
+      "description" : "Count packets and events.",
+      "name" : "Count",
+      "topology" : {
+        "interfaces" : [
+          {
+            "capacity" : 1,
+            "mode" : "in",
+            "protocol" : "protocol-3we4"
+          }
+        ]
       },
-      "name" : "Traffic Grapher",
       "version" : "0.0.1"
     },
-    "module-5" : {
+    "module-seed-0007" : {
       "categories" : {
-        "uncategorised" : true
+        "analysis" : true
       },
-      "description" : "Module with long name to test overflow treatment",
-      "interfaces" : {
-        "interface-1" : {
-          "mode" : "input",
-          "protocol" : "protocol-1"
-        },
-        "interface-2" : {
-          "mode" : "output",
-          "protocol" : "protocol-1"
-        },
-        "interface-3" : {
-          "mode" : "bidirectional",
-          "protocol" : "protocol-3"
-        },
-        "interface-4" : {
-          "mode" : "input",
-          "protocol" : "protocol-1"
-        },
-        "interface-5" : {
-          "mode" : "input",
-          "protocol" : "protocol-1"
-        },
-        "interface-6" : {
-          "mode" : "output",
-          "protocol" : "protocol-1"
-        },
-        "interface-7" : {
-          "mode" : "output",
-          "protocol" : "protocol-1"
-        }
+      "description" : "Plot packets and events.",
+      "name" : "Plot",
+      "topology" : {
+        "interfaces" : [
+          {
+            "capacity" : 1,
+            "mode" : "in",
+            "protocol" : "protocol-3we4"
+          }
+        ]
       },
-      "name" : "Generic Module",
       "version" : "0.0.1"
     }
   },
   "shared" : {
     "categories" : {
       "analysis" : {
-        "description" : "Text describing category",
+        "description" : "Modules for visualizing event streams and flows.",
         "modules" : {
-          "module-4" : true
+          "module-seed-0006" : true,
+          "module-seed-0007" : true
         }
       },
       "routing" : {
-        "description" : "Text describing category",
+        "description" : "Modules for routing traffic flows and for creating network topology.",
         "modules" : {
-          "module-2" : true
+          "module-seed-0001" : true,
+          "module-seed-0002" : true,
+          "module-seed-0003" : true
         }
       },
       "security" : {
-        "description" : "Text describing category",
+        "description" : "Modules for adding security features to traffic flows.",
         "modules" : {
-          "module-3" : true
+          "module-seed-0005" : true
         }
       },
       "translation" : {
-        "description" : "Text describing category",
+        "description" : "Modules for translating one event encapsulation format to another.",
         "modules" : {
-          "module-1" : true
-        }
-      },
-      "uncategorised" : {
-        "description" : "Text describing category",
-        "modules" : {
-          "module-5" : true
+          "module-seed-0004" : true,
+          "module-seed-0005" : true
         }
       }
     },
     "protocols" : {
-      "protocol-1" : {
+      "protocol-14rf" : {
         "hue" : 112,
         "name" : "DCOM"
       },
-      "protocol-2" : {
+      "protocol-26tg" : {
         "hue" : 190,
         "name" : "FTP"
       },
-      "protocol-3" : {
+      "protocol-3we4" : {
         "hue" : 220,
         "name" : "IMAP"
       },
-      "protocol-4" : {
+      "protocol-49iu" : {
         "hue" : 300,
         "name" : "TCP-IP"
       }
@@ -286,4 +259,8 @@ var projectTemplate = {
       "y": headerHeight + 15
     }
   }
+}
+
+var projectsSeed = {
+  "project-00001" : projectTemplate
 }

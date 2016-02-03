@@ -316,7 +316,6 @@ var Workspace = React.createClass({
 			this.wireData[wireID] = [];
 			var that = this;
 			_.forEach(thisWire, function(endpoint, i){
-				//console.log(endpoint);
 				var thisEndpoint = {};
 				if (endpoint.ifc){//endpoint is component NOT host
 					var thisProtocol = that.componentData[endpoint.component].interfaces[endpoint.ifc].protocol;

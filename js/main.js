@@ -44,32 +44,31 @@ var IOConsole = React.createClass({
         this.firebaseModulesRef = new Firebase(this.state.modulesSrc);
         this.firebaseModulesRef.on("value", function(dataSnapshot) {
             this.handleFirebaseModules(dataSnapshot)
-        }.bind(this));  
+        }.bind(this));
     },
 
     componentDidUpdate: function(){
-        if (_.indexOf(this.state.sortedProjectArray, this.state.selectedProjectID) == -1){ //todo - 
-            this.selectFirstProject()
-        }
+        //console.log("component did update: main");
+       // if (_.indexOf(this.state.sortedProjectArray, this.state.selectedProjectID) == -1){ //todo - 
+       //     this.selectFirstProject()
+       // }
     },
 
-    selectFirstProject: function() {
-        var newSelectedProject = this.state.sortedProjectArray[0];
-        this.setLocalSetting("selectedProjectID", newSelectedProject);
-        this.setState({
-            selectedProjectID: newSelectedProject
-        });      
-    },
 
     updateDataSources: function(payload){
-        if (payload.projectsSrc != this.state.projectsSrc){           
+        if (payload.projectsSrc != this.state.projectsSrc){     
+            console.log(payload.projectsSrc); 
+           //debugger    
             this.firebaseProjectsRef.off();
             this.firebaseProjectsRef = new Firebase(payload.projectsSrc);
 
             this.firebaseProjectsRef.on("value", function(dataSnapshot) {
+                //console.log(dataSnapshot, dataSnapshot.exists());
                 
                 var isSeeded = dataSnapshot.exists() && dataSnapshot.val() !== true;
+                console.log(isSeeded, dataSnapshot.val());
                 if (!isSeeded){
+                    console.log("project seed: ", projectsSeed);
                     this.firebaseProjectsRef.set(projectsSeed);
                 }
                 else {
@@ -78,10 +77,10 @@ var IOConsole = React.createClass({
             }.bind(this));
 
             this.setLocalSetting("projectsSrc", payload.projectsSrc);
-            this.setLocalSetting("selectedProjectID", false);
+           // this.setLocalSetting("selectedProjectID", "project-00001");
             this.setState({
                 projectsSrc: payload.projectsSrc,
-                selectedProjectID: false
+               // selectedProjectID: "project-00001"
             });
         }
 
@@ -125,7 +124,17 @@ var IOConsole = React.createClass({
         sortedProjectArray = sortedProjectArray.map(function(obj){ 
            return obj.key;
         });
+
+        // check for selected project validity
+        var currentSelectedProjectID = this.state.selectedProjectID;
+        var isValidSelectionID = _.includes(sortedProjectArray, currentSelectedProjectID);
+        var targetSelectionID = currentSelectedProjectID;
+        if (!isValidSelectionID){
+            targetSelectionID = sortedProjectArray[0]
+        }
+
         this.setState({
+            selectedProjectID: targetSelectionID,
             projectsObject: rootProjectsObject,
             sortedProjectArray: sortedProjectArray
         });
@@ -197,7 +206,6 @@ var IOConsole = React.createClass({
     },
 
 	handleNewWireDrop: function(tokenObject1, tokenObject2) {
-        console.log("creating: ", tokenObject1, tokenObject2);
 		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
         var tokenArray = [tokenObject1, tokenObject2];
 		newProjectTopologyObject = _.cloneDeep(selectedProject.topology);
@@ -205,7 +213,6 @@ var IOConsole = React.createClass({
         var newWire = [];
 
         _.forEach(tokenArray, function(token) {
-            console.log(token);
             var newInterface = {
                 "component": token.componentID || token.hostComponentID,
                 "ifc": null
@@ -254,10 +261,8 @@ var IOConsole = React.createClass({
         //dependencies
         if (!projectDependenciesObject[moduleID]){ // module is NOT already a dependency, so deal with dependencies
             var newProjectDependenciesObject = _.cloneDeep(projectDependenciesObject) || {};
-            console.log("Original: ", newProjectDependenciesObject);
             var moduleClone = _.cloneDeep(this.state.modulesObject[moduleID]); //must exist because user dragged and dropped
             var moduleCloneDependencies = moduleClone.dependencies || {};
-            console.log("Module clone: ", moduleCloneDependencies);
 
             newProjectDependenciesObject[moduleID] = moduleClone;//original module copied to project
             
@@ -272,10 +277,7 @@ var IOConsole = React.createClass({
                 moduleCloneDependencies[nestedModuleID] = true
             });
 
-            console.log("Modified: ", newProjectDependenciesObject);
-
             this.firebaseProjectsRef.child(this.state.selectedProjectID).child("dependencies").set(newProjectDependenciesObject);
-
         }
 
     	newProjectViewObject[newComponentID] = newViewData;
@@ -373,8 +375,6 @@ var IOConsole = React.createClass({
             newProjectDependencies[id] = newDependency          
         });
         
-        console.log(moduleArray, newProjectDependencies);
-
         newProjectObject.dependencies = newProjectDependencies;
    		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
     },
@@ -591,8 +591,6 @@ var IOConsole = React.createClass({
             });
     	}
 
-        console.log(newModuleInterfaceArray);
-
     	var newModuleID = "module-" + guid();
 
     	var categoriesObject = {};
@@ -624,8 +622,6 @@ var IOConsole = React.createClass({
     		version: "0.0.1",
             dependencies: projectDependencies
     	}
-
-        console.log("new module object: ", moduleObject);
 
     	this.firebaseModulesRef.child('data').child(newModuleID).set(moduleObject);
 
