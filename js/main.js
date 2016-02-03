@@ -237,8 +237,10 @@ var IOConsole = React.createClass({
 	handleNewComponentDrop: function(moduleID, posX, posY){
      	var newProjectViewObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].view) || {};
     	var newProjectComponentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].topology.components) || {};
+        
         var projectDependenciesObject = this.state.projectsObject[this.state.selectedProjectID].dependencies || {};
         
+        //new component stuff
     	var newComponentID = "comp-" + ioid();
         var newViewData = {
     		"x": posX,
@@ -248,10 +250,31 @@ var IOConsole = React.createClass({
             "module": moduleID
         };
 
-        if (!projectDependenciesObject[moduleID]){ // module is NOT already a dependency
+
+        //dependencies
+        if (!projectDependenciesObject[moduleID]){ // module is NOT already a dependency, so deal with dependencies
             var newProjectDependenciesObject = _.cloneDeep(projectDependenciesObject) || {};
-            newProjectDependenciesObject[moduleID] = _.cloneDeep(this.state.modulesObject[moduleID]);
-            this.firebaseProjectsRef.child(this.state.selectedProjectID).child("dependencies").set(newProjectDependenciesObject)
+            console.log("Original: ", newProjectDependenciesObject);
+            var moduleClone = _.cloneDeep(this.state.modulesObject[moduleID]); //must exist because user dragged and dropped
+            var moduleCloneDependencies = moduleClone.dependencies || {};
+            console.log("Module clone: ", moduleCloneDependencies);
+
+            newProjectDependenciesObject[moduleID] = moduleClone;//original module copied to project
+            
+            //move modules's nested dependencies to top-level dependencies and change nested dependent modules to "true"
+            _.forEach(moduleCloneDependencies, function(nestedModuleObject, nestedModuleID){
+                if (!projectDependenciesObject[nestedModuleID]){ // nested module is not already a dependency
+                    //add module (data from parent module) to project dependencies
+                    newProjectDependenciesObject[nestedModuleID] = _.cloneDeep(moduleCloneDependencies[nestedModuleID]);
+                    //
+                }
+                // change nested module ID value to true
+                moduleCloneDependencies[nestedModuleID] = true
+            });
+
+            console.log("Modified: ", newProjectDependenciesObject);
+
+            this.firebaseProjectsRef.child(this.state.selectedProjectID).child("dependencies").set(newProjectDependenciesObject);
 
         }
 
@@ -292,14 +315,26 @@ var IOConsole = React.createClass({
     },
 
    	deleteComponent: function(componentID) {
-   		var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
+        var selectedProject = this.state.projectsObject[this.state.selectedProjectID];        
+
+   		var newProjectObject = _.cloneDeep(selectedProject);
         var moduleDependencyID = newProjectObject.topology.components[componentID].module;
    		
         //delete view data
         newProjectObject.view[componentID] = null;
 
         //delete component from topology
-   		newProjectObject.topology.components[componentID] = null; //delete component from topology
+        //_.unset(newProjectObject.topology, "topology.components[componentID]");
+        delete newProjectObject.topology.components[componentID];
+
+        var topologyComponents = newProjectObject.topology.components;
+   		
+        var moduleArray = [];
+        _.forEach(topologyComponents, function(component){
+            var module = component.module;
+            moduleArray.push(module);
+        });
+        moduleArray = _.uniq(moduleArray);
 
    		//find wires and delete them
    		if (newProjectObject.topology.wires){
@@ -321,20 +356,26 @@ var IOConsole = React.createClass({
                 }
 	   		}
    		}
-        //check dependencies and remove if possible
-        var existingDependency = _.find(newProjectObject.topology.components, function(component) {
-            if (component){
-                return component.module == moduleDependencyID;
-            }
-            else {
-                return false
+
+        _.forEach(moduleArray, function(id){
+            var directDependency = selectedProject.dependencies[id];
+            if (directDependency.dependencies){
+                _.forEach(directDependency.dependencies, function(value, key){
+                    moduleArray.push(key)     
+                });
             }
         });
+        moduleArray = _.uniq(moduleArray);
 
-        if (!existingDependency){//delete dependent module
-            newProjectObject.dependencies[moduleDependencyID] = null;
-        }
+        var newProjectDependencies = {};
+        _.forEach(moduleArray, function(id){
+            var newDependency = selectedProject.dependencies[id];
+            newProjectDependencies[id] = newDependency          
+        });
+        
+        console.log(moduleArray, newProjectDependencies);
 
+        newProjectObject.dependencies = newProjectDependencies;
    		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
     },
 
@@ -513,7 +554,7 @@ var IOConsole = React.createClass({
     	// loop through wires and save component id if component is a host interface
         var project = this.state.projectsObject[this.state.selectedProjectID];
     	var projectTopology = project.topology;
-        var projectComponents = project.componennts;
+        var projectComponents = projectTopology.components;
     	var projectWires = projectTopology.wires;
     	var projectHostInterfaces = projectTopology.host_interfaces;
         var projectDependencies = project.dependencies;
@@ -559,7 +600,7 @@ var IOConsole = React.createClass({
         var isUncategorised = _.isEmpty(payload.categories);
 
         if (isUncategorised){
-            categoriesObject["uncategorised"] = true
+            categoriesObject = null
         }
         else {
             for (var category in payload.categories) {
@@ -569,7 +610,7 @@ var IOConsole = React.createClass({
         }
 
         var topologyObject = {
-            "attachments": newModuleInterfaceArray,
+            "interfaces": newModuleInterfaceArray,
             "components": projectComponents,
             "wires": projectWires
         };
@@ -584,21 +625,21 @@ var IOConsole = React.createClass({
             dependencies: projectDependencies
     	}
 
-        console.log(moduleObject);
+        console.log("new module object: ", moduleObject);
 
-    	////this.firebaseModulesRef.child('data').child(moduleID).set(moduleObject);
+    	this.firebaseModulesRef.child('data').child(newModuleID).set(moduleObject);
 
         //add module id to the relevant categories
         var categoryObject = {};
         if (isUncategorised){   
             categoryObject[newModuleID] = true;
-           //// this.firebaseModulesRef.child('shared').child('categories').child('uncategorised').child('modules').update(categoryObject);
+            this.firebaseModulesRef.child('shared').child('categories').child('uncategorised').child('modules').update(categoryObject);
         }
         else {
         	for (var category in payload.categories) {
         		var thisCategory = payload.categories[category];
         		categoryObject[newModuleID] = true;
-        	////	this.firebaseModulesRef.child('shared').child('categories').child(thisCategory).child('modules').update(categoryObject);
+        	   this.firebaseModulesRef.child('shared').child('categories').child(thisCategory).child('modules').update(categoryObject);
         	}
         }
     },

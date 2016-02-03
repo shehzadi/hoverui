@@ -191,7 +191,6 @@ var Workspace = React.createClass({
 			if (this.state.wireType == "existing"){ //dropping an existing wire
 				if (!_.isEqual(this.state.mouseDown, this.state.isSnapping)){
 					this.props.deleteWire(this.state.mouseDown);
-					console.log("delete wire", this.state.mouseDown, this.state.isSnapping)
 				}	
 			}
 
