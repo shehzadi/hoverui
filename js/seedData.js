@@ -164,6 +164,28 @@ var modulesSeed = {
         ]
       },
       "version" : "0.0.1"
+    },
+    "module-seed-0008" : {
+      "categories" : {
+        "security" : true
+      },
+      "description" : "Apply security policy rules to event streams.",
+      "name" : "Policy",
+      "topology" : {
+        "interfaces" : [
+          {
+            "capacity" : 1,
+            "mode" : "in",
+            "protocol" : "protocol-3we4"
+          },
+          {
+            "capacity" : 1,
+            "mode" : "out",
+            "protocol" : "protocol-3we4"
+          }
+        ]
+      },
+      "version" : "0.0.1"
     }
   },
   "shared" : {
@@ -186,7 +208,8 @@ var modulesSeed = {
       "security" : {
         "description" : "Modules for adding security features to traffic flows.",
         "modules" : {
-          "module-seed-0005" : true
+          "module-seed-0005" : true,
+          "module-seed-0008" : true
         }
       },
       "translation" : {
