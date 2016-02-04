@@ -2,6 +2,7 @@ var IOConsole = React.createClass({
 	getInitialState: function() {
 		var projectsSrc = this.getLocalSetting("projectsSrc") || "https://boiling-torch-3324.firebaseio.com/v2/users/maxb/projects";
 		var modulesSrc = this.getLocalSetting("modulesSrc") || "https://boiling-torch-3324.firebaseio.com/v2/modules";
+        var categoryVisibility = this.getLocalSetting("categoryVisibility") || {};
 		
         var selectedProjectID = this.getLocalSetting("selectedProjectID");
 
@@ -21,7 +22,7 @@ var IOConsole = React.createClass({
     		cursorX: 0,
     		cursorY: 0,
     		selectedProjectID: selectedProjectID,
-    		categoryVisibility: {},
+    		categoryVisibility: categoryVisibility,
             projectsSrc: projectsSrc,
             modulesSrc: modulesSrc
     	};
