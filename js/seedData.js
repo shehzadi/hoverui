@@ -103,6 +103,7 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
+
     "module-seed-0005" : {
       "categories" : {
         "security" : true,
@@ -131,6 +132,7 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
+
     "module-seed-0006" : {
       "categories" : {
         "analysis" : true
@@ -148,6 +150,7 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
+
     "module-seed-0007" : {
       "categories" : {
         "analysis" : true
@@ -165,6 +168,7 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
+
     "module-seed-0008" : {
       "categories" : {
         "security" : true
@@ -186,6 +190,47 @@ var modulesSeed = {
         ]
       },
       "version" : "0.0.1"
+    },
+
+    "module-seed-0010" : {
+      "categories" : {
+        "analysis" : true
+      },
+      "description" : "Show statistical analyses of event flow data.",
+      "name" : "Histogram",
+      "topology" : {
+        "interfaces" : [
+          {
+            "capacity" : 1,
+            "mode" : "in",
+            "protocol" : "protocol-3we4"
+          }
+        ]
+      },
+      "version" : "0.0.1"
+    },
+
+    "module-seed-0009" : {
+      "categories" : {
+        "routing" : true
+      },
+      "description" : "Load balance flows between up to 256 interfaces.",
+      "name" : "Balance-256",
+      "topology" : {
+        "interfaces" : [
+          {
+            "capacity" : 256,
+            "mode" : "out",
+            "protocol" : "protocol-3we4"
+          },
+          {
+            "capacity" : 1,
+            "mode" : "in",
+            "protocol" : "protocol-3we4"
+          }
+        ]
+      },
+      "version" : "0.0.1"
     }
   },
   "shared" : {
@@ -194,7 +239,8 @@ var modulesSeed = {
         "description" : "Modules for visualizing event streams and flows.",
         "modules" : {
           "module-seed-0006" : true,
-          "module-seed-0007" : true
+          "module-seed-0007" : true,
+          "module-seed-0010" : true
         }
       },
       "routing" : {
@@ -202,7 +248,8 @@ var modulesSeed = {
         "modules" : {
           "module-seed-0001" : true,
           "module-seed-0002" : true,
-          "module-seed-0003" : true
+          "module-seed-0003" : true,
+          "module-seed-0009" : true
         }
       },
       "security" : {
