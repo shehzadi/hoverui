@@ -108,6 +108,7 @@ function sortTokenArrays(tokenArrays){
 function positionTokens(component, ifcProps){
 	var pitch = ifcProps.pitch;
 	var tokenArrays = component.tokenArrays;
+	console.log("token arrays: ", tokenArrays);
 	for (var tokenArray in tokenArrays) {
 		thisTokenArray = tokenArrays[tokenArray];
 		var faceCenter = {};
@@ -241,8 +242,9 @@ function defineSvgSize(componentData, hostComponentData, cursorX, cursorY){
 
 		var otherInterfaces = componentData[component].ioCapability;		
 		_.forEach(otherInterfaces, function(thisInterface) {
-			leftArray.push(thisInterface.left);
-			topArray.push(thisInterface.top);
+			console.log(thisInterface.left);
+			leftArray.push(thisInterface.left || 0);
+			topArray.push(thisInterface.top || 0);
 		})
 	}
 

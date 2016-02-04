@@ -92,6 +92,7 @@ var InterfaceToken = React.createClass({
 	},
 
 	render: function() {
+		//debugger
 		var leftCenterPoint = this.props.tokenObject.left;
 		var topCenterPoint = this.props.tokenObject.top;
 		
@@ -128,6 +129,7 @@ var InterfaceToken = React.createClass({
 			top: topCenterPoint - (this.props.ifcDims.height/2) - growthH/2 
 		};
 
+		console.log(polygon.width, polygon.height);
 		
 		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "darker");
 
@@ -149,7 +151,7 @@ var InterfaceToken = React.createClass({
 		}
 
 		var text = "";
-		if (Number.isInteger(available)){
+		if (available > 1){
 			text = "" + available
 		}
 		var textX = polygon.left + (polygon.width / 2);
