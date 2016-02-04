@@ -48,7 +48,7 @@ var modulesSeed = {
       "categories" : {
         "routing" : true
       },
-      "description" : "Divide bidirectional flow in to two bidirectional flows",
+      "description" : "Divide bidirectional flow in to two unidirectional flows",
       "name" : "Divide",
       "topology" : {
         "interfaces" : [

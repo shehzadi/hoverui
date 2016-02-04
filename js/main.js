@@ -2,7 +2,8 @@ var IOConsole = React.createClass({
 	getInitialState: function() {
 		var projectsSrc = this.getLocalSetting("projectsSrc") || "https://boiling-torch-3324.firebaseio.com/v2/users/maxb/projects";
 		var modulesSrc = this.getLocalSetting("modulesSrc") || "https://boiling-torch-3324.firebaseio.com/v2/modules";
-		var selectedProjectID = this.getLocalSetting("selectedProjectID");
+		
+        var selectedProjectID = this.getLocalSetting("selectedProjectID");
 
     	return {
             projectsObject: {},
@@ -47,24 +48,12 @@ var IOConsole = React.createClass({
         }.bind(this));
     },
 
-    componentDidUpdate: function(){
-        //console.log("component did update: main");
-       // if (_.indexOf(this.state.sortedProjectArray, this.state.selectedProjectID) == -1){ //todo - 
-       //     this.selectFirstProject()
-       // }
-    },
-
-
     updateDataSources: function(payload){
         if (payload.projectsSrc != this.state.projectsSrc){     
-            console.log(payload.projectsSrc); 
-           //debugger    
             this.firebaseProjectsRef.off();
             this.firebaseProjectsRef = new Firebase(payload.projectsSrc);
 
-            this.firebaseProjectsRef.on("value", function(dataSnapshot) {
-                //console.log(dataSnapshot, dataSnapshot.exists());
-                
+            this.firebaseProjectsRef.on("value", function(dataSnapshot) {                
                 var isSeeded = dataSnapshot.exists() && dataSnapshot.val() !== true;
                 console.log(isSeeded, dataSnapshot.val());
                 if (!isSeeded){
@@ -77,10 +66,8 @@ var IOConsole = React.createClass({
             }.bind(this));
 
             this.setLocalSetting("projectsSrc", payload.projectsSrc);
-           // this.setLocalSetting("selectedProjectID", "project-00001");
             this.setState({
-                projectsSrc: payload.projectsSrc,
-               // selectedProjectID: "project-00001"
+                projectsSrc: payload.projectsSrc
             });
         }
 
@@ -256,7 +243,6 @@ var IOConsole = React.createClass({
         var newComponentData = {
             "module": moduleID
         };
-
 
         //dependencies
         if (!projectDependenciesObject[moduleID]){ // module is NOT already a dependency, so deal with dependencies
@@ -994,7 +980,5 @@ var ModuleItem = React.createClass({
 		);
 	}
 });
-
-
 
 React.render(<IOConsole></IOConsole>, document.body);
