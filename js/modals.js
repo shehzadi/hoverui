@@ -140,10 +140,10 @@ var LibrariesForm = React.createClass({
 				<p>Provide locations for Projects and IO Modules.</p>
 				<div>Projects</div>
 				<input className={invalidClassString} type="text" name="projectsSrc" value={this.state.projectsSrc} onChange={this.onFormChange}/>
-				<p className="help">e.g. https:&#47;&#47;XXXXXX.firebaseio.com&#47;development&#47;users&#47;jdoe&#47;projects</p>
+				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;development&#47;users&#47;jdoe&#47;projects</p>
 				<div>IO Modules</div>
 				<input className={invalidClassString} type="text" name="moduleSrc" value={this.state.modulesSrc} onChange={this.onFormChange}/>
-				<p className="help">e.g. https:&#47;&#47;XXXXXX.firebaseio.com&#47;development&#47;modules</p>
+				<p className="help">e.g. https:&#47;&#47;boiling-torch-3324.firebaseio.com&#47;development&#47;modules</p>
 			</main>
 			<footer>
 				<span className="validationMessage">{validationMessageString}</span>
