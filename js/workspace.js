@@ -2,20 +2,12 @@ var Workspace = React.createClass({
 
 	getInitialState: function() {
 		return {
-			dragComponentID: null,
-			interfaceIDObject: null,
-			interfaceGroupID: null,
-			componentID: null,
 			mouseDown: false,
-			startFromExistingWire: false,
 			dragging: false,
-			workspaceOriginX: 0,
-			workspaceOriginY: 0,
-			startX: 0,
-			startY: 0,
+			wireType: false,
+			isPendingUpdate: false,
 			cursorX: 0,
 			cursorY: 0,
-			isWireInProgress: false,
 			isSnapping: false
 		};
 	},
@@ -29,98 +21,41 @@ var Workspace = React.createClass({
     		ifc: {
     			width: 20,
     			height: 1,
-    			margin: 5
+    			pitch: 25
     		},
-    		wire: {
-    			width: 2
-    		},
-    		hostInterface: {
+    		hostComponent: {
     			width: 90,
     			height: 44
-    		},
-    		attachmentInterface: {
-    			width: 26,
-    			height: 1,
-    			apex: 7
     		}	
     	};
 	},
 
 
-	onMouseDown: function(componentID, interfaceGroupID, interfaceIDObject) {			
+	ifcMouseDown: function(tokenObject) {			
 		if (event.button == 0){	
 			event.stopPropagation();
 			this.addDocumentEvents();
 
 			var workspaceBox = React.findDOMNode(this).getBoundingClientRect();
-			var workspaceOriginX = workspaceBox.left;
-			var workspaceOriginY = workspaceBox.top;
-			var startFromExistingWire = false;
-
-			if (interfaceGroupID){ //mouse down on interface
-				
-				var wiresObject = this.props.selectedProject.topology.wires;
-
-				if (interfaceIDObject){ //mouse down on component interface
-
-					var refInterfaceID = Object.keys(interfaceIDObject)[0];
-					var thisRefEndpoint = {
-						"component": componentID,
-						"ifc": refInterfaceID
-					};
-
-					this.thisWireInProgressN = Object.keys(interfaceIDObject).length;
-					this.thisWireInProgressProtocol = this.getProtocol(componentID, refInterfaceID);
-					this.thisWireInProgressStartMode = this.getMode(componentID, refInterfaceID);
-
-					if (isExistingWire(thisRefEndpoint, wiresObject)) {// interface with existing wire
-						//console.log ("Existing Wire");
-						startFromExistingWire = thisRefEndpoint
-					}
-				}
-				else {//mouse down on attachment interface
-					var thisRefEndpoint = {
-						"component": componentID,
-						"ifc": "interface-1"
-					};
-
-					this.thisWireInProgressN = 1;
-					this.thisWireInProgressProtocol = this.props.selectedProject.topology.host_interfaces[componentID].protocol;
-					this.thisWireInProgressStartMode = this.props.selectedProject.topology.host_interfaces[componentID].mode;
-
-					if (isExistingWire(thisRefEndpoint, wiresObject)) {// interface with existing wire
-						//console.log ("Existing Wire");
-						startFromExistingWire = thisRefEndpoint
-					}
-				}						
-			}
-
-			else {
-				interfaceIDObject = null
-			}
+			this.workspaceOriginX = workspaceBox.left;
+			this.workspaceOriginY = workspaceBox.top;
+			this.startX = event.pageX - this.workspaceOriginX;
+    		this.startY = event.pageY - this.workspaceOriginY;
+			
     		this.setState({
-    			mouseDown: true,
-    			startFromExistingWire: startFromExistingWire,
-    			componentID: componentID,
-    			interfaceIDObject: interfaceIDObject,
-    			interfaceGroupID: interfaceGroupID,
-    			workspaceOriginX: workspaceOriginX,
-    			workspaceOriginY: workspaceOriginY,
-    			startX: event.pageX - workspaceOriginX,
-    			startY: event.pageY - workspaceOriginY
+    			mouseDown: tokenObject
     		});
 		}
 	},
 
 	getProtocol: function(componentID, interfaceID) {
-		//console.log(interfaceID);
 		var thisProtocol = "";
 		if (componentID.indexOf('host') == 0){ //is an attachment wire
 			thisProtocol = this.props.selectedProject.topology.host_interfaces[componentID].protocol
 		}
 		else {
-			var thisRefModule = this.props.selectedProject.topology.components[componentID];
-			thisProtocol = this.props.modules[thisRefModule].interfaces[interfaceID].protocol;
+			var thisComponent = this.props.selectedProject.topology.components[componentID];
+			thisProtocol = thisComponent.interfaces[interfaceID].protocol;
 		}
 		return thisProtocol
 	},
@@ -139,85 +74,82 @@ var Workspace = React.createClass({
 		return thisMode
 	},
 
-	ifcMouseLeave: function(componentID, interfaceGroupID, isInvalid) {
-		if (this.state.isWireInProgress){
+	ifcMouseLeave: function(tokenObject) {
+		if (this.state.wireType){
 			this.setState({
 				isSnapping: false,
 			});
 		}
 	},
 
-	ifcMouseEnter: function(componentID, interfaceGroupID, isInvalid) {
+	ifcMouseEnter: function(tokenObject) {
+		if (this.state.wireType){
+			this.setState({
+				isSnapping: tokenObject,
+			});
+		}
+	},
 
-		if (this.state.isWireInProgress && isInvalid == false){
-			var snapObject = {
-				component: componentID,
-				ifcGroup: interfaceGroupID
+	componentMouseDown: function(componentID, componentType) {
+		if (event.button == 0){	
+			event.stopPropagation();
+			this.addDocumentEvents();
+
+			var workspaceBox = React.findDOMNode(this).getBoundingClientRect();
+			this.workspaceOriginX = workspaceBox.left;
+			this.workspaceOriginY = workspaceBox.top;
+			this.startX = event.pageX - this.workspaceOriginX;
+			this.startY = event.pageY - this.workspaceOriginY;
+			if (componentType == "component"){
+				this.dragStartX = this.componentData[componentID].left;
+				this.dragStartY = this.componentData[componentID].top;
+			}
+			else if (componentType == "hostComponent"){
+				this.dragStartX = this.hostComponentData[componentID].left;
+				this.dragStartY = this.hostComponentData[componentID].top;
 			}
 
 			this.setState({
-				isSnapping: snapObject,
+				mouseDown: componentID
 			});
 		}
 	},
 
 	onMouseMove: function(event) { //captured on document
-		var cursorX = event.pageX - this.state.workspaceOriginX;
-		var cursorY = event.pageY - this.state.workspaceOriginY;
-		var deltaX = cursorX - this.state.startX;
-		var deltaY = cursorY - this.state.startY;
+		
+		var cursorX = event.pageX - this.workspaceOriginX;
+		var cursorY = event.pageY - this.workspaceOriginY;
+		var deltaX = cursorX - this.startX;
+		var deltaY = cursorY - this.startY;
 		var distance = Math.abs(deltaX) + Math.abs(deltaY);
 
 		if (this.state.dragging == false && distance > 4){ //dragging
-			this.setState({
-				dragging: true,
-			});
+			
 
-			if (this.state.interfaceGroupID){ //dragging from interface
-						
-				if (this.state.startFromExistingWire){ //drag starts from existing wire so update
-
-					var thisComponentID = this.state.componentID;
-					var thisInterfaceGroupID = this.state.interfaceGroupID;
-					var selectedProject = this.props.selectedProject;
-
-					var otherEnd = getOtherWireGroupEndpoint(thisComponentID, thisInterfaceGroupID, selectedProject);
-		
-					var otherEndRefInterface;
-					if (otherEnd.component.indexOf('host') == 0){ //is an attachment wire
-						otherEndRefInterface = "interface-1"
-					}
-					else {
-						otherEndRefInterface = Object.keys(selectedProject.view[otherEnd.component].groups[otherEnd.interfaceGroup])[0];
-					}
-
-					var interfaceIDObject;
-					if (otherEnd.component.indexOf('host') == 0){ //is an attachment wire
-						interfaceIDObject = null
-					}
-					else {
-						interfaceIDObject = selectedProject.view[otherEnd.component].groups[otherEnd.interfaceGroup]
-					}
-
-					this.setState({
-						componentID: otherEnd.component,
-						interfaceGroupID: otherEnd.interfaceGroup,
-						interfaceIDObject: interfaceIDObject
-					});
-
-					this.thisWireInProgressStartMode = this.getMode(otherEnd.component, otherEndRefInterface);
-
+			if (typeof this.state.mouseDown != "string"){ //dragging from interface
+				if (this.state.mouseDown.wire){ //dragging drom exiting wired interface
+					var wireType = "existing";
+					var isPendingUpdate = this.state.mouseDown.wire;
+					var sourceObject = getTokenForOtherEnd(this.state.mouseDown, this.componentData, this.hostComponentData);
+				}
+				else {
+					var wireType = "new";
+					var isPendingUpdate = false;
+					var sourceObject = this.state.mouseDown;
 				}
 
-				this.setState({
-					isWireInProgress: this.thisWireInProgressProtocol
-				});
 			}
-			else { //dragging component
-				this.setState({
-					dragComponentID: this.state.componentID
-				});
+			else {
+				var sourceObject = this.state.mouseDown;
+				var isPendingUpdate = false;
+				var wireType = false;
 			}
+
+			this.setState({
+				dragging: sourceObject,
+				wireType: wireType,
+				isPendingUpdate: isPendingUpdate
+			});
 		}
 
 		if (this.state.dragging){	
@@ -228,69 +160,50 @@ var Workspace = React.createClass({
 		}
 	},
 
-	onInterfaceMouseUp: function(componentID, interfaceGroupID, isInvalid) {
+	ifcMouseUp: function(tokenObject) {
 		event.stopPropagation();
-
-		// figure if dropping on original interface
-		var originalInterfaceID = this.state.startFromExistingWire.ifc;
-		var selectedProjectView = this.props.selectedProject.view;
-		var originalInterfaceGroupID = convertToGroup(componentID, originalInterfaceID, selectedProjectView);
-
-		var originalEndpoint = {
-			component: this.state.startFromExistingWire.component,
-			ifcGroup: originalInterfaceGroupID
-		};
-		var mouseUpEndpoint = {
-			component: componentID,
-			ifcGroup: interfaceGroupID
-		};
 		
-		if (_.isEqual(originalEndpoint, mouseUpEndpoint)){
-			this.setState({
-				startFromExistingWire: false
-			});	
+		if (this.state.wireType == "existing") {
+			
+			if (!_.isEqual(this.state.mouseDown, this.state.isSnapping)){
+				this.props.handleWireDrop(this.state.dragging, this.state.isSnapping);
+			}
 		}
-
-		else if (!isInvalid && this.state.isWireInProgress) {
-			this.props.handleWireDrop(componentID, interfaceGroupID, this.state.componentID, this.state.interfaceGroupID);
-		};	
-
-		this.setState({
-			isSnapping: false
-		});		
+		else if (this.state.wireType == "new"){
+			this.props.handleWireDrop(this.state.dragging, this.state.isSnapping);
+		}	
+		
 	},
 
 	onMouseUp: function(event) {
-
-		var finalX = event.pageX - this.state.workspaceOriginX;
-		var finalY = event.pageY - this.state.workspaceOriginY;
-		var deltaX = finalX - this.state.startX;
-		var deltaY = finalY - this.state.startY;
+		var finalX = event.pageX - this.workspaceOriginX;
+		var finalY = event.pageY - this.workspaceOriginY;
+		var deltaX = finalX - this.startX;
+		var deltaY = finalY - this.startY;
 
 		this.removeDocumentEvents();
 
-		if (this.state.dragging == true){
-			if (this.state.dragComponentID){ //dropping component
-				this.props.handleComponentDrop(this.state.dragComponentID, deltaX, deltaY);
+		if (this.state.dragging){
+			if (typeof this.state.dragging == "string"){ //dropping component
+				this.props.handleComponentDrop(this.state.dragging, deltaX, deltaY);
 			}
 
-			if (this.state.startFromExistingWire){ //dropping an existing wire (not on original interface)
-				this.props.deleteWires(this.state.startFromExistingWire)
+			if (this.state.wireType == "existing"){ //dropping an existing wire
+				if (!_.isEqual(this.state.mouseDown, this.state.isSnapping)){
+					this.props.deleteWire(this.state.mouseDown);
+				}	
 			}
 
 			this.setState({
 				dragging: false,
-				startFromExistingWire: false,
-				isWireInProgress: false,
-				dragComponentID: null
+				wireType: false,
+				isPendingUpdate: false
 			});				
 		};
 
 		this.setState({
     		mouseDown: false,
-    		componentID: null,
-    		interfaceGroupID: null,
-    		interfaceIDObject: null
+    		isSnapping: false
     	});		
 	},
 
@@ -304,609 +217,421 @@ var Workspace = React.createClass({
     	document.removeEventListener('mouseup', this.onMouseUp);
 	},
 
-	render: function() {
-		var selectedProjectObject = this.props.selectedProject;
-		if (selectedProjectObject){
-			var componentsObject = {};
-			var wiresObject = {};
-			var hostInterfacesObject = {};
-			if (selectedProjectObject.topology){
-				componentsObject = selectedProjectObject.topology.components;
-    			wiresObject = selectedProjectObject.topology.wires;
-    			//console.log(wiresObject);
-    			if (selectedProjectObject.topology.host_interfaces){
-    				hostInterfacesObject = selectedProjectObject.topology.host_interfaces;
-    			}
-    		}
-		}
+	componentWillMount: function() {
+  		this.prepData(this.props);
+	},
 
-		var getFaceString = function(vector, refVector){
-			var refMultiplier = refVector;
-			var interfaceSide = "";
+	prepData: function(props) {
+		var selectedProject = props.selectedProject;
+		var dependenciesObject = selectedProject.dependencies || {} ;
+		var componentsObject = selectedProject.topology.components || {};
+		var wiresObject = selectedProject.topology.wires || {};
+		var hostComponentsObject = selectedProject.topology.host_interfaces || {};
 
-			if ((vector.x * refMultiplier) <= vector.y){
-				if ((vector.x * -refMultiplier) < vector.y){
-					interfaceSide = "bottom";
-				}
-				else {
-					interfaceSide = "left";
-					//nLeft += 1;
-					//nBottom -= 1
-				}
-			}
-
-			else {
-				if ((vector.x * -refMultiplier) > vector.y){
-					interfaceSide = "top";
-					//nTop += 1;
-					//nBottom -= 1
-				}
-				else {
-					interfaceSide = "right";
-					//nRight += 1;
-					//nBottom -= 1
-				}
-			}
-			return interfaceSide
-		}
-
-		this.isPendingDeletion = false;
-
+		//set up component data object
 		this.componentData = {};
-
-		var components = [];
 		for (var componentID in componentsObject) {
+			var thisComponent = componentsObject[componentID];
+			var moduleID = thisComponent.module;
+			var componentViewData = selectedProject.view[componentID];
 
-			this.componentData[componentID] = {};
+			var interfaces = {};
 
-			var componentModuleID = componentsObject[componentID];
-			var componentModuleObject = this.props.modules[componentModuleID];
-
-			var componentViewData = selectedProjectObject.view[componentID];
-
-			var componentX = componentViewData.x;
-			var componentY = componentViewData.y;
-
-			if (componentID == this.state.dragComponentID){ //component is being dragged
-				componentX = componentX + this.state.cursorX - this.state.startX;
-				componentY = componentY + this.state.cursorY - this.state.startY;
+			if (thisComponent.interfaces){
+				for (var interfaceID in thisComponent.interfaces) {
+					thisInterface = thisComponent.interfaces[interfaceID];
+					interfaces[interfaceID] = {
+						interfaceID: interfaceID,
+						componentID: componentID,
+						mode: thisInterface.mode,
+						protocol: thisInterface.protocol
+					}
+				}
 			}
-
-			
-			if (componentX <= 0 || componentY <= headerHeight) { //component is outside of canvas, e.g. during drag operation
-				this.isPendingDeletion = componentID
-			}
+			var componentInterfaces = thisComponent.interfaces;
 
 			this.componentData[componentID] = {
-				left: componentX,
-				top: componentY
+				left: componentViewData.x, 
+				top: componentViewData.y, 
+				width: this.props.component.width, 
+				height: this.props.component.height, 
+				moduleID: moduleID, 
+				module: dependenciesObject[moduleID], 
+				interfaces: interfaces
 			};
+		};
+
+		//set up host component data object
+		this.hostComponentData = {};
+		for (var hostComponentID in hostComponentsObject) {
+			var thisHostComponent = hostComponentsObject[hostComponentID];
+			var hostComponentViewData = selectedProject.view[hostComponentID];
+			this.hostComponentData[hostComponentID] = {
+				hostComponentID: hostComponentID,
+				left: hostComponentViewData.x,
+				top: hostComponentViewData.y,
+				width: this.props.hostComponent.width, 
+				height: this.props.hostComponent.height, 
+				mode: thisHostComponent.mode,
+				protocol: thisHostComponent.protocol
+			};
+		};
+
+		//add io capability data
+		for (var componentID in this.componentData) {
+			var thisComponent = this.componentData[componentID];
+			var componentInterfaces = thisComponent.interfaces;
+			var moduleInterfaces = thisComponent.module.topology.interfaces;
+
+			var ioCapability = [];
+
+			_.forEach(moduleInterfaces, function(interface){
+				var thisCapability = {
+					componentID: componentID,
+					mode: interface.mode,
+					protocol: interface.protocol,
+					capacity: interface.capacity,
+					used: 0
+				};
+
+				// test for used capabilities
+				var that = this;
+				_.forEach(componentInterfaces, function(interface){
+					if (interface.mode == thisCapability.mode && interface.protocol == thisCapability.protocol){
+						thisCapability.used += 1
+					}
+				});
+				ioCapability.push(thisCapability)
+			});
+
+			this.componentData[componentID]["ioCapability"] = ioCapability;	
+		};
+
+		//set up wire data object
+		this.wireData = {};
+		for (var wireID in wiresObject) {
+
+			var thisWire = wiresObject[wireID];
+
+			this.wireData[wireID] = [];
+			var that = this;
+			_.forEach(thisWire, function(endpoint, i){
+				var thisEndpoint = {};
+				if (endpoint.ifc){//endpoint is component NOT host
+					var thisProtocol = that.componentData[endpoint.component].interfaces[endpoint.ifc].protocol;
+					var thisMode = that.componentData[endpoint.component].interfaces[endpoint.ifc].mode;
+					var thisIfc = endpoint.ifc;
+				}
+				else {
+					var thisProtocol = that.hostComponentData[endpoint.component].protocol;
+					var thisMode = that.hostComponentData[endpoint.component].mode;
+					var thisIfc = null;
+				}
+				thisEndpoint = {
+					"wire": wireID,
+					"component": endpoint.component,
+					"ifc": thisIfc,
+					"protocol": thisProtocol,
+					"mode": thisMode
+				}
+				that.wireData[wireID].push(thisEndpoint)
+			});
+		}
+
+		//add data from wire data
+		for (var wire in this.wireData) {
+			var thisWire = this.wireData[wire];
+			var that = this;
+			_.forEach(thisWire, function(thisEnd, i){
+				if (i == 0){
+					var otherEnd = thisWire[1]
+				}
+				else {
+					var otherEnd = thisWire[0]
+				}
+
+				if (thisEnd.ifc){//thisEnd is component, not host
+					var thisComponent = that.componentData[thisEnd.component];
+					var writeLocation = thisComponent.interfaces[thisEnd.ifc]
+				}
+				else {//thisEnd is a host
+					var thisComponent = that.hostComponentData[thisEnd.component];
+					var writeLocation = thisComponent
+				}
+
+				writeLocation["wireTo"] = {
+					component: otherEnd.component,
+					ifc: otherEnd.ifc || null
+				}
+				writeLocation["wire"] = wire;
+			});
+		};
+
+		this.positionInterfaces();
+	},
+
+	positionInterfaces: function() {
+		//add positional and face data etc.
+		for (var wire in this.wireData) {
+			var thisWire = this.wireData[wire];
+			var that = this;
+			_.forEach(thisWire, function(thisEnd, i){
+				if (i == 0){
+					var otherEnd = thisWire[1]
+				}
+				else {
+					var otherEnd = thisWire[0]
+				}
+
+				if (thisEnd.ifc){//thisEnd is component, not host
+					var thisComponent = that.componentData[thisEnd.component];
+					var writeLocation = thisComponent.interfaces[thisEnd.ifc]
+				}
+				else {//thisEnd is a host
+					var thisComponent = that.hostComponentData[thisEnd.component];
+					var writeLocation = thisComponent
+				}
+				
+				if (otherEnd.ifc){//otherEnd is component, not host
+					var otherComponent = that.componentData[otherEnd.component];
+				}
+				else {//otherEnd is a host
+					var otherComponent = that.hostComponentData[otherEnd.component];
+				}
+
+				var faceString = getFaceString(thisComponent, otherComponent);
+
+				writeLocation["face"] = faceString;
+				
+			});
+		};
+
+		//create token arrays
+		for (var componentID in this.componentData) {
+			var thisComponent = this.componentData[componentID];
+			var tokenArrays = {
+				"top": [],
+				"right": [],
+				"bottom": [],
+				"left": []
+  			}
+
+  			_.forEach(thisComponent.ioCapability, function(thisToken) {
+  				var remaining = thisToken.capacity - thisToken.used;
+  				if (remaining > 0){	//only add if not empty
+  					if (thisToken.mode == "in"){
+  						tokenArrays.top.push(thisToken)
+  					}
+  					else {
+  						tokenArrays.bottom.push(thisToken)
+  					}
+  					
+  				}
+  			})
+
+  			if (thisComponent.interfaces){
+				for (var interfaceID in thisComponent.interfaces){
+					thisInterface = thisComponent.interfaces[interfaceID];
+					thisInterfaceFace = thisInterface.face;
+					if (thisInterfaceFace == "top"){tokenArrays.top.push(thisInterface)}
+					if (thisInterfaceFace == "right"){tokenArrays.right.push(thisInterface)}
+					if (thisInterfaceFace == "bottom"){tokenArrays.bottom.push(thisInterface)}
+					if (thisInterfaceFace == "left"){tokenArrays.left.push(thisInterface)}
+				}
+  			}
+
+  			//sort arrays by protocol and mode
+  			tokenArrays = sortTokenArrays(tokenArrays);
+  			thisComponent["tokenArrays"] = tokenArrays
+
+  			//calculate locations of interface tokens
+  			tokenArrays = positionTokens(thisComponent, this.props.ifc);
+		};
+
+		//position host interfaces
+		for (var hostComponentID in this.hostComponentData) {
+			var thisHostComponent = this.hostComponentData[hostComponentID];
+			
+			if (thisHostComponent.face == "top"){
+				thisHostComponent['ifcLeft'] = thisHostComponent.left + (thisHostComponent.width / 2);
+				thisHostComponent['ifcTop'] = thisHostComponent.top;
+			}
+			else if (thisHostComponent.face == "right"){
+				thisHostComponent['ifcLeft'] = thisHostComponent.left + thisHostComponent.width;
+				thisHostComponent['ifcTop'] = thisHostComponent.top + (thisHostComponent.height / 2);
+			}
+			else if (thisHostComponent.face == "left"){
+				thisHostComponent['ifcLeft'] = thisHostComponent.left;
+				thisHostComponent['ifcTop'] = thisHostComponent.top + (thisHostComponent.height / 2);
+			}
+			else {
+				thisHostComponent['ifcLeft'] = thisHostComponent.left + (thisHostComponent.width / 2);
+				thisHostComponent['ifcTop'] = thisHostComponent.top + thisHostComponent.height;
+			}
+		};
+
+	},
+
+	componentWillReceiveProps: function(nextProps) {
+  		this.prepData(nextProps)
+	},
+
+	render: function() {
+		this.isPendingDeletion = false;
+
+		//render components
+		var components = [];
+		for (var componentID in this.componentData) {
+			var thisComponent = this.componentData[componentID];
+
+			if (componentID == this.state.dragging){ //component is being dragged
+				thisComponent.left = this.dragStartX + this.state.cursorX - this.startX;
+				thisComponent.top = this.dragStartY + this.state.cursorY - this.startY;	
+				this.positionInterfaces();		
+			}
+		
+			if (thisComponent.left <= 0 || thisComponent.top <= headerHeight) { //component is outside of canvas, e.g. during drag operation
+				this.isPendingDeletion = componentID
+			}
 			
   			components.push(
   				<Component
 					key = {componentID} 
 					isPendingDeletion = {this.isPendingDeletion} 
-					onMouseDown = {this.onMouseDown} 
-					width = {this.props.component.width} 
-					height = {this.props.component.height} 
-					thisModule = {componentModuleObject} 
-					thisComponentX = {componentX} 
-					thisComponentY = {componentY} 
-					thisComponentID = {componentID}/>
+					onMouseDown = {this.componentMouseDown} 
+					compDims = {this.props.component} 
+					component = {thisComponent} 
+					componentID = {componentID}/>
   			);
 		};
 
-		var hostComponentsArray = [];
-		var hostPortsArray = [];
-		for (var hostInterface in hostInterfacesObject) {
-			var thisProtocol = hostInterfacesObject[hostInterface].protocol;
-			var thisMode = hostInterfacesObject[hostInterface].mode;
-			var thisViewData = selectedProjectObject.view[hostInterface];
 
-			var hostInterfaceX = thisViewData.x;
-			var hostInterfaceY = thisViewData.y;
+		//render interfaces
+		var ifcs = [];
+		for (var componentID in this.componentData) {
+			var thisComponent = this.componentData[componentID];
+			var thisTokenArrays = thisComponent.tokenArrays;
 
-			if (hostInterface == this.state.dragComponentID){
-				hostInterfaceX = hostInterfaceX + this.state.cursorX - this.state.startX;
-				hostInterfaceY = hostInterfaceY + this.state.cursorY - this.state.startY;
-				if (hostInterfaceX <= 0){hostInterfaceX = 0}
-				if (hostInterfaceY <= headerHeight + 1){hostInterfaceY = headerHeight + 1}
-			};
+			var that = this;
+			_.forEach(thisTokenArrays, function(thisTokenArray, i) {
+				_.forEach(thisTokenArray, function(thisToken, j) {
+					var key = "" + componentID + i + j;
+					ifcs.push(
+					<InterfaceToken 
+						tokenObject = {thisToken} 
+						key = {key} 
+						isPendingDeletion = {that.isPendingDeletion} 
+						onMouseEnter = {that.ifcMouseEnter} 
+						onMouseLeave = {that.ifcMouseLeave} 
+						onMouseDown = {that.ifcMouseDown} 
+						onMouseUp = {that.ifcMouseUp} 
+						protocols = {that.props.protocols} 
+						componentID = {componentID} 
+						componentData = {that.componentData} 
+						dragging = {that.state.dragging} 
+						wireType = {that.state.wireType} 
+						mouseDown = {that.state.mouseDown}
+						isPendingUpdate = {that.state.isPendingUpdate}
+						ifcDims = {that.props.ifc}/>			
+					);
+				});
+			});
+		};
 
-			hostComponentsArray.push(
-				<HostInterface
-					key = {hostInterface} 
-					protocol = {thisProtocol} 
-					mode = {thisMode} 
-					onMouseDown = {this.onMouseDown} 
-					onMouseUp = {this.onInterfaceMouseUp} 
-					width = {this.props.hostInterface.width} 
-					height = {this.props.hostInterface.height} 		
-					posX = {hostInterfaceX} 
-					posY = {hostInterfaceY} 
-					ifcWidth = {this.props.attachmentInterface.width} 
-					ifcHeight = {this.props.attachmentInterface.height} 
-					attachmentID = {hostInterface}/>
+
+		//render host components and interfaces
+		var hostComponents = [];
+		var hostIfcArray = [];
+		for (var hostComponentID in this.hostComponentData) {
+			var thisHostComponent = this.hostComponentData[hostComponentID];
+
+			if (hostComponentID == this.state.dragging){ //component is being dragged
+				thisHostComponent.left = this.dragStartX + this.state.cursorX - this.startX;
+				thisHostComponent.top = this.dragStartY + this.state.cursorY - this.startY;
+				if (thisHostComponent.top <= headerHeight + 2){thisHostComponent.top = headerHeight + 2}
+				if (thisHostComponent.left <= 2){thisHostComponent.left = 2}	
+				this.positionInterfaces();		
+			}
+
+			hostComponents.push(
+				<HostComponent
+					key = {hostComponentID} 
+					onMouseDown = {this.componentMouseDown} 
+					onMouseUp = {this.ifcMouseUp} 
+					hostCompDims = {this.props.hostComponent} 
+					hostComponent = {thisHostComponent} 
+					hostComponentID = {hostComponentID}/>
 			);
 
-			this.componentData[hostInterface] = {
-				left: hostInterfaceX,
-				top: hostInterfaceY
-			};
-
-
-			var isInvalid = false;
-			var isStartOfNewWire = false;
-			if (this.state.isWireInProgress){
-				isInvalid = true;
-				if ((thisMode != this.thisWireInProgressStartMode || thisMode == "bidirectional")
-						&& (thisProtocol == this.thisWireInProgressProtocol)
-						&& (this.thisWireInProgressN == 1)) {
-					isInvalid = false;
-				}
-
-				var thisRefEndpoint = {
-					"component": hostInterface,
-					"ifc": "interface-1"
-				};
-
-				if (isExistingWire(thisRefEndpoint, wiresObject)){
-					isInvalid = true;
-				}
-
-				if (hostInterface == this.state.componentID) { //source interface
-					isInvalid = true;
-					isStartOfNewWire = true;
-				}
-				else if (_.isEqual(this.state.startFromExistingWire, thisRefEndpoint)){
-					isInvalid = false;
-				}
-			}
-
-			// host interface ports
-			// figure out component at other end, vector, face etc.
-			var otherEndOfWire = getOtherWireGroupEndpoint(hostInterface, "interface-1", selectedProjectObject);
-			//console.log(otherEndOfWire);
-			var vectorToOtherEndComponent = null;
-			var interfaceSide = null;
-
-			if (otherEndOfWire){
-				var verticalDist = this.componentData[otherEndOfWire.component].top - this.componentData[hostInterface].top;
-				var horizontalDist = this.componentData[otherEndOfWire.component].left - this.componentData[hostInterface].left;
-
-				vectorToOtherEndComponent = {
-					x: horizontalDist,
-					y: verticalDist
-				}
-
-				var refMultiplier = this.props.hostInterface.height / this.props.hostInterface.width;
-
-				if ((vectorToOtherEndComponent.x * refMultiplier) <= vectorToOtherEndComponent.y){
-					if ((vectorToOtherEndComponent.x * -refMultiplier) < vectorToOtherEndComponent.y){
-						interfaceSide = "bottom";
-					}
-					else {
-						interfaceSide = "left";
-					}
-				}
-
-				else {
-					if ((vectorToOtherEndComponent.x * -refMultiplier) > vectorToOtherEndComponent.y){
-						interfaceSide = "top";
-					}
-					else {
-						interfaceSide = "right";
-					}
-				}
-			}
-
-			else {
-				interfaceSide = "default"
-			}
-
-			var updatedFace = null;
-			if (this.state.isWireInProgress){ 				
-				if (!isInvalid){ //this is a valid interface
-					var vectorToOtherEndComponent = null;
-	
-					vectorToOtherEndComponent = {
-						x: this.componentData[this.state.componentID].left - this.componentData[hostInterface].left,
-						y: this.componentData[this.state.componentID].top - this.componentData[hostInterface].top
-					}
-					var refVector = this.props.hostInterface.height / this.props.hostInterface.width;
-					updatedFace = getFaceString(vectorToOtherEndComponent, refVector);
-					interfaceSide = updatedFace
-				}
-
-				else if (this.state.componentID == hostInterface){
-					var vectorToCursor = null;
-	
-					vectorToCursor = {
-						x: this.state.cursorX - (this.props.hostInterface.width/2) - this.componentData[hostInterface].left,
-						y: this.state.cursorY - (this.props.hostInterface.height/2) - this.componentData[hostInterface].top
-					}
-					var refVector = this.props.hostInterface.height / this.props.hostInterface.width;
-					updatedFace = getFaceString(vectorToCursor, refVector);
-					interfaceSide = updatedFace
-				}
-			}
 			
-			if (interfaceSide == "top"){
-				var thisLeft = hostInterfaceX + (this.props.hostInterface.width / 2);
-				var thisTop = hostInterfaceY ;
-			}
-			if (interfaceSide == "right"){
-				var thisTop = hostInterfaceY + ((this.props.hostInterface.height / 2));
-				var thisLeft = hostInterfaceX + this.props.hostInterface.width;
-			}
-			if (interfaceSide == "bottom" || interfaceSide == "default"){
-				var thisLeft = hostInterfaceX + (this.props.hostInterface.width / 2);
-				var thisTop = hostInterfaceY + this.props.hostInterface.height;
-			}
-			if (interfaceSide == "left"){
-				var thisTop = hostInterfaceY + ((this.props.hostInterface.height / 2));
-				var thisLeft = hostInterfaceX;
-			}
-
-
-			this.componentData[hostInterface]["interfaceGroups"] = {};
-			this.componentData[hostInterface].interfaceGroups = {
-				"interface-1": {
-					//top: ifcY + (this.props.attachmentInterface.height / 2),
-					//left: ifcX + (this.props.attachmentInterface.width / 2),
-					top: thisTop,
-					left: thisLeft,
-					face: interfaceSide,
-					wireTo: otherEndOfWire,
-					vector: vectorToOtherEndComponent
-				}
-			};
-			var thisFillColor = getHSL(0);
-			var thisBorderColor = getHSL(0, true);
-			
-			thisFillColor = getHSL(this.props.protocols[thisProtocol].hue);
-			thisBorderColor = getHSL(this.props.protocols[thisProtocol].hue, true);
-			
-			hostPortsArray.push(
-				<HostPort 
-					key = {hostInterface + "interface-1"} 
-					isInvalid = {isInvalid} 
-					isStartOfNewWire = {isStartOfNewWire} 
-					mode = {thisMode} 
+			hostIfcArray.push(
+				<HostInterface 
+					key = {hostComponentID} 
+					tokenObject = {thisHostComponent} 
+					wireType = {this.state.wireType} 
+					mouseDown = {this.state.mouseDown}
+					dragging = {this.state.dragging} 
+					isPendingUpdate = {this.state.isPendingUpdate}
 					onMouseEnter = {this.ifcMouseEnter} 
 					onMouseLeave = {this.ifcMouseLeave} 
-					onMouseDown = {this.onMouseDown} 
-					onMouseUp = {this.onInterfaceMouseUp} 
-					color = {thisFillColor} 
-					face = {interfaceSide} 
-					border = {thisBorderColor} 
-					width = {this.props.attachmentInterface.width} 
-					height = {this.props.attachmentInterface.height} 
-					left = {thisLeft} 
-					top = {thisTop} 
-					apex = {this.props.attachmentInterface.apex} 
-					interfaceID = "interface-1" 
-					componentID = {hostInterface}/>				
+					onMouseDown = {this.ifcMouseDown} 
+					onMouseUp = {this.ifcMouseUp} 
+					protocols = {this.props.protocols} 
+					hostCompDims = {this.props.hostComponent}/>				
 			);
 		};
 
 
-		//interfaces
-		var ifcs = [];
-		for (var componentID in componentsObject) {
-  			var componentModuleID = componentsObject[componentID];
-			var componentModuleObject = this.props.modules[componentModuleID];
-
-			var componentViewData = selectedProjectObject.view[componentID];
-  			
-	  		var interfacesObject = componentModuleObject.interfaces;
-	  		var interfaceGroups = componentViewData.groups;
-	  		var nInterfaceGroups = Object.keys(interfaceGroups).length;
-	  		this.componentData[componentID]["interfaceGroups"] = {};
-
-	  		var thisComponentX = this.componentData[componentID].left;
-	  		var thisComponentY = this.componentData[componentID].top;
-
-			//loop through internal interface groups and get coordinates of other end components
-
-			var nRight = 0; 
-			var nLeft = 0;
-			var nTop = 0;
-			var nBottom = nInterfaceGroups;
-			
-			for (var groupID in interfaceGroups) {
-
-				var thisGroupID = groupID;
-			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
-
-				var otherEndOfWire = getOtherWireGroupEndpoint(componentID, groupID, selectedProjectObject);
-				var vectorToOtherEndComponent = null;
-				var interfaceSide = null;
-
-				//get number of interfaces in group
-				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
-
-				//get protocol and mode
-				var referenceInterface = Object.keys(thisInterfaceGroup)[0];
-				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
-				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
-		
-				if (otherEndOfWire){
-					vectorToOtherEndComponent = {
-						x: this.componentData[otherEndOfWire.component].left - this.componentData[componentID].left,
-						y: this.componentData[otherEndOfWire.component].top - this.componentData[componentID].top
-					}
-					var refVector = this.props.component.height / this.props.component.width;
-					interfaceSide = getFaceString(vectorToOtherEndComponent, refVector)
-				}
-				else {
-					interfaceSide = "default"					
-				}
-
-				//calculate start-of-new-wire & validity
-				var isInvalid = false;
-				var isStartOfNewWire = false;
-
-				if (this.state.isWireInProgress){ //test for mode, protocol and number of interfaces	
-					isInvalid = true;
-
-					if ((interfaceGroupMode != this.thisWireInProgressStartMode || interfaceGroupMode == "bidirectional")
-						&& (interfaceGroupProtocol == this.thisWireInProgressProtocol)
-						&& (this.thisWireInProgressN == nInterfacesInGroup)) {
-						isInvalid = false;
-					}
-
-					if (componentID == this.state.componentID) { //other interfaces on same component
-						isInvalid = true;
-					}
-
-					// test for existing wire
-					var thisRefEndpoint = {
-						"component": componentID,
-						"ifc": referenceInterface
-					};
-
-					if (isExistingWire(thisRefEndpoint, wiresObject)){
-						isInvalid = true;
-					}
-
-					//test for self
-					if (componentID == this.state.componentID && thisGroupID == this.state.interfaceGroupID) { //source interface
-						isInvalid = true;
-						isStartOfNewWire = true
-					}
-
-					else if (_.isEqual(this.state.startFromExistingWire, thisRefEndpoint)){
-						isInvalid = false;
-					}
-				}
-
-				this.componentData[componentID]["interfaceGroups"][groupID] = {
-					face: interfaceSide,
-					top: null,
-					left: null,
-					isInvalid: null,
-					isStartOfNewWire: null,
-					wireTo: otherEndOfWire,
-					vector: vectorToOtherEndComponent
-				};
-
-				this.componentData[componentID]["interfaceGroups"][thisGroupID].isInvalid = isInvalid;
-				this.componentData[componentID]["interfaceGroups"][thisGroupID].isStartOfNewWire = isStartOfNewWire;
-
-
-				var updatedFace = null;
-				if (this.state.isWireInProgress){ 				
-					if (!this.componentData[componentID]["interfaceGroups"][groupID].isInvalid){ //this is a valid interface
-						var vectorToOtherEndComponent = null;
-		
-						vectorToOtherEndComponent = {
-							x: this.componentData[this.state.componentID].left - this.componentData[componentID].left,
-							y: this.componentData[this.state.componentID].top - this.componentData[componentID].top
-						}
-						var refVector = this.props.component.height / this.props.component.width;
-						updatedFace = getFaceString(vectorToOtherEndComponent, refVector);
-						this.componentData[componentID]["interfaceGroups"][groupID].face = updatedFace;
-					}
-
-					else if (this.state.componentID == componentID && this.state.interfaceGroupID == groupID){
-						var vectorToCursor = null;
-		
-						vectorToCursor = {
-							x: this.state.cursorX - (this.props.component.width/2) - this.componentData[componentID].left,
-							y: this.state.cursorY - (this.props.component.height/2) - this.componentData[componentID].top
-						}
-						var refVector = this.props.component.height / this.props.component.width;
-						updatedFace = getFaceString(vectorToCursor, refVector);
-						this.componentData[componentID]["interfaceGroups"][groupID].face = updatedFace
-					}
-				}
-
-				// update N
-
-				var thisFace = this.componentData[componentID]["interfaceGroups"][groupID].face;
-				if (thisFace == "top"){nTop += 1; nBottom -= 1}
-				if (thisFace == "left"){nLeft += 1; nBottom -= 1}
-				if (thisFace == "right"){nRight += 1; nBottom -= 1}
-			
-			};
-
-//--------
-
-			var groupIndex = 0;
-			var rightIndex = 0; 
-			var leftIndex = 0;
-			var topIndex = 0;
-			var bottomIndex = 0;
-			for (var group in interfaceGroups) {
-				var thisGroupID = group;
-			    var thisInterfaceGroup = interfaceGroups[thisGroupID];
-
-				//get number of interfaces in group
-				var nInterfacesInGroup = Object.keys(thisInterfaceGroup).length;
-
-				//get protocol and mode
-				var referenceInterface = Object.keys(thisInterfaceGroup)[0];
-				var interfaceGroupProtocol = this.getProtocol(componentID, referenceInterface);
-				var interfaceGroupMode = interfacesObject[referenceInterface].mode;
-
-				//calculate location
-				//get face
-				var thisFace = this.componentData[componentID]["interfaceGroups"][group].face;
-				if (thisFace == "top"){
-					var leftDatum = (0.5 * this.props.component.width) - (0.5 * (nTop - 1) * (this.props.ifc.width + this.props.ifc.margin));
-					var thisLeft = thisComponentX + leftDatum + (topIndex * (this.props.ifc.width + this.props.ifc.margin));
-					var thisTop = thisComponentY ;
-					topIndex += 1
-				}
-				if (thisFace == "right"){
-					var topDatum = (0.5 * this.props.component.height) - (0.5 * (nRight - 1) * (this.props.ifc.width + this.props.ifc.margin));
-					var thisTop = thisComponentY + topDatum + (rightIndex * (this.props.ifc.width + this.props.ifc.margin));
-					var thisLeft = thisComponentX + this.props.component.width - (this.props.ifc.height / 2) + 1;
-					rightIndex += 1
-				}
-				if (thisFace == "bottom" || thisFace == "default"){
-					var leftDatum = (0.5 * this.props.component.width) - (0.5 * (nBottom - 1) * (this.props.ifc.width + this.props.ifc.margin));
-					var thisLeft = thisComponentX + leftDatum + (bottomIndex * (this.props.ifc.width + this.props.ifc.margin));
-					var thisTop = thisComponentY + this.props.component.height;
-					bottomIndex += 1
-				}
-				if (thisFace == "left"){
-					var topDatum = (0.5 * this.props.component.height) - (0.5 * (nLeft - 1) * (this.props.ifc.width + this.props.ifc.margin));
-					var thisTop = thisComponentY + topDatum + (leftIndex * (this.props.ifc.width + this.props.ifc.margin));
-					var thisLeft = thisComponentX - (this.props.ifc.height / 2) + 1;
-					leftIndex += 1
-				}
-
-
-				this.componentData[componentID]["interfaceGroups"][thisGroupID] = {
-					face: this.componentData[componentID]["interfaceGroups"][thisGroupID].face,
-					top: thisTop,
-					left: thisLeft,
-					isStartOfNewWire: this.componentData[componentID]["interfaceGroups"][thisGroupID].isStartOfNewWire,
-					isInvalid: this.componentData[componentID]["interfaceGroups"][thisGroupID].isInvalid,
-					wireTo: this.componentData[componentID]["interfaceGroups"][thisGroupID].wireTo,
-					vector: this.componentData[componentID]["interfaceGroups"][thisGroupID].vector
-				};
-
-				var thisFillColor = getHSL(this.props.protocols[interfaceGroupProtocol].hue);
-				var thisBorderColor = getHSL(this.props.protocols[interfaceGroupProtocol].hue, true);
-
-				var thisKey = "" + componentID + thisGroupID;
-
-				ifcs.push(
-					<InterfaceGroup 
-						isInvalid = {this.componentData[componentID]["interfaceGroups"][group].isInvalid} 
-						isStartOfNewWire = {this.componentData[componentID]["interfaceGroups"][group].isStartOfNewWire} 
-						isPendingDeletion = {this.isPendingDeletion} 
-						key = {thisKey} 
-						onMouseEnter = {this.ifcMouseEnter} 
-						onMouseLeave = {this.ifcMouseLeave} 
-						onMouseDown = {this.onMouseDown} 
-						onMouseUp = {this.onInterfaceMouseUp} 
-						interfaceMode = {interfaceGroupMode} 
-						face = {thisFace} 
-						color = {thisFillColor} 
-						border = {thisBorderColor} 
-						width = {this.props.ifc.width} 
-						height = {this.props.ifc.height} 
-						componentData = {this.componentData} 
-						componentHeight = {this.props.component.height} 
-						componentWidth = {this.props.component.width} 
-						interfaceGroupID = {thisGroupID} 
-						interfaceIDObject = {thisInterfaceGroup} 
-						componentID = {componentID}/>				
-				);
-
-				groupIndex += 1;
-			};
-		};
-
-
+		//render wires
 		var wires = [];
-		var localGroupArray = [];
-
-		this.existingWireEndpoint = false;
-		if (this.state.startFromExistingWire && this.state.dragging){
-			this.existingWireEndpoint = {
-				component: this.state.startFromExistingWire.component,
-				interfaceGroup: convertToGroup(this.state.startFromExistingWire.component, this.state.startFromExistingWire.ifc, selectedProjectObject.view)
-			};
-		};
-
-		for (var wire in wiresObject) {
-			var thisWire = wiresObject[wire];
-			//console.log(wiresObject);
-			var thisProtocol = this.getProtocol(thisWire["endpoint-1"].component, thisWire["endpoint-1"].ifc);
+		for (var wire in this.wireData) {
+			var thisWire = this.wireData[wire];
 			var wireClass = "";
 			if (this.state.isWireInProgress){
 				wireClass = "discreet"
 			};
 
-			var endpoints = {
-				"endpoint-1": {
-					"component": thisWire["endpoint-1"].component,
-					"interfaceGroup": convertToGroup(thisWire["endpoint-1"].component, thisWire["endpoint-1"].ifc, selectedProjectObject.view)
-				},
-				"endpoint-2": {
-					"component": thisWire["endpoint-2"].component,
-					"interfaceGroup": convertToGroup(thisWire["endpoint-2"].component, thisWire["endpoint-2"].ifc, selectedProjectObject.view)
-				}
-			};
-
     		var isWireExists = false;
-    		_.forEach(localGroupArray, function(thisEndpoint) {
-    			if (_.isEqual(thisEndpoint, endpoints["endpoint-1"])){
-    				isWireExists = true;
-    			}
-    		});
-
-    		thisStrokeColor = getHSL(this.props.protocols[thisProtocol].hue, true);
 
 			if (!isWireExists) {
-				localGroupArray.push(endpoints["endpoint-1"]);
-				localGroupArray.push(endpoints["endpoint-2"]);
-				//console.log(endpoints);
 				wires.push(
-					<WireGroup
+					<Wire
 						key = {wire} 
 						isPendingDeletion = {this.isPendingDeletion} 
 						wireClass = {wireClass} 
-						color = {thisStrokeColor} 
-						stroke = {this.props.wire.width} 
+						isPendingUpdate = {this.state.isPendingUpdate} 
+						dragging = {this.state.dragging} 
+						wireID = {wire} 
+						protocols = {this.props.protocols} 
 						componentData = {this.componentData} 
-						endpoints = {endpoints} 
+						hostComponentData = {this.hostComponentData} 
+						wire = {thisWire} 
 						existingWireEndpoint = {this.existingWireEndpoint}/>
 				);
 			}
 		};
 
-		if (this.state.interfaceGroupID && this.state.dragging) {
-			if (this.state.interfaceIDObject){ // component interface
-				var referenceInterface = Object.keys(this.state.interfaceIDObject)[0];
-				var thisProtocol = this.getProtocol(this.state.componentID, referenceInterface);
-			}
-			else { // host interface
-				var thisProtocol = this.props.selectedProject.topology.host_interfaces[this.state.componentID].protocol
-			}
 
-			var thisStrokeColor = getHSL(this.props.protocols[thisProtocol].hue, true);
-
+		//render wire in progress if required
+		if (this.state.wireType) {
 			var wireInProgress = <WireInProgress
-				color = {thisStrokeColor} 
+				protocols = {this.props.protocols} 
+				dragging = {this.state.dragging} 
+				isPendingUpdate = {this.state.isPendingUpdate}
+				wireType = {this.state.wireType} 
 				isSnapping = {this.state.isSnapping} 
-				thisInterfaceGroup = {this.state.interfaceGroupID} 
-				thisComponent = {this.state.componentID} 
 				componentData = {this.componentData} 
-				thisAbsX = {this.state.cursorX} 
-				thisAbsY = {this.state.cursorY} 
-				stroke = {this.props.wire.width + 1} 
-				ifcDims = {this.props.ifc}/>
+				hostComponentData = {this.hostComponentData}
+				cursorX = {this.state.cursorX} 
+				cursorY = {this.state.cursorY}/>	
 		}
 
-		//figure out size of svg container
-		this.svgExtents = defineSvgSize(this.componentData, this.state.cursorX, this.state.cursorY)
 
+		//figure out size of svg container
+		this.svgExtents = defineSvgSize(this.componentData, this.hostComponentData, this.state.cursorX, this.state.cursorY)
+
+
+		//return
 		return (
 			<div className="ui-module workspace pattern">		
 				<svg className="wireContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
@@ -914,104 +639,13 @@ var Workspace = React.createClass({
 					{wireInProgress}
 				</svg>	
 				{components}
-				{hostComponentsArray}
+				{hostComponents}
 						
 				<svg className="ifcContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{ifcs}
-					{hostPortsArray}
+					{hostIfcArray}
 				</svg>		
 			</div>
 		);
 	},
-});
-
-var HostInterface = React.createClass({
-	onMouseDown: function() {
-		this.props.onMouseDown(this.props.attachmentID)
-	},
-
-	render: function() {
-
-		var containerStyle = {
-			width: this.props.width,
-			height: this.props.height,
-			top: this.props.posY,
-			left: this.props.posX,
-		};
-
-		return (
-			<div 
-				className="hostInterface" 
-				style={containerStyle}
-				onMouseDown={this.onMouseDown}>
-				hostIfcName
-  			</div>
-		);
-	}
-});
-
-var Component = React.createClass({
-	handleMouseDown: function(){
-		this.props.onMouseDown(this.props.thisComponentID)
-	},
-
-	render: function() {
-		var componentStyle = {
-			width: this.props.width,
-			height: this.props.height,
-			top: this.props.thisComponentY,
-			left: this.props.thisComponentX
-		};
-
-		var classString = "component";
-		if (this.props.isPendingDeletion == this.props.thisComponentID){
-			classString += " pendingDeletion"
-		}
-
-		return (
-			<div 
-				className = {classString} 
-				onMouseDown = {this.handleMouseDown}  
-				style = {componentStyle}>
-  				<div className="componentName">
-  					{this.props.thisModule.name}
-  				</div>
-  				<div className="componentVersion">
-  					{this.props.thisModule.version}
-  				</div>	
-  			</div>
-		);
-	}
-});
-
-var WireInProgress = React.createClass({
-	render: function() {
-		var end1Comp = this.props.thisComponent;
-		var end1Int = this.props.thisInterfaceGroup;
-
-		var ifcWidth = this.props.ifcDims.width;
-		var ifcHeight = this.props.ifcDims.height;
-
-		var componentStyle = {
-			stroke: this.props.color,
-			strokeWidth: this.props.stroke,
-		};
-
-		var x2 = this.props.thisAbsX;
-		var y2 = this.props.thisAbsY;
-		if (this.props.isSnapping){
-			x2 = this.props.componentData[this.props.isSnapping.component].interfaceGroups[this.props.isSnapping.ifcGroup].left;
-			y2 = this.props.componentData[this.props.isSnapping.component].interfaceGroups[this.props.isSnapping.ifcGroup].top
-		}
-
-		return (
-			<line 
-				className = "wire" 
-				x1 = {this.props.componentData[end1Comp].interfaceGroups[end1Int].left} 
-				y1 = {this.props.componentData[end1Comp].interfaceGroups[end1Int].top} 
-				x2 = {x2}
-				y2 = {y2}
-				style = {componentStyle}/>
-		);
-	}
 });

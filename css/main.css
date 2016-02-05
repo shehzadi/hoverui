@@ -379,7 +379,7 @@ body::-webkit-scrollbar {
   pointer-events: fill;
 }
 
-.workspace .hostInterface {
+.workspace .hostComponent {
   position: absolute;
   background-color: rgba(140, 140, 140, 0.8);
   outline: 1px solid rgba(0, 0, 0, 0.35);
@@ -652,8 +652,9 @@ body::-webkit-scrollbar {
   outline: 1px solid rgba(0, 0, 0, 0.15);
 }
 
-.tools button {
+.tools button, .tools a {
   padding: 1px 8px 1px 7px;
+  text-decoration: none;
   min-width: 20px;
   margin: 2px;
   background-color: #9e9e9e;
@@ -667,7 +668,7 @@ body::-webkit-scrollbar {
   white-space: nowrap;
 }
 
-.tools button:hover:not(.disabled) {
+.tools button:hover:not(.disabled), .tools a:hover:not(.disabled) {
   background-color: #949494;
   border: 1px solid #8a8a8a;
 }
