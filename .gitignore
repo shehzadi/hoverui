@@ -20,3 +20,4 @@ prepros.cfg
 firebase.json
 js/main copy.js
 firebase-debug.log
+npm-debug.log
