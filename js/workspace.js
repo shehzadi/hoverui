@@ -419,7 +419,13 @@ var Workspace = React.createClass({
   			_.forEach(thisComponent.ioCapability, function(thisToken) {
   				var remaining = thisToken.capacity - thisToken.used;
   				if (remaining > 0){	//only add if not empty
-  					tokenArrays.bottom.push(thisToken)
+  					if (thisToken.mode == "in"){
+  						tokenArrays.top.push(thisToken)
+  					}
+  					else {
+  						tokenArrays.bottom.push(thisToken)
+  					}
+  					
   				}
   			})
 

@@ -185,7 +185,7 @@ var InterfaceToken = React.createClass({
 			rotation = 90
 		}
 
-		if (this.props.tokenObject.face == "top"){
+		if (this.props.tokenObject.face == "top" || (this.props.tokenObject.capacity && this.props.tokenObject.mode == "in")){
 			rotation = 180;
 		}
 
