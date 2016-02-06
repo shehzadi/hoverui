@@ -13,6 +13,9 @@ $button-color: hsl(0, 0%, 60%);
 $app-min-width : 800px;
 $app-min-height : 300px;
 
+$grab-width : 10px;
+$grab-corner : 20px;
+
 $home-height: 40px;
 $tools-height: 40px;
 $secondary-nav-height: 35px;
@@ -382,7 +385,92 @@ body::-webkit-scrollbar {
 	}
 }
 
+.policyInProgress {
+	position: absolute;
+	z-index: 1000;
+	padding: 10px 14px;
+	background-color: hsla(6, 59%, 50%, 0.5);
+	border: 1px dashed hsla(6, 59%, 50%, 0.8);
+	font-size: 12px;
+	display: flex;
+	flex-direction: column;
+	border-radius: 8px;
+	cursor: -webkit-grab;
+	justify-content: center;
+	align-items: center;
+		.policyName {
+			text-align: center;
+			line-height: 1;
+		}
+		.policyVersion {
+			@include subtext;
+		}
+	* {
+		cursor: -webkit-grab;
+	}
+}
+
 .workspace {
+	.policy {
+		position: absolute;
+		padding: 6px 8px;
+		color: hsla(6, 59%, 50%, 1);
+		background-color: hsla(6, 59%, 50%, 0.3);
+		border: 1px dashed hsla(6, 59%, 50%, 0.8);
+		font-size: 12px;
+		display: flex;
+		flex-direction: column;
+		border-radius: 8px;
+		justify-content: left;
+		align-items: top;
+		.policyVersion {
+			@include subtext;
+			margin-left: 0.5em;
+			display: inline-block;
+		}
+		.grab {
+			position: absolute;
+		}
+		.top, .bottom {
+			height: $grab-width;
+			left: $grab-corner;
+			right: $grab-corner;
+			cursor: ns-resize;
+		}
+		.left, .right {
+			bottom: $grab-corner;
+			top: $grab-corner;
+			width: $grab-width;
+			cursor: ew-resize;
+		}
+		.topRight, .bottomLeft {
+			cursor: nesw-resize
+		}
+		.topLeft, .bottomRight {
+			cursor: nwse-resize
+		}
+		.topRight, .topLeft, .bottomRight, .bottomLeft {
+			height: $grab-corner;
+			width: $grab-corner;
+		}
+		.top, .topRight, .topLeft {
+			top: 0;
+		}
+		.bottom, .bottomRight, .bottomLeft{
+			bottom: 0;
+		}
+		.right, .topRight, .bottomRight{
+			right: 0;
+		}
+		.left, .topLeft, .bottomLeft{
+			left: 0;
+		}
+	}
+
+	.policy.pendingDeletion {
+		opacity: 0.5;
+	}
+
 	.component {
 		padding: 10px 14px;
 		position: absolute;

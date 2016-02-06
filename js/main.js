@@ -1,7 +1,7 @@
 var IOConsole = React.createClass({
 	getInitialState: function() {
-		var projectsSrc = this.getLocalSetting("projectsSrc") || "https://boiling-torch-3324.firebaseio.com/v2/users/maxb/projects";
-		var modulesSrc = this.getLocalSetting("modulesSrc") || "https://boiling-torch-3324.firebaseio.com/v2/modules";
+		var projectsSrc = this.getLocalSetting("projectsSrc") || "https://boiling-torch-3324.firebaseio.com/v3/users/maxb/projects";
+		var modulesSrc = this.getLocalSetting("modulesSrc") || "https://boiling-torch-3324.firebaseio.com/v3/modules";
         
         var categoryVisibility = this.getLocalSetting("categoryVisibility") || {};
 		
@@ -34,7 +34,11 @@ var IOConsole = React.createClass({
     		componentInProgress: {
     			width: 145,
     			height: 76
-    		}
+    		},
+            policyInProgress: {
+                width: 200,
+                height: 120
+            }
     	};
 	},
 
@@ -230,21 +234,38 @@ var IOConsole = React.createClass({
 
     },
 
-	handleNewComponentDrop: function(moduleID, posX, posY){
+	handleNewObjectDrop: function(moduleID, posX, posY){
+        var moduleObject = this.state.modulesObject[moduleID];
+        var moduleType = moduleObject.type || "component";
      	var newProjectViewObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].view) || {};
     	var newProjectComponentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].topology.components) || {};
-        
+        var newProjectPoliciesObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].policies) || {};
         var projectDependenciesObject = this.state.projectsObject[this.state.selectedProjectID].dependencies || {};
         
-        //new component stuff
-    	var newComponentID = "comp-" + ioid();
-        var newViewData = {
-    		"x": posX,
-    		"y": posY
-        };
-        var newComponentData = {
-            "module": moduleID
-        };
+        if (moduleType == "component"){
+            var newID = "comp-" + ioid();
+            var newViewData = {
+                "x": posX,
+                "y": posY
+            };
+            var newComponentData = {
+                "module": moduleID
+            };
+            newProjectComponentsObject[newID] = newComponentData;
+        }
+        else if (moduleType == "policy"){
+            var newID = "policy-" + ioid();
+            var newViewData = {
+                "left": posX,
+                "top": posY,
+                "width": this.props.policyInProgress.width,
+                "height": this.props.policyInProgress.height
+            };
+            var newPolicyData = {
+                "module": moduleID
+            };
+            newProjectPoliciesObject[newID] = newPolicyData;
+        }        
 
         //dependencies
         if (!projectDependenciesObject[moduleID]){ // module is NOT already a dependency, so deal with dependencies
@@ -267,85 +288,116 @@ var IOConsole = React.createClass({
 
             this.firebaseProjectsRef.child(this.state.selectedProjectID).child("dependencies").set(newProjectDependenciesObject);
         }
-
-    	newProjectViewObject[newComponentID] = newViewData;
-    	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("view").set(newProjectViewObject)
-
-    	newProjectComponentsObject[newComponentID] = newComponentData;
-    	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("components").set(newProjectComponentsObject)
+    	newProjectViewObject[newID] = newViewData;
+    	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("view").set(newProjectViewObject);
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("components").set(newProjectComponentsObject);
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("policies").set(newProjectPoliciesObject)
 	},
 
-	handleComponentDrop: function(dropComponent, deltaX, deltaY) {
+	handleObjectDrop: function(objectID, deltaX, deltaY) {
     	var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
 
-    	newProjectObject.view[dropComponent].x += deltaX;
-    	newProjectObject.view[dropComponent].y += deltaY;
+    	
 
-    	if (dropComponent.indexOf('host') == 0){
-    		if (newProjectObject.view[dropComponent].x <= 2){
-				newProjectObject.view[dropComponent].x = 2
+    	if (objectID.indexOf('host') == 0){
+            newProjectObject.view[objectID].x += deltaX;
+            newProjectObject.view[objectID].y += deltaY;
+
+    		if (newProjectObject.view[objectID].x <= 2){
+				newProjectObject.view[objectID].x = 2
 	    	}
-	    	if (newProjectObject.view[dropComponent].y <= headerHeight + 2){
-				newProjectObject.view[dropComponent].y = headerHeight + 2	
+	    	if (newProjectObject.view[objectID].y <= headerHeight + 2){
+				newProjectObject.view[objectID].y = headerHeight + 2	
 	    	}
 
     		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
     	}
     	
-	    else {
+	    else if (objectID.indexOf('comp') == 0){
+            newProjectObject.view[objectID].x += deltaX;
+            newProjectObject.view[objectID].y += deltaY;
 
-	    	if (newProjectObject.view[dropComponent].x <= 0 || newProjectObject.view[dropComponent].y <= headerHeight){
-				this.deleteComponent(dropComponent)	
+	    	if (newProjectObject.view[objectID].x <= 0 || newProjectObject.view[objectID].y <= headerHeight){
+				this.deleteObject(objectID)	
 	    	}
 
 	    	else {
 	    		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
 	    	}
-	    }	
+	    }
+
+        else if (objectID.indexOf('policy') == 0){
+            newProjectObject.view[objectID].left += deltaX;
+            newProjectObject.view[objectID].top += deltaY;
+            if (newProjectObject.view[objectID].left <= 0 || newProjectObject.view[objectID].top <= headerHeight){
+                this.deleteObject(objectID)  
+            }
+
+            else {
+                this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
+            }
+        }
     },
 
-   	deleteComponent: function(componentID) {
+   	deleteObject: function(objectID) {
         var selectedProject = this.state.projectsObject[this.state.selectedProjectID];        
 
-   		var newProjectObject = _.cloneDeep(selectedProject);
-        var moduleDependencyID = newProjectObject.topology.components[componentID].module;
+        var newProjectObject = _.cloneDeep(selectedProject);
    		
+
+        if (objectID.indexOf('comp') == 0){
+            var moduleDependencyID = selectedProject.topology.components[objectID].module;
+
+            //delete component from topology
+            delete newProjectObject.topology.components[objectID];
+
+            //find wires and delete them
+            if (newProjectObject.topology.wires){
+                for (var wire in newProjectObject.topology.wires){
+                    var wireObject = newProjectObject.topology.wires[wire];
+                    if (wireObject[0].component == objectID){
+                        newProjectObject.topology.wires[wire] = null;
+                        //find interface on other component and delete
+                        if (newProjectObject.topology.components[wireObject[1].component]){
+                            newProjectObject.topology.components[wireObject[1].component].interfaces[wireObject[1].ifc] = null
+                        }
+                    }
+                    if (wireObject[1].component == objectID){
+                        newProjectObject.topology.wires[wire] = null;
+                        //find interface on other component and delete
+                        if (newProjectObject.topology.components[wireObject[0].component]){
+                            newProjectObject.topology.components[wireObject[0].component].interfaces[wireObject[0].ifc] = null
+                        }
+                    }
+                }
+            }
+        }
+        else if (objectID.indexOf('policy') == 0){
+            var moduleDependencyID = selectedProject.policies[objectID].module;
+
+            //delete policy from policies
+            delete newProjectObject.policies[objectID];
+        }
+       	
         //delete view data
-        newProjectObject.view[componentID] = null;
+        delete newProjectObject.view[objectID];
 
-        //delete component from topology
-        //_.unset(newProjectObject.topology, "topology.components[componentID]");
-        delete newProjectObject.topology.components[componentID];
-
+        //manage dependencies
         var topologyComponents = newProjectObject.topology.components;
+        var policies = newProjectObject.policies;
    		
         var moduleArray = [];
         _.forEach(topologyComponents, function(component){
             var module = component.module;
             moduleArray.push(module);
         });
+        _.forEach(policies, function(policy){
+            var module = policy.module;
+            moduleArray.push(module);
+        });
         moduleArray = _.uniq(moduleArray);
 
-   		//find wires and delete them
-   		if (newProjectObject.topology.wires){
-	   		for (var wire in newProjectObject.topology.wires){
-	   			var wireObject = newProjectObject.topology.wires[wire];
-	   			if (wireObject[0].component == componentID){
-	   				newProjectObject.topology.wires[wire] = null;
-                    //find interface on other component and delete
-                    if (newProjectObject.topology.components[wireObject[1].component]){
-                        newProjectObject.topology.components[wireObject[1].component].interfaces[wireObject[1].ifc] = null
-                    }
-	   			}
-                if (wireObject[1].component == componentID){
-                    newProjectObject.topology.wires[wire] = null;
-                    //find interface on other component and delete
-                    if (newProjectObject.topology.components[wireObject[0].component]){
-                        newProjectObject.topology.components[wireObject[0].component].interfaces[wireObject[0].ifc] = null
-                    }
-                }
-	   		}
-   		}
+
 
         _.forEach(moduleArray, function(id){
             var directDependency = selectedProject.dependencies[id];
@@ -434,46 +486,57 @@ var IOConsole = React.createClass({
 		}
 	},
 
+    onMouseMove: function(event) { //captured on document
+        var cursorX = event.pageX;
+        var cursorY = event.pageY;
+        var deltaX = cursorX - this.state.startX;
+        var deltaY = cursorY - this.state.startY;
+        var distance = Math.abs(deltaX) + Math.abs(deltaY);
+
+        if (this.state.dragging == false && distance > 4){ //dragging
+            this.setState({
+                dragging: this.state.mouseDown
+            });
+        }
+
+        if (this.state.dragging){   
+            this.setState({
+                cursorX: cursorX,
+                cursorY: cursorY
+            });
+        }
+    },
+
 	onMouseUp: function(event) { //captured on document
-		this.removeDocumentEvents();
+		var dropID = this.state.dragging;
+        var dropObject = this.state.modulesObject[dropID];
+       // debugger
+        var dropType = dropObject.type || "component";
 
 		var workspaceElement = this.refs.workspace.getDOMNode().getBoundingClientRect();
-
 		var workspaceOriginX = workspaceElement.left;
 		var workspaceOriginY = workspaceElement.top;
 
-		var newComponentX = event.pageX - workspaceOriginX - (this.props.componentInProgress.width / 2);
-		var newComponentY = event.pageY - workspaceOriginY - (this.props.componentInProgress.height / 2);
+        if (dropType == "component"){
+            var dims = this.props.componentInProgress
+        }
+        else if (dropType == "policy") {
+            var dims = this.props.policyInProgress
+        }
+
+		var newComponentX = event.pageX - workspaceOriginX - (dims.width / 2);
+		var newComponentY = event.pageY - workspaceOriginY - (dims.height / 2);
 
 		if (newComponentX > 0 && newComponentY > headerHeight){
-			this.handleNewComponentDrop(this.state.mouseDown, newComponentX, newComponentY)
+			this.handleNewObjectDrop(this.state.dragging, newComponentX, newComponentY)
 		}
+
+        this.removeDocumentEvents();
 
 		this.setState({
     		mouseDown: false,
     		dragging: false
     	});
-	},
-
-	onMouseMove: function(event) { //captured on document
-		var cursorX = event.pageX;
-		var cursorY = event.pageY;
-		var deltaX = cursorX - this.state.startX;
-		var deltaY = cursorY - this.state.startY;
-		var distance = Math.abs(deltaX) + Math.abs(deltaY);
-
-		if (this.state.dragging == false && distance > 4){ //dragging
-			this.setState({
-				dragging: true,
-			});
-		}
-
-		if (this.state.dragging){	
-			this.setState({
-				cursorX: cursorX,
-    			cursorY: cursorY
-			});
-		}
 	},
 
 	addDocumentEvents: function() {
@@ -636,17 +699,32 @@ var IOConsole = React.createClass({
         var nProjects = Object.keys(this.state.projectsObject).length;
 
 		var componentInProgress;
+        var policyInProgress;
 		if (this.state.dragging){
-			var moduleName = this.state.modulesObject[this.state.mouseDown].name;
-			var moduleVersion = this.state.modulesObject[this.state.mouseDown].version;
-			componentInProgress = <ComponentInProgress
-				thisModuleID = {this.state.mouseDown} 
-				moduleName = {moduleName} 
-				moduleVersion = {moduleVersion} 
-				thisWidth = {this.props.componentInProgress.width} 
-				thisHeight = {this.props.componentInProgress.height} 
-				thisX = {this.state.cursorX} 
-				thisY = {this.state.cursorY}/>
+            var moduleID = this.state.mouseDown;
+            var moduleObject = this.state.modulesObject[moduleID];
+			var moduleName = moduleObject.name;
+			var moduleVersion = moduleObject.version;
+            var moduleType = moduleObject.type || "component";
+
+            if (moduleType == "policy"){
+               policyInProgress = <PolicyInProgress
+                    moduleID = {moduleID} 
+                    module = {moduleObject} 
+                    dims = {this.props.policyInProgress} 
+                    thisX = {this.state.cursorX} 
+                    thisY = {this.state.cursorY}/>
+            }
+            else if (moduleType == "component"){
+                componentInProgress = <ComponentInProgress
+                    thisModuleID = {moduleID} 
+                    moduleName = {moduleName} 
+                    moduleVersion = {moduleVersion} 
+                    thisWidth = {this.props.componentInProgress.width} 
+                    thisHeight = {this.props.componentInProgress.height} 
+                    thisX = {this.state.cursorX} 
+                    thisY = {this.state.cursorY}/>
+            }			
 		}
 
 		var modalDialogues = [];
@@ -711,7 +789,7 @@ var IOConsole = React.createClass({
 						<Workspace 
 							ref = "workspace" 
 							className = "ui-module workspace" 
-							handleComponentDrop = {this.handleComponentDrop} 
+							handleObjectDrop = {this.handleObjectDrop} 
 							handleWireDrop = {this.handleNewWireDrop} 
 							deleteWire= {this.deleteWire}
 							protocols = {this.state.protocolsObject} 
@@ -719,6 +797,7 @@ var IOConsole = React.createClass({
 					</div>
 				</div>
 				{componentInProgress}
+                {policyInProgress}
 				{modalDialogues}
                 {popover}
 			</div>

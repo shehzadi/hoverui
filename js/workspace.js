@@ -90,7 +90,7 @@ var Workspace = React.createClass({
 		}
 	},
 
-	componentMouseDown: function(componentID, componentType) {
+	objectMouseDown: function(objectID, objectType) {
 		if (event.button == 0){	
 			event.stopPropagation();
 			this.addDocumentEvents();
@@ -100,17 +100,21 @@ var Workspace = React.createClass({
 			this.workspaceOriginY = workspaceBox.top;
 			this.startX = event.pageX - this.workspaceOriginX;
 			this.startY = event.pageY - this.workspaceOriginY;
-			if (componentType == "component"){
-				this.dragStartX = this.componentData[componentID].left;
-				this.dragStartY = this.componentData[componentID].top;
+			if (objectType == "component"){
+				this.dragStartX = this.componentData[objectID].left;
+				this.dragStartY = this.componentData[objectID].top;
 			}
-			else if (componentType == "hostComponent"){
-				this.dragStartX = this.hostComponentData[componentID].left;
-				this.dragStartY = this.hostComponentData[componentID].top;
+			else if (objectType == "hostComponent"){
+				this.dragStartX = this.hostComponentData[objectID].left;
+				this.dragStartY = this.hostComponentData[objectID].top;
+			}
+			else if (objectType == "policy"){
+				this.dragStartX = this.policiesData[objectID].left;
+				this.dragStartY = this.policiesData[objectID].top;
 			}
 
 			this.setState({
-				mouseDown: componentID
+				mouseDown: objectID
 			});
 		}
 	},
@@ -185,7 +189,7 @@ var Workspace = React.createClass({
 
 		if (this.state.dragging){
 			if (typeof this.state.dragging == "string"){ //dropping component
-				this.props.handleComponentDrop(this.state.dragging, deltaX, deltaY);
+				this.props.handleObjectDrop(this.state.dragging, deltaX, deltaY);
 			}
 
 			if (this.state.wireType == "existing"){ //dropping an existing wire
@@ -227,6 +231,23 @@ var Workspace = React.createClass({
 		var componentsObject = selectedProject.topology.components || {};
 		var wiresObject = selectedProject.topology.wires || {};
 		var hostComponentsObject = selectedProject.topology.host_interfaces || {};
+		var policiesObject = selectedProject.policies || {};
+
+		//set up policies data object
+		this.policiesData = {};
+		for (var policyID in policiesObject) {
+			var policyViewData = selectedProject.view[policyID];
+			var moduleID = policiesObject[policyID].module;
+			//debugger
+			this.policiesData[policyID] = {
+				moduleID: moduleID,
+				module: dependenciesObject[moduleID], 
+				left: policyViewData.left, 
+				top: policyViewData.top, 
+				width: policyViewData.width, 
+				height: policyViewData.height
+			}
+		}
 
 		//set up component data object
 		this.componentData = {};
@@ -479,6 +500,31 @@ var Workspace = React.createClass({
 	render: function() {
 		this.isPendingDeletion = false;
 
+		//render policies
+		var policies = [];
+		for (var policyID in this.policiesData) {
+			var thisPolicy = this.policiesData[policyID];
+
+			if (policyID == this.state.dragging){ //component is being dragged
+				thisPolicy.left = this.dragStartX + this.state.cursorX - this.startX;
+				thisPolicy.top = this.dragStartY + this.state.cursorY - this.startY;	
+			}
+		
+			if (thisPolicy.left <= 0 || thisPolicy.top <= headerHeight) { //component is outside of canvas, e.g. during drag operation
+				this.isPendingDeletion = policyID
+			}
+			
+  			policies.push(
+  				<Policy
+					key = {policyID} 
+					isPendingDeletion = {this.isPendingDeletion} 
+					onMouseDown = {this.objectMouseDown} 
+					//dims = {this.props.component} 
+					policyObject = {thisPolicy} 
+					policyID = {policyID}/>
+  			);
+		};
+
 		//render components
 		var components = [];
 		for (var componentID in this.componentData) {
@@ -498,7 +544,7 @@ var Workspace = React.createClass({
   				<Component
 					key = {componentID} 
 					isPendingDeletion = {this.isPendingDeletion} 
-					onMouseDown = {this.componentMouseDown} 
+					onMouseDown = {this.objectMouseDown} 
 					compDims = {this.props.component} 
 					component = {thisComponent} 
 					componentID = {componentID}/>
@@ -556,7 +602,7 @@ var Workspace = React.createClass({
 			hostComponents.push(
 				<HostComponent
 					key = {hostComponentID} 
-					onMouseDown = {this.componentMouseDown} 
+					onMouseDown = {this.objectMouseDown} 
 					onMouseUp = {this.ifcMouseUp} 
 					hostCompDims = {this.props.hostComponent} 
 					hostComponent = {thisHostComponent} 
@@ -638,8 +684,10 @@ var Workspace = React.createClass({
 					{wires}
 					{wireInProgress}
 				</svg>	
+				{policies}
 				{components}
 				{hostComponents}
+				
 						
 				<svg className="ifcContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{ifcs}

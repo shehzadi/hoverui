@@ -128,8 +128,6 @@ var InterfaceToken = React.createClass({
 			left: leftCenterPoint - (this.props.ifcDims.width/2) - growthW/2,
 			top: topCenterPoint - (this.props.ifcDims.height/2) - growthH/2 
 		};
-
-		console.log(polygon.width, polygon.height);
 		
 		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "darker");
 

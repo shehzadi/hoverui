@@ -335,6 +335,107 @@ body::-webkit-scrollbar {
   cursor: -webkit-grab;
 }
 
+.policyInProgress {
+  position: absolute;
+  z-index: 1000;
+  padding: 10px 14px;
+  background-color: rgba(203, 67, 52, 0.5);
+  border: 1px dashed rgba(203, 67, 52, 0.8);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  cursor: -webkit-grab;
+  justify-content: center;
+  align-items: center;
+}
+
+.policyInProgress .policyName {
+  text-align: center;
+  line-height: 1;
+}
+
+.policyInProgress .policyVersion {
+  font-size: 85%;
+  opacity: 0.6;
+}
+
+.policyInProgress * {
+  cursor: -webkit-grab;
+}
+
+.workspace .policy {
+  position: absolute;
+  padding: 6px 8px;
+  color: #cb4334;
+  background-color: rgba(203, 67, 52, 0.3);
+  border: 1px dashed rgba(203, 67, 52, 0.8);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  justify-content: left;
+  align-items: top;
+}
+
+.workspace .policy .policyVersion {
+  font-size: 85%;
+  opacity: 0.6;
+  margin-left: 0.5em;
+  display: inline-block;
+}
+
+.workspace .policy .grab {
+  position: absolute;
+}
+
+.workspace .policy .top, .workspace .policy .bottom {
+  height: 10px;
+  left: 20px;
+  right: 20px;
+  cursor: ns-resize;
+}
+
+.workspace .policy .left, .workspace .policy .right {
+  bottom: 20px;
+  top: 20px;
+  width: 10px;
+  cursor: ew-resize;
+}
+
+.workspace .policy .topRight, .workspace .policy .bottomLeft {
+  cursor: nesw-resize;
+}
+
+.workspace .policy .topLeft, .workspace .policy .bottomRight {
+  cursor: nwse-resize;
+}
+
+.workspace .policy .topRight, .workspace .policy .topLeft, .workspace .policy .bottomRight, .workspace .policy .bottomLeft {
+  height: 20px;
+  width: 20px;
+}
+
+.workspace .policy .top, .workspace .policy .topRight, .workspace .policy .topLeft {
+  top: 0;
+}
+
+.workspace .policy .bottom, .workspace .policy .bottomRight, .workspace .policy .bottomLeft {
+  bottom: 0;
+}
+
+.workspace .policy .right, .workspace .policy .topRight, .workspace .policy .bottomRight {
+  right: 0;
+}
+
+.workspace .policy .left, .workspace .policy .topLeft, .workspace .policy .bottomLeft {
+  left: 0;
+}
+
+.workspace .policy.pendingDeletion {
+  opacity: 0.5;
+}
+
 .workspace .component {
   padding: 10px 14px;
   position: absolute;
