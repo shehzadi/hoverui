@@ -96,6 +96,9 @@ var HostInterface = React.createClass({
 
 		var fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue);
 		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "darker");
+
+		// policy indicator
+		//console.log(this.props.tokenObject);
 		
 
 		// validity for drop

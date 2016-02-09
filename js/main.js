@@ -288,11 +288,28 @@ var IOConsole = React.createClass({
 
             this.firebaseProjectsRef.child(this.state.selectedProjectID).child("dependencies").set(newProjectDependenciesObject);
         }
+
     	newProjectViewObject[newID] = newViewData;
     	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("view").set(newProjectViewObject);
         this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("components").set(newProjectComponentsObject);
         this.firebaseProjectsRef.child(this.state.selectedProjectID).child("policies").set(newProjectPoliciesObject)
 	},
+
+    handlePolicyUpdate: function(id, array, deltaX, deltaY) {
+        var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
+
+        newProjectObject.view[id].left += deltaX;
+        newProjectObject.view[id].top += deltaY;
+
+        if (newProjectObject.view[id].left <= 0 || newProjectObject.view[id].top <= headerHeight){
+            this.deleteObject(id) 
+        }
+
+        else {
+           // newProjectObject.policies[id]["interfaces"] = array;
+            this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
+        }      
+    },
 
 	handleObjectDrop: function(objectID, deltaX, deltaY) {
     	var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
@@ -327,13 +344,15 @@ var IOConsole = React.createClass({
 	    }
 
         else if (objectID.indexOf('policy') == 0){
-            newProjectObject.view[objectID].left += deltaX;
-            newProjectObject.view[objectID].top += deltaY;
-            if (newProjectObject.view[objectID].left <= 0 || newProjectObject.view[objectID].top <= headerHeight){
+            var policyData = newProjectObject.view[objectID];
+            policyData.left += deltaX;
+            policyData.top += deltaY;
+            if (policyData.left <= 0 || policyData.top <= headerHeight){
                 this.deleteObject(objectID)  
             }
 
             else {
+                var newArray = getInterfaceArray(policy, components, hostComponents);
                 this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
             }
         }
@@ -510,7 +529,7 @@ var IOConsole = React.createClass({
 	onMouseUp: function(event) { //captured on document
 		var dropID = this.state.dragging;
         var dropObject = this.state.modulesObject[dropID];
-       // debugger
+
         var dropType = dropObject.type || "component";
 
 		var workspaceElement = this.refs.workspace.getDOMNode().getBoundingClientRect();
@@ -790,6 +809,7 @@ var IOConsole = React.createClass({
 							ref = "workspace" 
 							className = "ui-module workspace" 
 							handleObjectDrop = {this.handleObjectDrop} 
+                            handlePolicyUpdate = {this.handlePolicyUpdate} 
 							handleWireDrop = {this.handleNewWireDrop} 
 							deleteWire= {this.deleteWire}
 							protocols = {this.state.protocolsObject} 

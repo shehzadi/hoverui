@@ -179,7 +179,7 @@ var Workspace = React.createClass({
 		
 	},
 
-	onMouseUp: function(event) {
+	onDocumentMouseUp: function(event) {
 		var finalX = event.pageX - this.workspaceOriginX;
 		var finalY = event.pageY - this.workspaceOriginY;
 		var deltaX = finalX - this.startX;
@@ -189,7 +189,13 @@ var Workspace = React.createClass({
 
 		if (this.state.dragging){
 			if (typeof this.state.dragging == "string"){ //dropping component
-				this.props.handleObjectDrop(this.state.dragging, deltaX, deltaY);
+				if (_.startsWith(this.state.dragging, 'policy')){
+					var interfaceArray = getInterfaceArray(this.policiesData[this.state.dragging], this.componentData, this.hostComponentData);
+					this.props.handlePolicyUpdate(this.state.dragging, interfaceArray, deltaX, deltaY)
+				}
+				else {
+					this.props.handleObjectDrop(this.state.dragging, deltaX, deltaY);
+				}
 			}
 
 			if (this.state.wireType == "existing"){ //dropping an existing wire
@@ -213,12 +219,12 @@ var Workspace = React.createClass({
 
 	addDocumentEvents: function() {
     	document.addEventListener('mousemove', this.onMouseMove);
-    	document.addEventListener('mouseup', this.onMouseUp);
+    	document.addEventListener('mouseup', this.onDocumentMouseUp);
 	},
 
 	removeDocumentEvents: function() {
     	document.removeEventListener('mousemove', this.onMouseMove);
-    	document.removeEventListener('mouseup', this.onMouseUp);
+    	document.removeEventListener('mouseup', this.onDocumentMouseUp);
 	},
 
 	componentWillMount: function() {
@@ -232,22 +238,6 @@ var Workspace = React.createClass({
 		var wiresObject = selectedProject.topology.wires || {};
 		var hostComponentsObject = selectedProject.topology.host_interfaces || {};
 		var policiesObject = selectedProject.policies || {};
-
-		//set up policies data object
-		this.policiesData = {};
-		for (var policyID in policiesObject) {
-			var policyViewData = selectedProject.view[policyID];
-			var moduleID = policiesObject[policyID].module;
-			//debugger
-			this.policiesData[policyID] = {
-				moduleID: moduleID,
-				module: dependenciesObject[moduleID], 
-				left: policyViewData.left, 
-				top: policyViewData.top, 
-				width: policyViewData.width, 
-				height: policyViewData.height
-			}
-		}
 
 		//set up component data object
 		this.componentData = {};
@@ -265,7 +255,8 @@ var Workspace = React.createClass({
 						interfaceID: interfaceID,
 						componentID: componentID,
 						mode: thisInterface.mode,
-						protocol: thisInterface.protocol
+						protocol: thisInterface.protocol,
+						policies: []
 					}
 				}
 			}
@@ -294,7 +285,8 @@ var Workspace = React.createClass({
 				width: this.props.hostComponent.width, 
 				height: this.props.hostComponent.height, 
 				mode: thisHostComponent.mode,
-				protocol: thisHostComponent.protocol
+				protocol: thisHostComponent.protocol,
+				policies: []
 			};
 		};
 
@@ -388,7 +380,51 @@ var Workspace = React.createClass({
 			});
 		};
 
+		//set up policies data object
+		this.policiesData = {};
+		for (var policyID in policiesObject) {
+			var policyViewData = selectedProject.view[policyID];
+			var policy = policiesObject[policyID];
+			var moduleID = policy.module;
+			//debugger
+			this.policiesData[policyID] = {
+				moduleID: moduleID,
+				module: dependenciesObject[moduleID], 
+				interfaces: policy.interfaces || null, 
+				left: policyViewData.left, 
+				top: policyViewData.top, 
+				width: policyViewData.width, 
+				height: policyViewData.height
+			}
+		};		
+
 		this.positionInterfaces();
+		this.applyPoliciesToInterfaces();
+	},
+
+	applyPoliciesToInterfaces: function() {
+		_.forEach(this.componentData, function(component, componentID){
+			var interfaces = component.interfaces;
+
+			_.forEach(interfaces, function(ifc, ifcID){
+				var ifcTop = ifc.top;
+				var ifcLeft = ifc.left;
+				ifc.policies = [];
+
+				_.forEach(this.policiesData, function(policy, policyID){
+					var policyLeft = policy.left;
+					var policyRight = policyLeft + policy.width;
+					var policyTop = policy.top;
+					var policyBottom = policyTop + policy.height
+
+					if (_.inRange(ifcLeft, policyLeft, policyRight) && _.inRange(ifcTop, policyTop, policyBottom)){
+						//add policyID to interface data
+						ifc.policies.push(policyID);
+						console.log(componentID, ifcID, policyID, policyRight)
+					}
+				}.bind(this));
+			}.bind(this));
+		}.bind(this));
 	},
 
 	positionInterfaces: function() {
@@ -507,7 +543,8 @@ var Workspace = React.createClass({
 
 			if (policyID == this.state.dragging){ //component is being dragged
 				thisPolicy.left = this.dragStartX + this.state.cursorX - this.startX;
-				thisPolicy.top = this.dragStartY + this.state.cursorY - this.startY;	
+				thisPolicy.top = this.dragStartY + this.state.cursorY - this.startY;
+				this.applyPoliciesToInterfaces();	
 			}
 		
 			if (thisPolicy.left <= 0 || thisPolicy.top <= headerHeight) { //component is outside of canvas, e.g. during drag operation
@@ -519,6 +556,9 @@ var Workspace = React.createClass({
 					key = {policyID} 
 					isPendingDeletion = {this.isPendingDeletion} 
 					onMouseDown = {this.objectMouseDown} 
+					handlePolicyUpdate = {this.props.handlePolicyUpdate} 
+					componentData = {this.componentData} 
+					hostComponentData = {this.hostComponentData} 
 					//dims = {this.props.component} 
 					policyObject = {thisPolicy} 
 					policyID = {policyID}/>
@@ -533,7 +573,8 @@ var Workspace = React.createClass({
 			if (componentID == this.state.dragging){ //component is being dragged
 				thisComponent.left = this.dragStartX + this.state.cursorX - this.startX;
 				thisComponent.top = this.dragStartY + this.state.cursorY - this.startY;	
-				this.positionInterfaces();		
+				this.positionInterfaces();	
+				this.applyPoliciesToInterfaces();	
 			}
 		
 			if (thisComponent.left <= 0 || thisComponent.top <= headerHeight) { //component is outside of canvas, e.g. during drag operation
@@ -596,7 +637,8 @@ var Workspace = React.createClass({
 				thisHostComponent.top = this.dragStartY + this.state.cursorY - this.startY;
 				if (thisHostComponent.top <= headerHeight + 2){thisHostComponent.top = headerHeight + 2}
 				if (thisHostComponent.left <= 2){thisHostComponent.left = 2}	
-				this.positionInterfaces();		
+				this.positionInterfaces();	
+				this.applyPoliciesToInterfaces();	
 			}
 
 			hostComponents.push(

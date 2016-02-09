@@ -155,6 +155,11 @@ var InterfaceToken = React.createClass({
 		var textX = polygon.left + (polygon.width / 2);
 		var textY = polygon.top - 7;
 
+		// policy indicator
+		
+
+
+
 		var inputPointer = "";
 		var outputPointer = "";
 		if (this.props.tokenObject.mode == "in" || this.props.tokenObject.mode == "bi"){
@@ -189,6 +194,15 @@ var InterfaceToken = React.createClass({
 
 		var transformString = "rotate(" + rotation + " " + leftCenterPoint + " " + topCenterPoint + ")";
 		var textTransformString = "rotate(" + (-rotation) + " " + textX + " " + textY + ")";
+
+
+		var circle;
+		if (!_.isEmpty(this.props.tokenObject.policies)){
+			circle = (
+				<circle cx={textX} cy={textY} r="4" transform = {textTransformString}/>
+			)
+		}
+
  
 		return (
 			<g
@@ -209,6 +223,8 @@ var InterfaceToken = React.createClass({
 					transform = {textTransformString}>
 					{text}
 				</text>
+				{circle}
+				
 			</g>
   		)
 	},

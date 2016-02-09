@@ -1,6 +1,5 @@
 var Policy = React.createClass({
 	handleMouseDown: function(){
-		console.log("mouseDown", this.props.policyID);
 		this.props.onMouseDown(this.props.policyID, "policy")
 	},
 	render: function() {
@@ -36,5 +35,16 @@ var Policy = React.createClass({
   				<div className = "grab topLeft"></div>
   			</div>		
 		);
-	}
+	},
+	componentDidMount: function(){
+		// if policy object has no interfaces (yet) check interfaces because it may be new
+		if (_.isEmpty(this.props.policyObject.interfaces)){
+			// if new policy overlaps an interface, send an event upwards to update data on Main
+			var interfaceArray = getInterfaceArray(this.props.policyObject, this.props.componentData, this.props.hostComponentData);
+			if (!_.isEmpty(interfaceArray)){
+				this.props.handlePolicyUpdate(this.props.policyID, interfaceArray, 0, 0)
+			}
+		}
+		
+	},
 });

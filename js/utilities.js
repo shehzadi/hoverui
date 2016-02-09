@@ -1,5 +1,34 @@
 var headerHeight = 40;
 
+function getInterfaceArray(policy, components, hostComponents){
+	var policyLeft = policy.left;
+	var policyRight = policyLeft + policy.width;
+	var policyTop = policy.top;
+	var policyBottom = policyTop + policy.height
+
+	var interfaceArray = [];
+
+	_.forEach(components, function(componentObject, componentID){
+		var interfaces = componentObject.interfaces;
+		_.forEach(interfaces, function(interfaceObject, interfaceID){
+			var thisInterfaceLeft = interfaceObject.left;
+			var thisInterfaceTop = interfaceObject.top;
+			if (_.inRange(thisInterfaceLeft, policyLeft, policyRight) && _.inRange(thisInterfaceTop, policyTop, policyBottom)){
+				interfaceArray.push({"id": componentID, "ifc": interfaceID})
+			}
+		})
+	})
+
+	_.forEach(hostComponents, function(hostComponentObject, hostComponentID){
+		var thisInterfaceLeft = hostComponentObject.ifcLeft;
+		var thisInterfaceTop = hostComponentObject.ifcTop;
+		if (_.inRange(thisInterfaceLeft, policyLeft, policyRight) && _.inRange(thisInterfaceTop, policyTop, policyBottom)){
+			interfaceArray.push({"id": hostComponentID, "ifc": false})
+		}
+	})
+	return interfaceArray
+}
+
 function guid() {
   return randomStringOf4() + randomStringOf4() + '-' + randomStringOf4() + '-' + randomStringOf4() + '-' +
     randomStringOf4() + '-' + randomStringOf4() + randomStringOf4() + randomStringOf4();
@@ -44,6 +73,7 @@ function checkTypeValidity(protocol1, mode1, protocol2, mode2){
 	return isValid
 }
 
+/*
 function isExistingWire(thisEndpoint, wiresObject){
 	for (var wire in wiresObject) {
 		var endpoint1 = wiresObject[wire]["endpoint-1"];
@@ -54,7 +84,9 @@ function isExistingWire(thisEndpoint, wiresObject){
 		}
 	}
 }
+*/
 
+/*
 function convertToGroup(componentID, interfaceID, selectedProjectView){
 	if (componentID.indexOf('host') == 0){ //is an attachment wire
 		return "interface-1"
@@ -69,7 +101,9 @@ function convertToGroup(componentID, interfaceID, selectedProjectView){
 		}
 	}		
 }
+*/
 
+/*
 function getInterfaceCoords (data, ifc){
 	var returnValue = {};
 	_.forEach(data.interfaceTokens, function(thisToken) {
@@ -90,6 +124,7 @@ function getInterfaceCoords (data, ifc){
 	})
 	return returnValue
 }
+*/
 
 function sortTokenArrays(tokenArrays){
 	for (var tokenArray in tokenArrays) {
@@ -188,6 +223,7 @@ function getTokenForOtherEnd(startToken, componentData, hostComponentData){
 	return endToken
 }
 
+/*
 function getOtherEndOfWire(componentID, interfaceID, selectedProject){
 	var returnValue = false;
 
@@ -222,6 +258,7 @@ function getOtherEndOfWire(componentID, interfaceID, selectedProject){
 
 	return returnValue
 }
+*/
 
 function defineSvgSize(componentData, hostComponentData, cursorX, cursorY){
 	var svgExtents = {
