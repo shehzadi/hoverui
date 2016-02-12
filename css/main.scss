@@ -13,8 +13,8 @@ $button-color: hsl(0, 0%, 60%);
 $app-min-width : 800px;
 $app-min-height : 300px;
 
-$grab-width : 10px;
-$grab-corner : 20px;
+$grab-width : 6px;
+$grab-corner : 12px;
 
 $home-height: 40px;
 $tools-height: 40px;
@@ -387,23 +387,22 @@ body::-webkit-scrollbar {
 
 .policyInProgress {
 	position: absolute;
+	color: hsla(0, 0%, 0%, 0.6);
 	z-index: 1000;
-	padding: 10px 14px;
-	background-color: hsla(6, 59%, 50%, 0.5);
-	border: 1px dashed hsla(6, 59%, 50%, 0.8);
+	padding: 6px 8px;
+	border-width: 1px;
+	border-style: dashed;
 	font-size: 12px;
 	display: flex;
 	flex-direction: column;
 	border-radius: 8px;
 	cursor: -webkit-grab;
-	justify-content: center;
-	align-items: center;
-		.policyName {
-			text-align: center;
-			line-height: 1;
-		}
+	justify-content: left;
+	align-items: top;
 		.policyVersion {
 			@include subtext;
+			margin-left: 0.5em;
+			display: inline-block;
 		}
 	* {
 		cursor: -webkit-grab;
@@ -413,10 +412,10 @@ body::-webkit-scrollbar {
 .workspace {
 	.policy {
 		position: absolute;
+		color: hsla(0, 0%, 0%, 0.6);
 		padding: 6px 8px;
-		color: hsla(6, 59%, 50%, 1);
-		background-color: hsla(6, 59%, 50%, 0.3);
-		border: 1px dashed hsla(6, 59%, 50%, 0.8);
+		border-width: 1px;
+		border-style: solid;
 		font-size: 12px;
 		display: flex;
 		flex-direction: column;

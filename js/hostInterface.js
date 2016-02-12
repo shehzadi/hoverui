@@ -148,16 +148,51 @@ var HostInterface = React.createClass({
 		points += outputPointer;
 		points += " " + polygon.left + ", " + (polygon.top + polygon.height); //bottom-left
 
+
+		var indicatorX = polygon.left + (polygon.width / 2);
+		var indicatorY = polygon.top - 15;
+
+		var indicators = [];
+
+		var moduleArray = [];
+		_.forEach(this.props.tokenObject.policies, function(policyID, i){
+			var moduleID = this.props.policiesData[policyID].moduleID;
+			var hue = this.props.policiesData[policyID].view.hue;
+			moduleArray.push(moduleID)
+		}.bind(this))
+
+		moduleArray = _.uniq(moduleArray);
+
+		_.forEach(moduleArray, function(moduleID, i){
+			var hue = this.props.dependencies[moduleID].view.hue;
+			var cy = indicatorY - (8 * i);
+			var indicatorStyle = {
+				fill: getHSL(hue, "lighter"),
+				stroke: getHSL(hue),
+			}
+			indicators.push(<circle key={i} cx={indicatorX} cy={cy} style={indicatorStyle} r="3" />)
+		}.bind(this))
+
+
+
+
+
+		
+
 		return (
-			<polygon 
-				className = "hostInterface" 
-				style = {interfaceStyle} 
-				points = {points} 
-				transform = {transformString} 
-				onMouseEnter={this.onMouseEnter} 
-				onMouseLeave={this.onMouseLeave} 
-				onMouseUp={this.onMouseUp} 
-				onMouseDown={this.onMouseDown}/>
+			<g transform = {transformString}>
+				<polygon 
+					className = "hostInterface" 
+					style = {interfaceStyle} 
+					points = {points} 
+					//transform = {transformString} 
+					onMouseEnter={this.onMouseEnter} 
+					onMouseLeave={this.onMouseLeave} 
+					onMouseUp={this.onMouseUp} 
+					onMouseDown={this.onMouseDown}/>
+				{indicators}
+			</g>
+			
   		)
 	},
 });

@@ -337,27 +337,25 @@ body::-webkit-scrollbar {
 
 .policyInProgress {
   position: absolute;
+  color: rgba(0, 0, 0, 0.6);
   z-index: 1000;
-  padding: 10px 14px;
-  background-color: rgba(203, 67, 52, 0.5);
-  border: 1px dashed rgba(203, 67, 52, 0.8);
+  padding: 6px 8px;
+  border-width: 1px;
+  border-style: dashed;
   font-size: 12px;
   display: flex;
   flex-direction: column;
   border-radius: 8px;
   cursor: -webkit-grab;
-  justify-content: center;
-  align-items: center;
-}
-
-.policyInProgress .policyName {
-  text-align: center;
-  line-height: 1;
+  justify-content: left;
+  align-items: top;
 }
 
 .policyInProgress .policyVersion {
   font-size: 85%;
   opacity: 0.6;
+  margin-left: 0.5em;
+  display: inline-block;
 }
 
 .policyInProgress * {
@@ -366,10 +364,10 @@ body::-webkit-scrollbar {
 
 .workspace .policy {
   position: absolute;
+  color: rgba(0, 0, 0, 0.6);
   padding: 6px 8px;
-  color: #cb4334;
-  background-color: rgba(203, 67, 52, 0.3);
-  border: 1px dashed rgba(203, 67, 52, 0.8);
+  border-width: 1px;
+  border-style: solid;
   font-size: 12px;
   display: flex;
   flex-direction: column;
@@ -390,16 +388,16 @@ body::-webkit-scrollbar {
 }
 
 .workspace .policy .top, .workspace .policy .bottom {
-  height: 10px;
-  left: 20px;
-  right: 20px;
+  height: 6px;
+  left: 12px;
+  right: 12px;
   cursor: ns-resize;
 }
 
 .workspace .policy .left, .workspace .policy .right {
-  bottom: 20px;
-  top: 20px;
-  width: 10px;
+  bottom: 12px;
+  top: 12px;
+  width: 6px;
   cursor: ew-resize;
 }
 
@@ -412,8 +410,8 @@ body::-webkit-scrollbar {
 }
 
 .workspace .policy .topRight, .workspace .policy .topLeft, .workspace .policy .bottomRight, .workspace .policy .bottomLeft {
-  height: 20px;
-  width: 20px;
+  height: 12px;
+  width: 12px;
 }
 
 .workspace .policy .top, .workspace .policy .topRight, .workspace .policy .topLeft {

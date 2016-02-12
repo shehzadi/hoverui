@@ -15,7 +15,6 @@ var HomeActions = React.createClass({
 
 var AddObject = React.createClass({
 	handleActions: function(event){
-		console.log(event)
 		this.props.handleActions(event)
 	},
 

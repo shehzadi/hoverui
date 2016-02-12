@@ -61,9 +61,7 @@ var IOConsole = React.createClass({
 
             this.firebaseProjectsRef.on("value", function(dataSnapshot) {                
                 var isSeeded = dataSnapshot.exists() && dataSnapshot.val() !== true;
-                console.log(isSeeded, dataSnapshot.val());
                 if (!isSeeded){
-                    console.log("project seed: ", projectsSeed);
                     this.firebaseProjectsRef.set(projectsSeed);
                 }
                 else {
@@ -295,26 +293,33 @@ var IOConsole = React.createClass({
         this.firebaseProjectsRef.child(this.state.selectedProjectID).child("policies").set(newProjectPoliciesObject)
 	},
 
-    handlePolicyUpdate: function(id, array, deltaX, deltaY) {
+    handlePolicyUpdate: function(id, left, top, height, width) {
         var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
+        var policyView = newProjectObject.view[id];
+        policyView.left = left;
+        policyView.top = top;
+        policyView.height = height;
+        policyView.width = width;
 
-        newProjectObject.view[id].left += deltaX;
-        newProjectObject.view[id].top += deltaY;
-
-        if (newProjectObject.view[id].left <= 0 || newProjectObject.view[id].top <= headerHeight){
+        if (policyView.left <= 0 || policyView.top <= headerHeight){
             this.deleteObject(id) 
         }
-
         else {
-           // newProjectObject.policies[id]["interfaces"] = array;
             this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
         }      
     },
 
+    updatePoliciesData: function(policiesData) {
+        var newProjectPoliciesObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].policies) || {};
+        _.forEach(policiesData, function(policy, policyID){
+            var computedInterfaces = policy.computedInterfaces;
+            _.set(newProjectPoliciesObject[policyID], 'interfaces', computedInterfaces);
+        })
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("policies").set(newProjectPoliciesObject)
+    },
+
 	handleObjectDrop: function(objectID, deltaX, deltaY) {
     	var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
-
-    	
 
     	if (objectID.indexOf('host') == 0){
             newProjectObject.view[objectID].x += deltaX;
@@ -343,7 +348,7 @@ var IOConsole = React.createClass({
 	    	}
 	    }
 
-        else if (objectID.indexOf('policy') == 0){
+       /* else if (objectID.indexOf('policy') == 0){
             var policyData = newProjectObject.view[objectID];
             policyData.left += deltaX;
             policyData.top += deltaY;
@@ -352,10 +357,10 @@ var IOConsole = React.createClass({
             }
 
             else {
-                var newArray = getInterfaceArray(policy, components, hostComponents);
+                //var newArray = getInterfaceArray(policy, components, hostComponents);
                 this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
             }
-        }
+        }*/
     },
 
    	deleteObject: function(objectID) {
@@ -810,6 +815,7 @@ var IOConsole = React.createClass({
 							className = "ui-module workspace" 
 							handleObjectDrop = {this.handleObjectDrop} 
                             handlePolicyUpdate = {this.handlePolicyUpdate} 
+                            updatePoliciesData = {this.updatePoliciesData}
 							handleWireDrop = {this.handleNewWireDrop} 
 							deleteWire= {this.deleteWire}
 							protocols = {this.state.protocolsObject} 

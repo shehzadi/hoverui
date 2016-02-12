@@ -155,11 +155,6 @@ var InterfaceToken = React.createClass({
 		var textX = polygon.left + (polygon.width / 2);
 		var textY = polygon.top - 7;
 
-		// policy indicator
-		
-
-
-
 		var inputPointer = "";
 		var outputPointer = "";
 		if (this.props.tokenObject.mode == "in" || this.props.tokenObject.mode == "bi"){
@@ -195,18 +190,44 @@ var InterfaceToken = React.createClass({
 		var transformString = "rotate(" + rotation + " " + leftCenterPoint + " " + topCenterPoint + ")";
 		var textTransformString = "rotate(" + (-rotation) + " " + textX + " " + textY + ")";
 
+		// policy indicator
 
+		
+		var indicatorX = textX;
+		var indicatorY = textY;
+
+		var indicators = [];
+		var moduleArray = [];
+		_.forEach(this.props.tokenObject.policies, function(policyID, i){
+			var moduleID = this.props.policiesData[policyID].moduleID;
+			var hue = this.props.policiesData[policyID].view.hue;
+			moduleArray.push(moduleID)
+		}.bind(this))
+
+		moduleArray = _.uniq(moduleArray);
+
+		_.forEach(moduleArray, function(moduleID, i){
+			var hue = this.props.dependencies[moduleID].view.hue;
+			var cy = indicatorY - (8 * i);
+			var indicatorStyle = {
+				fill: getHSL(hue, "lighter"),
+				stroke: getHSL(hue),
+			}
+			indicators.push(<circle key={i} cx={indicatorX} cy={cy} style={indicatorStyle} r="3" />)
+		}.bind(this))
+		
+
+		/*
 		var circle;
 		if (!_.isEmpty(this.props.tokenObject.policies)){
 			circle = (
-				<circle cx={textX} cy={textY} r="4" transform = {textTransformString}/>
+				<circle cx={textX} cy={textY} r="3" transform = {textTransformString}/>
 			)
 		}
-
+		*/
  
 		return (
-			<g
-				transform = {transformString}>
+			<g transform = {transformString}>
 				<polygon 
 					className = "interface" 
 					style = {style} 
@@ -223,7 +244,7 @@ var InterfaceToken = React.createClass({
 					transform = {textTransformString}>
 					{text}
 				</text>
-				{circle}
+				{indicators}
 				
 			</g>
   		)

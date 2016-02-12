@@ -1,4 +1,5 @@
 var headerHeight = 40;
+var minPolicyDim = 40;
 
 function getInterfaceArray(policy, components, hostComponents){
 	var policyLeft = policy.left;
@@ -42,15 +43,16 @@ function randomStringOf4() {
     return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 }
 
-function getHSL(hue, modification){
+function getHSL(hue, modification, opacity){
 	var lightness = "55%";
+	var thisOpacity = opacity || 1;
 	if (modification == "darker"){
 		lightness = "45%"
 	}
 	if (modification == "lighter"){
 		lightness = "65%"
 	}
-	return "hsl(" + hue + ", 70%," + lightness + ")"
+	return "hsla(" + hue + ", 70%," + lightness + ", " + thisOpacity + ")"
 }
 
 function checkTypeValidity(protocol1, mode1, protocol2, mode2){

@@ -4,6 +4,7 @@ var Workspace = React.createClass({
 		return {
 			mouseDown: false,
 			dragging: false,
+			resizing: false,
 			wireType: false,
 			isPendingUpdate: false,
 			cursorX: 0,
@@ -24,12 +25,17 @@ var Workspace = React.createClass({
     			pitch: 25
     		},
     		hostComponent: {
-    			width: 90,
-    			height: 44
+    			width: 95,
+    			height: 52
     		}	
     	};
 	},
 
+	componentDidUpdate: function(prevProps){
+		if (!_.isEqual(this.props, prevProps)){
+			this.props.updatePoliciesData(this.policiesData)
+		}		
+	},
 
 	ifcMouseDown: function(tokenObject) {			
 		if (event.button == 0){	
@@ -48,31 +54,6 @@ var Workspace = React.createClass({
 		}
 	},
 
-	getProtocol: function(componentID, interfaceID) {
-		var thisProtocol = "";
-		if (componentID.indexOf('host') == 0){ //is an attachment wire
-			thisProtocol = this.props.selectedProject.topology.host_interfaces[componentID].protocol
-		}
-		else {
-			var thisComponent = this.props.selectedProject.topology.components[componentID];
-			thisProtocol = thisComponent.interfaces[interfaceID].protocol;
-		}
-		return thisProtocol
-	},
-
-	getMode: function(componentID, interfaceID) {
-		var thisMode = "";
-
-		if (componentID.indexOf('host') == 0){ //is an attachment wire
-			thisMode = this.props.selectedProject.topology.host_interfaces[componentID].mode
-		}
-
-		else {
-			var thisRefModule = this.props.selectedProject.topology.components[componentID];
-			thisMode = this.props.modules[thisRefModule].interfaces[interfaceID].mode;
-		}
-		return thisMode
-	},
 
 	ifcMouseLeave: function(tokenObject) {
 		if (this.state.wireType){
@@ -90,11 +71,9 @@ var Workspace = React.createClass({
 		}
 	},
 
-	objectMouseDown: function(objectID, objectType) {
+	objectMouseDown: function(objectID, objectType, direction) {
 		if (event.button == 0){	
-			event.stopPropagation();
 			this.addDocumentEvents();
-
 			var workspaceBox = React.findDOMNode(this).getBoundingClientRect();
 			this.workspaceOriginX = workspaceBox.left;
 			this.workspaceOriginY = workspaceBox.top;
@@ -111,10 +90,13 @@ var Workspace = React.createClass({
 			else if (objectType == "policy"){
 				this.dragStartX = this.policiesData[objectID].left;
 				this.dragStartY = this.policiesData[objectID].top;
+				this.dragStartW = this.policiesData[objectID].width;
+				this.dragStartH = this.policiesData[objectID].height;
 			}
 
 			this.setState({
-				mouseDown: objectID
+				mouseDown: objectID,
+				resizing: direction || false
 			});
 		}
 	},
@@ -175,8 +157,39 @@ var Workspace = React.createClass({
 		}
 		else if (this.state.wireType == "new"){
 			this.props.handleWireDrop(this.state.dragging, this.state.isSnapping);
-		}	
+		}
 		
+	},
+
+	getPolicyPosition: function(id, deltaX, deltaY, mode) {
+		var thisPolicy = this.policiesData[id];
+		if (mode){
+			if (_.contains(mode, 'top')) {
+				thisPolicy.top = this.dragStartY + deltaY;
+			    thisPolicy.height = this.dragStartH - deltaY;
+			    if (thisPolicy.height <= minPolicyDim){thisPolicy.top = this.dragStartY + this.dragStartH - minPolicyDim}
+			}
+			if (_.contains(mode, 'right')) {
+				thisPolicy.width = this.dragStartW + deltaX;
+			}
+			if (_.contains(mode, 'bottom')) {
+				thisPolicy.height = this.dragStartH + deltaY;
+			}
+			if (_.contains(mode, 'left')) {
+				thisPolicy.left = this.dragStartX + deltaX;
+			    thisPolicy.width = this.dragStartW - deltaX;
+			    if (thisPolicy.width <= minPolicyDim){thisPolicy.left = this.dragStartX + this.dragStartW - minPolicyDim}
+			}
+			   
+			if (thisPolicy.height <= minPolicyDim){thisPolicy.height = minPolicyDim}
+			if (thisPolicy.width <= minPolicyDim){thisPolicy.width = minPolicyDim}
+
+
+		}
+		else {
+			thisPolicy.left = this.dragStartX + deltaX;
+			thisPolicy.top = this.dragStartY + deltaY;
+		}
 	},
 
 	onDocumentMouseUp: function(event) {
@@ -190,8 +203,9 @@ var Workspace = React.createClass({
 		if (this.state.dragging){
 			if (typeof this.state.dragging == "string"){ //dropping component
 				if (_.startsWith(this.state.dragging, 'policy')){
-					var interfaceArray = getInterfaceArray(this.policiesData[this.state.dragging], this.componentData, this.hostComponentData);
-					this.props.handlePolicyUpdate(this.state.dragging, interfaceArray, deltaX, deltaY)
+					var thisPolicy = this.policiesData[this.state.dragging];
+					var policyPosition = this.getPolicyPosition(this.state.dragging, deltaX, deltaY, this.state.resizing);
+					this.handlePolicyUpdate(this.state.dragging, thisPolicy.left, thisPolicy.top, thisPolicy.height, thisPolicy.width)
 				}
 				else {
 					this.props.handleObjectDrop(this.state.dragging, deltaX, deltaY);
@@ -206,6 +220,7 @@ var Workspace = React.createClass({
 
 			this.setState({
 				dragging: false,
+				resizing: false,
 				wireType: false,
 				isPendingUpdate: false
 			});				
@@ -386,11 +401,14 @@ var Workspace = React.createClass({
 			var policyViewData = selectedProject.view[policyID];
 			var policy = policiesObject[policyID];
 			var moduleID = policy.module;
+			var policyView = selectedProject.dependencies[moduleID].view;
 			//debugger
 			this.policiesData[policyID] = {
 				moduleID: moduleID,
 				module: dependenciesObject[moduleID], 
 				interfaces: policy.interfaces || null, 
+				view: policyView,
+				computedInterfaces: [], 
 				left: policyViewData.left, 
 				top: policyViewData.top, 
 				width: policyViewData.width, 
@@ -403,6 +421,11 @@ var Workspace = React.createClass({
 	},
 
 	applyPoliciesToInterfaces: function() {
+		// clear policies
+		_.forEach(this.policiesData, function(policy, policyID){
+			policy.computedInterfaces = []
+		});
+
 		_.forEach(this.componentData, function(component, componentID){
 			var interfaces = component.interfaces;
 
@@ -415,17 +438,81 @@ var Workspace = React.createClass({
 					var policyLeft = policy.left;
 					var policyRight = policyLeft + policy.width;
 					var policyTop = policy.top;
-					var policyBottom = policyTop + policy.height
+					var policyBottom = policyTop + policy.height;
 
 					if (_.inRange(ifcLeft, policyLeft, policyRight) && _.inRange(ifcTop, policyTop, policyBottom)){
 						//add policyID to interface data
 						ifc.policies.push(policyID);
-						console.log(componentID, ifcID, policyID, policyRight)
+						//add interfaceID to policy data
+						policy.computedInterfaces.push({
+							"component": componentID,
+							"ifc": ifcID
+						});
 					}
 				}.bind(this));
 			}.bind(this));
 		}.bind(this));
+
+		_.forEach(this.hostComponentData, function(hostComponent, hostComponentID){
+				var ifcTop = hostComponent.ifcTop;
+				var ifcLeft = hostComponent.ifcLeft;
+				hostComponent.policies = [];
+
+				_.forEach(this.policiesData, function(policy, policyID){
+					var policyLeft = policy.left;
+					var policyRight = policyLeft + policy.width;
+					var policyTop = policy.top;
+					var policyBottom = policyTop + policy.height;
+
+					if (_.inRange(ifcLeft, policyLeft, policyRight) && _.inRange(ifcTop, policyTop, policyBottom)){
+						//add policyID to interface data
+						hostComponent.policies.push(policyID);
+						//add interfaceID to policy data
+						policy.computedInterfaces.push({
+							"component": hostComponentID,
+							"ifc": false
+						});
+					}
+				}.bind(this));
+		}.bind(this));
 	},
+
+    handlePolicyUpdate: function(id, left, top, height, width) {
+    	//var newInterfaceArray = this.getNewInterfaceArray(id, this.componentData, this.hostComponentData);
+        this.props.handlePolicyUpdate(id, left, top, height, width);
+    },
+
+    getNewInterfaceArray: function(policyID, componentData, hostComponentData) {
+    	returnArray = [];
+    	_.forEach(componentData, function(component, componentID){
+    		var thisInterfaces = component.interfaces;
+
+    		_.forEach(thisInterfaces, function(ifc, ifcID){
+	    		var thisPolicies = ifc.policies;
+
+	    		_.forEach(thisPolicies, function(id){
+	    			if (policyID == id){
+		    			returnArray.push({
+		    				"component": componentID,
+		    				"ifc": ifcID
+		    			})
+		    		}
+		    	});
+	    	});
+    	});
+
+    	_.forEach(hostComponentData, function(hostComponent, hostComponentID){
+    		_.forEach(hostComponent.policies, function(id){
+    			if (id == policyID){
+	    			returnArray.push({
+	    				"component": hostComponentID,
+	    				"ifc": false
+	    			})
+	    		}
+	    	});
+    	});
+    	return returnArray
+    },
 
 	positionInterfaces: function() {
 		//add positional and face data etc.
@@ -542,8 +629,9 @@ var Workspace = React.createClass({
 			var thisPolicy = this.policiesData[policyID];
 
 			if (policyID == this.state.dragging){ //component is being dragged
-				thisPolicy.left = this.dragStartX + this.state.cursorX - this.startX;
-				thisPolicy.top = this.dragStartY + this.state.cursorY - this.startY;
+				var deltaX = this.state.cursorX - this.startX;
+				var deltaY = this.state.cursorY - this.startY;
+				this.getPolicyPosition(policyID, deltaX, deltaY, this.state.resizing);
 				this.applyPoliciesToInterfaces();	
 			}
 		
@@ -556,7 +644,7 @@ var Workspace = React.createClass({
 					key = {policyID} 
 					isPendingDeletion = {this.isPendingDeletion} 
 					onMouseDown = {this.objectMouseDown} 
-					handlePolicyUpdate = {this.props.handlePolicyUpdate} 
+					handlePolicyUpdate = {this.handlePolicyUpdate} 
 					componentData = {this.componentData} 
 					hostComponentData = {this.hostComponentData} 
 					//dims = {this.props.component} 
@@ -598,6 +686,7 @@ var Workspace = React.createClass({
 		for (var componentID in this.componentData) {
 			var thisComponent = this.componentData[componentID];
 			var thisTokenArrays = thisComponent.tokenArrays;
+			var policiesData = this.policiesData;
 
 			var that = this;
 			_.forEach(thisTokenArrays, function(thisTokenArray, i) {
@@ -613,6 +702,8 @@ var Workspace = React.createClass({
 						onMouseDown = {that.ifcMouseDown} 
 						onMouseUp = {that.ifcMouseUp} 
 						protocols = {that.props.protocols} 
+						policiesData = {policiesData} 
+						dependencies = {that.props.selectedProject.dependencies} 
 						componentID = {componentID} 
 						componentData = {that.componentData} 
 						dragging = {that.state.dragging} 
@@ -631,6 +722,7 @@ var Workspace = React.createClass({
 		var hostIfcArray = [];
 		for (var hostComponentID in this.hostComponentData) {
 			var thisHostComponent = this.hostComponentData[hostComponentID];
+			var policiesData = this.policiesData;
 
 			if (hostComponentID == this.state.dragging){ //component is being dragged
 				thisHostComponent.left = this.dragStartX + this.state.cursorX - this.startX;
@@ -665,6 +757,8 @@ var Workspace = React.createClass({
 					onMouseDown = {this.ifcMouseDown} 
 					onMouseUp = {this.ifcMouseUp} 
 					protocols = {this.props.protocols} 
+					policiesData = {policiesData} 
+					dependencies = {this.props.selectedProject.dependencies} 
 					hostCompDims = {this.props.hostComponent}/>				
 			);
 		};
