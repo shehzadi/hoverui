@@ -39,6 +39,7 @@ var Wire = React.createClass({
 				thisCoordinates["left"] = root.ifcLeft;
 				thisCoordinates["top"] = root.ifcTop;
 			}
+			thisCoordinates["face"] = root.face;
 			wireCoordinates["end" + i] = thisCoordinates;
 		});
 
@@ -71,18 +72,45 @@ var Wire = React.createClass({
 			stroke: thisStrokeColor,
 			strokeDasharray: dashArray, 
 			strokeWidth: this.props.width + growth,
-			opacity: thisOpacity
+			opacity: thisOpacity,
+			fill: "transparent"
 		};
 
+		// make path string
+		//<path d="M10 10 H 90 V 90 H 10 L 10 10"/>
+		var lengthOfStraight = 15;
+		var pathString = "M" + wireCoordinates.end0.left + " " + wireCoordinates.end0.top;
+
+		switch (wireCoordinates.end0.face){
+			case "top":
+				pathString += " V" + (wireCoordinates.end0.top - lengthOfStraight); break;
+			case "right":
+				pathString += " H" + (wireCoordinates.end0.left + lengthOfStraight); break;
+			case "bottom":
+				pathString += " V" + (wireCoordinates.end0.top + lengthOfStraight); break;
+			case "left":
+				pathString += " H" + (wireCoordinates.end0.left - lengthOfStraight); break;
+		}
+
+		switch (wireCoordinates.end1.face){
+			case "top":
+				pathString += " L" + wireCoordinates.end1.left + " " + (wireCoordinates.end1.top - lengthOfStraight); break;
+			case "right":
+				pathString += " L" + (wireCoordinates.end1.left + lengthOfStraight) + " " + wireCoordinates.end1.top; break;
+			case "bottom":
+				pathString += " L" + wireCoordinates.end1.left + " " + (wireCoordinates.end1.top + lengthOfStraight); break;
+			case "left":
+				pathString += " L" + (wireCoordinates.end1.left - lengthOfStraight) + " " + wireCoordinates.end1.top; break;
+		}
+
+		pathString += " L" + wireCoordinates.end1.left + " " + wireCoordinates.end1.top;
+
 		return (
-			<line 
+			<path 
 				className = {className} 
 				onMouseEnter={this.onMouseEnter} 
 				onMouseLeave={this.onMouseLeave} 
-				x1 = {wireCoordinates.end0.left} 
-				y1 = {wireCoordinates.end0.top} 
-				x2 = {wireCoordinates.end1.left} 
-				y2 = {wireCoordinates.end1.top} 
+				d = {pathString} 
 				style = {componentStyle}/>
 		);
 	}

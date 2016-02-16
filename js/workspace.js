@@ -546,6 +546,7 @@ var Workspace = React.createClass({
 				var faceString = getFaceString(thisComponent, otherComponent);
 
 				writeLocation["face"] = faceString;
+				thisEnd["face"] = faceString
 				
 			});
 		};
