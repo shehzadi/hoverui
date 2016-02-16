@@ -20,9 +20,9 @@ var Workspace = React.createClass({
     			height: 76
     		},
     		ifc: {
-    			width: 20,
+    			width: 16,
     			height: 1,
-    			pitch: 25
+    			pitch: 20
     		},
     		hostComponent: {
     			width: 95,

@@ -9,9 +9,9 @@ var HostInterface = React.createClass({
 	getDefaultProps: function() {
 		return {
 			hostInterface: {
-				width: 26,
+				width: 22,
 				height: 1,
-				apex: 9
+				apex: 8
     		}
     	};
 	},

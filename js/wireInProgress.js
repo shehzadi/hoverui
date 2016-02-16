@@ -19,7 +19,7 @@ var WireInProgress = React.createClass({
 
 		var startFace = "";
 
-		if (staticEnd.face){face = staticEnd.face}
+		if (staticEnd.face){startFace = staticEnd.face}
 		else if (staticEnd.mode){
 			switch (staticEnd.mode){
 				case "in":
@@ -53,6 +53,7 @@ var WireInProgress = React.createClass({
 		var y2 = this.props.cursorY;
 		var endFace = "";
 		if (this.props.isSnapping){
+			console.log(this.props.isSnapping);
 			if (this.props.isSnapping.ifcLeft){
 				x2 = this.props.isSnapping.ifcLeft;
 				y2 = this.props.isSnapping.ifcTop
@@ -62,7 +63,7 @@ var WireInProgress = React.createClass({
 				y2 = this.props.isSnapping.top
 			}
 
-			if (this.props.isSnapping.face){face = this.props.isSnapping.face}
+			if (this.props.isSnapping.face){endFace = this.props.isSnapping.face}
 			else if (this.props.isSnapping.mode){
 				switch (this.props.isSnapping.mode){
 					case "in":
