@@ -20,7 +20,8 @@ var Policy = React.createClass({
 			width: this.props.policyObject.width,
 			height: this.props.policyObject.height,
 			top: this.props.policyObject.top,
-			left: this.props.policyObject.left
+			left: this.props.policyObject.left,
+			zIndex: -1 * this.props.policyObject.width * this.props.policyObject.height
 		}
 
 		var classString = "policy";

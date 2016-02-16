@@ -410,6 +410,7 @@ body::-webkit-scrollbar {
 }
 
 .workspace {
+	z-index: 0;
 	.policy {
 		position: absolute;
 		color: hsla(0, 0%, 0%, 0.6);
@@ -510,6 +511,10 @@ body::-webkit-scrollbar {
 
 	polygon {
 		pointer-events: fill
+	}
+
+	path {
+		pointer-events: stroke
 	}
 
 	.hostComponent {

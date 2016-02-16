@@ -49,7 +49,7 @@ var Wire = React.createClass({
 
 		var growth = 0;
 		if (this.state.isHover){
-			growth = 3
+			growth = 4
 		};
 
 		var dashArray = "";
@@ -108,8 +108,8 @@ var Wire = React.createClass({
 		return (
 			<path 
 				className = {className} 
-				onMouseEnter={this.onMouseEnter} 
-				onMouseLeave={this.onMouseLeave} 
+				onMouseEnter = {this.onMouseEnter} 
+				onMouseLeave = {this.onMouseLeave} 
 				d = {pathString} 
 				style = {componentStyle}/>
 		);

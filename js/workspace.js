@@ -817,11 +817,11 @@ var Workspace = React.createClass({
 		//return
 		return (
 			<div className="ui-module workspace pattern">		
+				{policies}
 				<svg className="wireContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{wires}
 					{wireInProgress}
-				</svg>	
-				{policies}
+				</svg>		
 				{components}
 				{hostComponents}
 				

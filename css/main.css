@@ -362,6 +362,10 @@ body::-webkit-scrollbar {
   cursor: -webkit-grab;
 }
 
+.workspace {
+  z-index: 0;
+}
+
 .workspace .policy {
   position: absolute;
   color: rgba(0, 0, 0, 0.6);
@@ -476,6 +480,10 @@ body::-webkit-scrollbar {
 
 .workspace polygon {
   pointer-events: fill;
+}
+
+.workspace path {
+  pointer-events: stroke;
 }
 
 .workspace .hostComponent {
