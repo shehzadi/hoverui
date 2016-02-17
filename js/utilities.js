@@ -79,8 +79,6 @@ function checkTypeValidity(protocol1, mode1, protocol2, mode2){
 function sortTokenArrays(tokenArrays){
 	_.forEach(tokenArrays, function(tokenArray){
 		tokenArray.sort(function (tokenA, tokenB) {
-			console.log(tokenA, tokenB);
-
 				if(!tokenA.wireTo || !tokenB.wireTo){
 					var l = 0
 				}

@@ -153,6 +153,10 @@ var HostInterface = React.createClass({
 		var indicatorY = polygon.top - 15;
 
 		var indicators = [];
+		var indicatorOpacity = 1;
+		if (this.props.wireType){
+			indicatorOpacity = 0.3
+		}
 
 		var moduleArray = [];
 		_.forEach(this.props.tokenObject.policies, function(policyID, i){
@@ -169,6 +173,7 @@ var HostInterface = React.createClass({
 			var indicatorStyle = {
 				fill: getHSL(hue, "lighter"),
 				stroke: getHSL(hue),
+				opacity: indicatorOpacity
 			}
 			indicators.push(<circle key={i} cx={indicatorX} cy={cy} style={indicatorStyle} r="3" />)
 		}.bind(this))

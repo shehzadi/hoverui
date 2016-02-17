@@ -197,6 +197,10 @@ var InterfaceToken = React.createClass({
 		var indicatorY = textY;
 
 		var indicators = [];
+		var indicatorOpacity = 1;
+		if (this.props.wireType){
+			indicatorOpacity = 0.3
+		}
 		var moduleArray = [];
 		_.forEach(this.props.tokenObject.policies, function(policyID, i){
 			var moduleID = this.props.policiesData[policyID].moduleID;
@@ -212,6 +216,7 @@ var InterfaceToken = React.createClass({
 			var indicatorStyle = {
 				fill: getHSL(hue, "lighter"),
 				stroke: getHSL(hue),
+				opacity: indicatorOpacity
 			}
 			indicators.push(<circle key={i} cx={indicatorX} cy={cy} style={indicatorStyle} r="3" />)
 		}.bind(this))

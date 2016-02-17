@@ -1,6 +1,5 @@
 var WireInProgress = React.createClass({
 	render: function() {
-		console.log(this.props.dragging);
 		var thisProtocol = this.props.dragging.protocol;
 		var staticEnd = this.props.dragging;
 
@@ -53,7 +52,6 @@ var WireInProgress = React.createClass({
 		var y2 = this.props.cursorY;
 		var endFace = "";
 		if (this.props.isSnapping){
-			console.log(this.props.isSnapping);
 			if (this.props.isSnapping.ifcLeft){
 				x2 = this.props.isSnapping.ifcLeft;
 				y2 = this.props.isSnapping.ifcTop
