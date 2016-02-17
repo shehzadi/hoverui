@@ -395,12 +395,12 @@ var Workspace = React.createClass({
 					var otherComponent = this.componentData[otherComponentID]
 				}
 
-				console.log(thisComponent, otherComponent);
+				//console.log(thisComponent, otherComponent);
 
 				writeLocation["wireTo"] = {
 					component: otherComponentID,
-					ifc: otherEnd.ifc || null,
-					vector: getVector(thisComponent, otherComponent)
+					ifc: otherEnd.ifc || false
+					//vector: getVector(thisComponent, otherComponent)
 				}
 				writeLocation["wire"] = wire;
 			}.bind(this));
@@ -529,7 +529,6 @@ var Workspace = React.createClass({
 		//add positional and face data etc.
 		for (var wire in this.wireData) {
 			var thisWire = this.wireData[wire];
-			var that = this;
 			_.forEach(thisWire, function(thisEnd, i){
 				if (i == 0){
 					var otherEnd = thisWire[1]
@@ -539,27 +538,31 @@ var Workspace = React.createClass({
 				}
 
 				if (thisEnd.ifc){//thisEnd is component, not host
-					var thisComponent = that.componentData[thisEnd.component];
+					var thisComponent = this.componentData[thisEnd.component];
 					var writeLocation = thisComponent.interfaces[thisEnd.ifc]
 				}
 				else {//thisEnd is a host
-					var thisComponent = that.hostComponentData[thisEnd.component];
+					var thisComponent = this.hostComponentData[thisEnd.component];
 					var writeLocation = thisComponent
 				}
 				
 				if (otherEnd.ifc){//otherEnd is component, not host
-					var otherComponent = that.componentData[otherEnd.component];
+					var otherComponent = this.componentData[otherEnd.component];
 				}
 				else {//otherEnd is a host
-					var otherComponent = that.hostComponentData[otherEnd.component];
+					var otherComponent = this.hostComponentData[otherEnd.component];
 				}
 
+				//add face data
 				var faceString = getFaceString(thisComponent, otherComponent);
-
 				writeLocation["face"] = faceString;
 				thisEnd["face"] = faceString
+
+				//add wireTo vector data
+				var wireToVector = getVector(thisComponent, otherComponent);
+				writeLocation.wireTo["vector"] = wireToVector;
 				
-			});
+			}.bind(this));
 		};
 
 		//create token arrays
