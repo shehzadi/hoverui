@@ -36,7 +36,7 @@ function guid() {
 }
 
 function ioid() {
-  return randomStringOf4();
+  return new Date().getTime() + "-" + randomStringOf4();
 }
 
 function randomStringOf4() {
@@ -75,70 +75,54 @@ function checkTypeValidity(protocol1, mode1, protocol2, mode2){
 	return isValid
 }
 
-/*
-function isExistingWire(thisEndpoint, wiresObject){
-	for (var wire in wiresObject) {
-		var endpoint1 = wiresObject[wire]["endpoint-1"];
-		var endpoint2 = wiresObject[wire]["endpoint-2"];
-		
-		if (_.isEqual(thisEndpoint, endpoint1) || _.isEqual(thisEndpoint, endpoint2)){
-			return true;
-		}
-	}
-}
-*/
-
-/*
-function convertToGroup(componentID, interfaceID, selectedProjectView){
-	if (componentID.indexOf('host') == 0){ //is an attachment wire
-		return "interface-1"
-	}
-	else {
-		var thisGroupData = selectedProjectView[componentID].groups;
-		for (var group in thisGroupData) {
-			var interfaceArray = Object.keys(thisGroupData[group]);
-			if (interfaceArray.indexOf(interfaceID) > -1){
-				return group
-			}		
-		}
-	}		
-}
-*/
-
-/*
-function getInterfaceCoords (data, ifc){
-	var returnValue = {};
-	_.forEach(data.interfaceTokens, function(thisToken) {
-		if (ifc){
-			if (thisToken.id == ifc){
-				returnValue = {
-					x: thisToken.left,
-					y: thisToken.top
-				}
-			}
-		}
-		else {
-			returnValue = {
-				x: thisToken.left,
-				y: thisToken.top
-			}
-		}
-	})
-	return returnValue
-}
-*/
 
 function sortTokenArrays(tokenArrays){
-	for (var tokenArray in tokenArrays) {
-		thisTokenArray = tokenArrays[tokenArray];
-		thisTokenArray.sort(function (x, y) {
-		    var n = x.protocol.localeCompare(y.protocol);
-		    if (n !== 0) {
-		        return n;
-		    }
-		    return x.mode.localeCompare(y.mode);
+	_.forEach(tokenArrays, function(tokenArray){
+		tokenArray.sort(function (tokenA, tokenB) {
+			console.log(tokenA, tokenB);
+
+				if(!tokenA.wireTo || !tokenB.wireTo){
+					var l = 0
+				}
+				else if (tokenA.face == "left" || tokenA.face == "right"){
+					var delta = tokenA.wireTo.vector.y - tokenB.wireTo.vector.y;
+					var l;
+					if (delta < 0){l = -1}
+					else if (delta > 0){l = 1}
+					else {l = 0}
+				}
+				else if (tokenA.face == "top" || tokenA.face == "bottom") {
+					var delta = tokenA.wireTo.vector.x - tokenB.wireTo.vector.x;
+					var l;
+					if (delta < 0){l = -1}
+					else if (delta > 0){l = 1}
+					else {l = 0}
+				}
+
+				if (l !== 0){
+					return l
+				}
+				else {
+
+
+
+				    var n = tokenA.protocol.localeCompare(tokenB.protocol);
+				    if (n !== 0) {
+				        return n;
+				    }
+				    else {
+				    	var p = tokenA.mode.localeCompare(tokenB.mode);
+				    	if (tokenB.face == "right" || tokenB.face == "bottom"){
+				    		p = -p //reverse order
+				    	}
+				    	return p;
+				    }
+
+				}
+
+
 		});
-	}
+	})	
 	return tokenArrays
 }
 
@@ -183,12 +167,17 @@ function positionTokens(component, ifcProps){
 	}
 }
 
-function getFaceString(firstObject, secondObject){
-	var refAngle = firstObject.height / firstObject.width;
+function getVector(firstObject, secondObject){
 	var vector = {
 		x: (secondObject.left + (0.5 * secondObject.width)) - (firstObject.left + (0.5 * firstObject.width)),
 		y: (secondObject.top + (0.5 * secondObject.height)) - (firstObject.top + (0.5 * firstObject.height)),
 	}
+	return vector
+}
+
+function getFaceString(firstObject, secondObject){
+	var refAngle = firstObject.height / firstObject.width;
+	var vector = getVector(firstObject, secondObject);
 
 	var interfaceSide = "";
 

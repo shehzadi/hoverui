@@ -369,7 +369,6 @@ var Workspace = React.createClass({
 		//add data from wire data
 		for (var wire in this.wireData) {
 			var thisWire = this.wireData[wire];
-			var that = this;
 			_.forEach(thisWire, function(thisEnd, i){
 				if (i == 0){
 					var otherEnd = thisWire[1]
@@ -379,20 +378,32 @@ var Workspace = React.createClass({
 				}
 
 				if (thisEnd.ifc){//thisEnd is component, not host
-					var thisComponent = that.componentData[thisEnd.component];
+					var thisComponent = this.componentData[thisEnd.component];
 					var writeLocation = thisComponent.interfaces[thisEnd.ifc]
 				}
 				else {//thisEnd is a host
-					var thisComponent = that.hostComponentData[thisEnd.component];
+					var thisComponent = this.hostComponentData[thisEnd.component];
 					var writeLocation = thisComponent
 				}
 
+				var otherComponentID = otherEnd.component;
+
+				if (_.startsWith(otherComponentID, 'host')){
+					var otherComponent = this.hostComponentData[otherComponentID]
+				}
+				else {
+					var otherComponent = this.componentData[otherComponentID]
+				}
+
+				console.log(thisComponent, otherComponent);
+
 				writeLocation["wireTo"] = {
-					component: otherEnd.component,
-					ifc: otherEnd.ifc || null
+					component: otherComponentID,
+					ifc: otherEnd.ifc || null,
+					vector: getVector(thisComponent, otherComponent)
 				}
 				writeLocation["wire"] = wire;
-			});
+			}.bind(this));
 		};
 
 		//set up policies data object
@@ -585,9 +596,15 @@ var Workspace = React.createClass({
 				}
   			}
 
-  			//sort arrays by protocol and mode
-  			tokenArrays = sortTokenArrays(tokenArrays);
   			thisComponent["tokenArrays"] = tokenArrays
+		};
+
+		for (var componentID in this.componentData) {
+			var thisComponent = this.componentData[componentID];
+			var tokenArrays = thisComponent.tokenArrays;
+
+  			//sort arrays by location, protocol and mode
+  			tokenArrays = sortTokenArrays(tokenArrays);
 
   			//calculate locations of interface tokens
   			tokenArrays = positionTokens(thisComponent, this.props.ifc);
