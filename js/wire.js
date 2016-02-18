@@ -12,9 +12,11 @@ var Wire = React.createClass({
 	},
 
 	onMouseEnter: function() {	
-		this.setState({
-			isHover: true
-    	});
+		if (!this.props.dragging){
+			this.setState({
+				isHover: true
+    		});
+		}	
 	},
 
 	onMouseLeave: function() {	

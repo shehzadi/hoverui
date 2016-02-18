@@ -15,8 +15,8 @@ var Policy = React.createClass({
 	render: function() {
 		var hue = this.props.policyObject.view.hue;
 		var style = {
-			backgroundColor: getHSL(hue, null, 0.1),
-			borderColor: getHSL(hue, null, 0.5),
+			backgroundColor: getHSL(hue, null, 0.07),
+			borderColor: getHSL(hue, null, 0.4),
 			width: this.props.policyObject.width,
 			height: this.props.policyObject.height,
 			top: this.props.policyObject.top,

@@ -44,10 +44,10 @@ function randomStringOf4() {
 }
 
 function getHSL(hue, modification, opacity){
-	var lightness = "55%";
+	var lightness = "50%";
 	var thisOpacity = opacity || 1;
 	if (modification == "darker"){
-		lightness = "45%"
+		lightness = "40%"
 	}
 	if (modification == "lighter"){
 		lightness = "65%"

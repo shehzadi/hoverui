@@ -874,7 +874,7 @@ var Home = React.createClass({
 		return (
 			<div className="home">
 				<img className="logo" src="img/logo.png"/>
-				<h1>IO Visor Console</h1>
+				<h1>Hover Console</h1>
 				<button className={addObjectClass} name="addObject" onClick={this.openPopover}>+</button>
 				<button className={homeActionsClass} name="homeActions" onClick={this.openPopover}></button>
 			</div>

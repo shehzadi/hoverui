@@ -1,9 +1,9 @@
 /* Variables */
 $app-background-color: grey;
-$primary-brand-color: hsl(346, 85%, 44%);
-$primary-nav-color: hsl(0, 0%, 60%);
+$primary-brand-color: hsla(346, 76%, 39%, 1.0);
+$primary-nav-color: hsl(0, 0%, 63%);
 $tab-color: hsl(0, 0%, 70%);
-$workspace-color: hsl(0, 0%, 75%);
+$workspace-color: hsl(0, 0%, 77%);
 $topoItem-color: hsla(0, 0%, 100%, 0.6);
 $nav-section-text-color: hsl(0, 0%, 30%);
 
@@ -66,7 +66,7 @@ body {
 /* Scrollbars */
 
 ::-webkit-scrollbar {
-	background: hsla(0, 0%, 0%, 0.05);
+	background: hsla(0, 0%, 0%, 0.07);
     width: 8px;
     height: 8px;
 }
@@ -76,7 +76,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: hsla(0, 0%, 0%, 0.2);
+    background: hsla(0, 0%, 0%, 0.12);
 }
 
 body::-webkit-scrollbar {
@@ -593,7 +593,7 @@ body::-webkit-scrollbar {
 
 .home {
 	border-bottom: 1px solid darken($primary-brand-color, 6%);
-	background-color: $primary-brand-color;
+	background: linear-gradient(lighten($primary-brand-color, 6%), $primary-brand-color);
 	padding: 0 8px 0 $default-padding;
 	@include flexbox;
 	flex: 0 0 $home-height;
@@ -638,7 +638,7 @@ body::-webkit-scrollbar {
 
 .projects {
 	outline: 1px solid hsl(0, 0%, 50%);
-	border-bottom: 2px solid hsl(0, 0%, 60%);
+	border-bottom: 2px solid $primary-nav-color;
 	flex: 0 0 auto;
 	overflow-y: auto;
 	max-height: 30vh;
@@ -764,8 +764,8 @@ body::-webkit-scrollbar {
 	height: $tools-height;
 	font-size: 13px;
 	padding: 7px 15px;
-	background-color: hsla(0, 0%, 65%, 0.65);
-	border-bottom: 1px solid hsla(0, 0%, 60%, 0.7);
+	background-color: hsla(0, 0%, 65%, 0.5);
+	border-bottom: 1px solid hsla(0, 0%, 60%, 0.6);
 	@include text-ellipsis;
 
 	span {

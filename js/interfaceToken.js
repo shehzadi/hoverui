@@ -202,7 +202,7 @@ var InterfaceToken = React.createClass({
 
 		
 		var indicatorX = textX;
-		var indicatorY = textY;
+		var indicatorY = textY + 2;
 
 		var indicators = [];
 		var indicatorOpacity = 1;
@@ -220,13 +220,13 @@ var InterfaceToken = React.createClass({
 
 		_.forEach(moduleArray, function(moduleID, i){
 			var hue = this.props.dependencies[moduleID].view.hue;
-			var cy = indicatorY - (8 * i);
+			var cy = indicatorY - (7 * i);
 			var indicatorStyle = {
 				fill: getHSL(hue, "lighter"),
 				stroke: getHSL(hue),
 				opacity: indicatorOpacity
 			}
-			indicators.push(<circle key={i} cx={indicatorX} cy={cy} style={indicatorStyle} r="3" />)
+			indicators.push(<circle key={i} cx={indicatorX} cy={cy} style={indicatorStyle} r="2.5" />)
 		}.bind(this))
 		
 

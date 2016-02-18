@@ -150,7 +150,7 @@ var HostInterface = React.createClass({
 
 
 		var indicatorX = polygon.left + (polygon.width / 2);
-		var indicatorY = polygon.top - 15;
+		var indicatorY = polygon.top - 13;
 
 		var indicators = [];
 		var indicatorOpacity = 1;
@@ -169,13 +169,13 @@ var HostInterface = React.createClass({
 
 		_.forEach(moduleArray, function(moduleID, i){
 			var hue = this.props.dependencies[moduleID].view.hue;
-			var cy = indicatorY - (8 * i);
+			var cy = indicatorY - (7 * i);
 			var indicatorStyle = {
 				fill: getHSL(hue, "lighter"),
 				stroke: getHSL(hue),
 				opacity: indicatorOpacity
 			}
-			indicators.push(<circle key={i} cx={indicatorX} cy={cy} style={indicatorStyle} r="3" />)
+			indicators.push(<circle key={i} cx={indicatorX} cy={cy} style={indicatorStyle} r="2.5" />)
 		}.bind(this))
 
 		return (

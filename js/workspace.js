@@ -26,7 +26,7 @@ var Workspace = React.createClass({
     		},
     		hostComponent: {
     			width: 95,
-    			height: 52
+    			height: 55
     		}	
     	};
 	},
