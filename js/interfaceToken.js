@@ -23,11 +23,11 @@ var InterfaceToken = React.createClass({
 
 	onMouseLeave: function() {			
 		if (this.state.isValid){
-			this.setState({
-				isHover: false
-	    	});
 	    	this.props.onMouseLeave(this.props.tokenObject);
     	}
+    	this.setState({
+			isHover: false
+    	});
 	},
 
 	onMouseDown: function() {	
@@ -54,6 +54,7 @@ var InterfaceToken = React.createClass({
 
 			var isThisValidType = checkTypeValidity(sourceProtocol, sourceMode, thisProtocol, thisMode);
 			var isValid = isThisValidType;
+			//this.isSource = false;
 		
 			if (this.props.tokenObject.wire){//existing wire
 				isValid = false
@@ -68,7 +69,8 @@ var InterfaceToken = React.createClass({
 			}
 
 			if (_.isEqual(this.props.tokenObject, this.props.dragging)){
-				isValid = true
+				isValid = false;
+				//this.isSource = true
 			}
 
 			if (this.props.wireType == "existing"){
@@ -79,6 +81,8 @@ var InterfaceToken = React.createClass({
 					isValid = true
 				}
 			}
+
+			if (this.isSource == true){}
 
 			this.setState({
 				isValid: isValid
@@ -120,6 +124,10 @@ var InterfaceToken = React.createClass({
 		// validity for drop
 		if (this.state.isValid == false){
 			thisOpacity = 0.2
+		}
+
+		if (_.isEqual(this.props.tokenObject, this.props.dragging)){ //is source
+			thisOpacity = 1
 		}
 
 		var polygon = {	

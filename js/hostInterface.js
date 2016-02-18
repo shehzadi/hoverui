@@ -31,11 +31,14 @@ var HostInterface = React.createClass({
 			}
 
 			if (_.isEqual(this.props.tokenObject, this.props.dragging)){
-				isValid = true
+				isValid = false
 			}
 
-			if (_.isEqual(this.props.tokenObject, this.props.mouseDown)){
-				isValid = true
+
+			if (this.props.wireType == "existing"){
+				if (_.isEqual(this.props.tokenObject, this.props.mouseDown)){
+					isValid = true
+				}
 			}
 						
 			this.setState({
@@ -61,10 +64,10 @@ var HostInterface = React.createClass({
 	onMouseLeave: function() {	
 		if (this.state.isValid){
 			this.props.onMouseLeave(this.props.tokenObject);
-			this.setState({
-				isHover: false
-    		});
     	}
+    	this.setState({
+			isHover: false
+		});
 	},
 
 	onMouseDown: function() {	
@@ -72,10 +75,12 @@ var HostInterface = React.createClass({
 	},
 
 	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.tokenObject);
-		this.setState({
-			isHover: false
-    	});
+		if (this.state.isValid){
+			this.props.onMouseUp(this.props.tokenObject);
+			this.setState({
+				isHover: false
+	    	});
+		}
 	},
 
 	render: function() {
@@ -87,23 +92,18 @@ var HostInterface = React.createClass({
 		if (this.state.isHover  || _.isEqual(this.props.tokenObject, this.props.dragging)){
 			growthW = 4;
 			growthH = 8;
-		}
-
-		var thisOpacity = 1;
-		if (this.props.isInvalid && !this.props.isStartOfNewWire){
-			thisOpacity = 0.2
-		}
+		}		
 
 		var fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue);
 		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "darker");
 
-		// policy indicator
-		//console.log(this.props.tokenObject);
-		
-
 		// validity for drop
+		var thisOpacity = 1;
 		if (this.state.isValid == false){
 			thisOpacity = 0.2
+		}
+		if (_.isEqual(this.props.tokenObject, this.props.dragging)){ //is source
+			thisOpacity = 1
 		}
 	
 		var interfaceStyle = {
@@ -178,12 +178,6 @@ var HostInterface = React.createClass({
 			indicators.push(<circle key={i} cx={indicatorX} cy={cy} style={indicatorStyle} r="3" />)
 		}.bind(this))
 
-
-
-
-
-		
-
 		return (
 			<g transform = {transformString}>
 				<polygon 
@@ -196,8 +190,7 @@ var HostInterface = React.createClass({
 					onMouseUp={this.onMouseUp} 
 					onMouseDown={this.onMouseDown}/>
 				{indicators}
-			</g>
-			
+			</g>		
   		)
 	},
 });
