@@ -347,20 +347,6 @@ var IOConsole = React.createClass({
 	    		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
 	    	}
 	    }
-
-       /* else if (objectID.indexOf('policy') == 0){
-            var policyData = newProjectObject.view[objectID];
-            policyData.left += deltaX;
-            policyData.top += deltaY;
-            if (policyData.left <= 0 || policyData.top <= headerHeight){
-                this.deleteObject(objectID)  
-            }
-
-            else {
-                //var newArray = getInterfaceArray(policy, components, hostComponents);
-                this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
-            }
-        }*/
     },
 
    	deleteObject: function(objectID) {
@@ -580,6 +566,7 @@ var IOConsole = React.createClass({
     },
 
     openPopover: function(event) {
+        console.log(event.target);
         this.setState({
             popoverTarget: event.target,
         }); 
@@ -806,7 +793,8 @@ var IOConsole = React.createClass({
 							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]}
                             nProjects = {nProjects} 
 							deleteProject = {this.deleteProject} 
-							openModal = {this.openModal}
+							openModal = {this.openModal} 
+                            openPopover = {this.openPopover}
 							renameProject = {this.renameProject}/>
 					</div>
 					<div id="workspace">

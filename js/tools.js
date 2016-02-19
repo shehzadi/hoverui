@@ -47,6 +47,10 @@ var Tools = React.createClass({
    		};
 	},
 
+	openPopover: function(event){
+		this.props.openPopover(event)
+	},
+
 	handleDeleteProjectClick: function(){
 		this.props.deleteProject()
 	},
@@ -128,6 +132,7 @@ var Tools = React.createClass({
 				<a href={downloadData} download={selectedProjectObject.name + " (" + selectedProjectObject.version + ").json"}>Download JSON</a>
 				<button className={publishModuleButtonClass} onClick = {this.handleSaveAsProjectClick}>Publish as IO Module&hellip;</button>
 				<button className={deleteButtonClass} onClick = {this.handleDeleteProjectClick}>Delete Project</button>
+				<button className="" name="projectActions" onClick={this.openPopover}>More Actions</button>
 				<div className="buttons">
 					<button className="disabled">Deploy to IO Visor&hellip;</button>
 				</div>

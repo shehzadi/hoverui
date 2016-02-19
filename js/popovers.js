@@ -33,6 +33,23 @@ var AddObject = React.createClass({
 	}
 });
 
+var ProjectActions = React.createClass({
+	handleActions: function(event){
+		this.props.handleActions(event)
+	},
+
+	render: function() {
+		return (
+			<ul className="popoverContent">
+				<li className = "menuSection">More Project Actions</li>
+				<li><a name="duplicate" onMouseUp={this.handleActions}>Duplicate Project</a></li>
+				<li className = "menuSection"></li>
+				<li><a name="delete" onMouseUp={this.handleActions}>Delete Project</a></li>
+			</ul>
+		)
+	}
+});
+
 var Popover = React.createClass({
 	handleActions: function(event) {
 		this.props.handleActions(event)
@@ -68,6 +85,17 @@ var Popover = React.createClass({
 				<div id="popoverBackground" onClick={this.closePopover}>
 	  				<div style={popoverPosition} className="popoverContainer">
 	  					<AddObject 
+	  						handleActions = {this.handleActions}/>
+	  				</div>
+	  			</div>	
+			)
+		}
+
+		if (this.props.popoverTarget.name == "projectActions"){
+			popover = (
+				<div id="popoverBackground" onClick={this.closePopover}>
+	  				<div style={popoverPosition} className="popoverContainer">
+	  					<ProjectActions 
 	  						handleActions = {this.handleActions}/>
 	  				</div>
 	  			</div>	
