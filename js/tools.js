@@ -51,14 +51,6 @@ var Tools = React.createClass({
 		this.props.openPopover(event)
 	},
 
-	handleDeleteProjectClick: function(){
-		this.props.deleteProject()
-	},
-
-	handleSaveAsProjectClick: function(){
-		this.props.openModal("saveAsModule")
-	},
-
 	handleEditClick: function(event) {
    		this.setState({
    			isEditingName: true,
@@ -80,7 +72,6 @@ var Tools = React.createClass({
 		var version = "";
 
 		var selectedProjectObject = this.props.selectedProject;
-		var wiresObject = selectedProjectObject.topology.wires || {};
 
 		if (selectedProjectObject){
 			project = selectedProjectObject.name;
@@ -105,22 +96,6 @@ var Tools = React.createClass({
 			)
 		}
 
-		var deleteButtonClass = "";
-		if (this.props.nProjects == 1){
-			deleteButtonClass = "disabled"
-		}
-
-		var publishModuleButtonClass = "";
-		var nWiresToHostInterfaces = 0;
-
-		isConnectionsToHostInterfaces = _.find(wiresObject, function(wire) {
-			return !wire[0].ifc || !wire[1].ifc;
-		});
-
-		if (!isConnectionsToHostInterfaces){
-			publishModuleButtonClass = "disabled"
-		}
-
 		var downloadData = "data: text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.props.selectedProject));
 
 		return (
@@ -128,10 +103,6 @@ var Tools = React.createClass({
 				{projectName}
 				<span className="version">{version}</span>
 				<button className="disabled">Save Version&hellip;</button>
-				<button className="disabled">Duplicate</button>
-				<a href={downloadData} download={selectedProjectObject.name + " (" + selectedProjectObject.version + ").json"}>Download JSON</a>
-				<button className={publishModuleButtonClass} onClick = {this.handleSaveAsProjectClick}>Publish as IO Module&hellip;</button>
-				<button className={deleteButtonClass} onClick = {this.handleDeleteProjectClick}>Delete Project</button>
 				<button className="" name="projectActions" onClick={this.openPopover}>More Actions</button>
 				<div className="buttons">
 					<button className="disabled">Deploy to IO Visor&hellip;</button>

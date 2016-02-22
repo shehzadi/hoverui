@@ -166,8 +166,21 @@ var IOConsole = React.createClass({
 
     handleActions: function(event){
         var eventName = event.target.name;
-        if (eventName == "newProject"){this.createNewProject(projectTemplate)}
-        if (eventName == "repositories"){this.openModal("librariesSettings")}
+
+        switch(eventName) {
+            case "newProject":
+                this.createNewProject(projectTemplate); break;
+            case "repositories":
+                this.openModal("librariesSettings"); break;
+            case "downloadJSON":
+                document.getElementById('download').click(); break;
+            case "deleteProject":
+                this.deleteProject(); break;
+            case "saveIOModule":
+                this.openModal("saveAsModule"); break;
+            default:
+                alert("No Event Handler", event)
+        }
         
     },
 
@@ -566,7 +579,6 @@ var IOConsole = React.createClass({
     },
 
     openPopover: function(event) {
-        console.log(event.target);
         this.setState({
             popoverTarget: event.target,
         }); 
@@ -707,7 +719,9 @@ var IOConsole = React.createClass({
             return false
         }
 
-        var nProjects = Object.keys(this.state.projectsObject).length;
+        //var nProjects = Object.keys(this.state.projectsObject).length;
+
+        var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
 
 		var componentInProgress;
         var policyInProgress;
@@ -740,7 +754,7 @@ var IOConsole = React.createClass({
 
 		var modalDialogues = [];
 		if (this.state.modalArray.length > 0){
-			var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
+			
 			var that = this;
 			_.forEach(this.state.modalArray, function(modalName) {
     			var modalDialogue = (<ModalDialogue
@@ -763,11 +777,15 @@ var IOConsole = React.createClass({
         if (this.state.popoverTarget != false){
             popover = (
                 <Popover
+                    projects = {this.state.projectsObject} 
+                    selectedProject = {selectedProject} 
                     handleActions = {this.handleActions} 
                     closePopover = {this.closePopover} 
                     popoverTarget = {this.state.popoverTarget}/>
             );
         }
+
+        var downloadData = "data: text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(selectedProject));
 
 		return (
 			<div id="IOConsole">
@@ -790,9 +808,9 @@ var IOConsole = React.createClass({
 				<div id="main">
 					<div id="header">
 						<Tools 
-							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]}
-                            nProjects = {nProjects} 
-							deleteProject = {this.deleteProject} 
+							selectedProject = {selectedProject}
+                            //nProjects = {nProjects} 
+							//deleteProject = {this.deleteProject} 
 							openModal = {this.openModal} 
                             openPopover = {this.openPopover}
 							renameProject = {this.renameProject}/>
@@ -807,14 +825,20 @@ var IOConsole = React.createClass({
 							handleWireDrop = {this.handleNewWireDrop} 
 							deleteWire= {this.deleteWire}
 							protocols = {this.state.protocolsObject} 
-							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]}/>
+							selectedProject = {selectedProject}/>
 					</div>
 				</div>
 				{componentInProgress}
                 {policyInProgress}
 				{modalDialogues}
                 {popover}
+                <a 
+                    href = {downloadData}
+                    download = {selectedProject.name + " (" + selectedProject.version + ").json"}
+                    id = "download"
+                    hidden></a>
 			</div>
+
 		);
 	},
 });

@@ -39,12 +39,30 @@ var ProjectActions = React.createClass({
 	},
 
 	render: function() {
+		var deleteButtonClass = "";
+		if (_.size(this.props.projects) == 1){
+			deleteButtonClass = "disabled"
+		}
+		var wiresObject = this.props.selectedProject.topology.wires || {};
+
+		var saveAsModuleButtonClass = "";
+		var nWiresToHostInterfaces = 0;
+
+		var isConnectionsToHostInterfaces = _.find(wiresObject, function(wire) {
+			return !wire[0].ifc || !wire[1].ifc;
+		});
+
+		if (!isConnectionsToHostInterfaces){
+			saveAsModuleButtonClass = "disabled"
+		}
+
 		return (
 			<ul className="popoverContent">
-				<li className = "menuSection">More Project Actions</li>
-				<li><a name="duplicate" onMouseUp={this.handleActions}>Duplicate Project</a></li>
+				<li><a className="disabled" name="duplicate" onMouseUp={this.handleActions}>Duplicate Project</a></li>
+				<li><a name="saveIOModule" className={saveAsModuleButtonClass} onMouseUp={this.handleActions}>Save as IO Module&hellip;</a></li>
+				<li><a name="downloadJSON" onMouseUp={this.handleActions}>Download JSON</a></li>
 				<li className = "menuSection"></li>
-				<li><a name="delete" onMouseUp={this.handleActions}>Delete Project</a></li>
+				<li><a name="deleteProject" className={deleteButtonClass} onMouseUp={this.handleActions}>Delete Project&hellip;</a></li>
 			</ul>
 		)
 	}
@@ -96,6 +114,8 @@ var Popover = React.createClass({
 				<div id="popoverBackground" onClick={this.closePopover}>
 	  				<div style={popoverPosition} className="popoverContainer">
 	  					<ProjectActions 
+	  						selectedProject = {this.props.selectedProject}
+	  						projects = {this.props.projects}
 	  						handleActions = {this.handleActions}/>
 	  				</div>
 	  			</div>	
