@@ -253,6 +253,7 @@ var Workspace = React.createClass({
 		var wiresObject = selectedProject.topology.wires || {};
 		var hostComponentsObject = selectedProject.topology.host_interfaces || {};
 		var policiesObject = selectedProject.policies || {};
+		var instrumentsObject = selectedProject.instruments || {};
 
 		//set up component data object
 		this.componentData = {};
@@ -425,11 +426,47 @@ var Workspace = React.createClass({
 				width: policyViewData.width, 
 				height: policyViewData.height
 			}
-		};		
+		};
+
+		//set up instruments data object
+		this.instrumentData = {};
+        _.forEach(instrumentsObject, function(instrument, id){
+            var moduleID = instrument.module;
+            var instrumentViewData = selectedProject.view[id];
+            this.instrumentData[id] = {
+                module: dependenciesObject[moduleID],
+                interfaces: [],
+                top: instrumentViewData.top,
+                left: instrumentViewData.left,
+                width: instrumentViewData.width,
+                height: instrumentViewData.height
+            }
+
+            var interfaces = instrument.interfaces || [];
+            _.forEach(interfaces, function(ifc){
+                var newInterface = {
+                    component: ifc.component,
+                    ifc: ifc.ifc
+                }
+                this.instrumentData[id].interfaces.push(newInterface)
+            }.bind(this))
+        }.bind(this));
 
 		this.positionInterfaces();
 		this.applyPoliciesToInterfaces();
+		this.addPositionsToInstruments();
 	},
+
+	addPositionsToInstruments: function() {
+		_.forEach(this.instrumentData, function(instrument, id){
+			var interfaces = instrument.interfaces;
+			_.forEach(interfaces, function(ifc){
+				var thisIfc = this.componentData[ifc.component].interfaces[ifc.ifc];
+				ifc["left"] = thisIfc.left;
+				ifc["top"] = thisIfc.top;			
+			}.bind(this))
+		}.bind(this))
+    },
 
 	applyPoliciesToInterfaces: function() {
 		// clear policies
@@ -489,7 +526,6 @@ var Workspace = React.createClass({
 	},
 
     handlePolicyUpdate: function(id, left, top, height, width) {
-    	//var newInterfaceArray = this.getNewInterfaceArray(id, this.componentData, this.hostComponentData);
         this.props.handlePolicyUpdate(id, left, top, height, width);
     },
 
@@ -668,7 +704,6 @@ var Workspace = React.createClass({
 					handlePolicyUpdate = {this.handlePolicyUpdate} 
 					componentData = {this.componentData} 
 					hostComponentData = {this.hostComponentData} 
-					//dims = {this.props.component} 
 					policyObject = {thisPolicy} 
 					policyID = {policyID}/>
   			);
@@ -784,6 +819,16 @@ var Workspace = React.createClass({
 			);
 		};
 
+		//render instruments
+		var instruments = [];
+		_.forEach(this.instrumentData, function(instrument, id){
+			instruments.push(
+				<Instrument
+					key = {id} 
+					id = {id} 
+					instrument = {instrument}/>
+			);
+		});
 
 		//render wires
 		var wires = [];
@@ -843,13 +888,12 @@ var Workspace = React.createClass({
 					{wireInProgress}
 				</svg>		
 				{components}
-				{hostComponents}
-				
-						
+				{hostComponents}				
 				<svg className="ifcContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{ifcs}
 					{hostIfcArray}
-				</svg>		
+				</svg>	
+				{instruments}	
 			</div>
 		);
 	},

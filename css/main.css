@@ -366,6 +366,35 @@ body::-webkit-scrollbar {
   z-index: 0;
 }
 
+.workspace .instrument {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.6);
+  background-color: #404040;
+  padding: 6px 8px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  align-items: top;
+}
+
+.workspace .instrument .instrumentVersion {
+  font-size: 85%;
+  opacity: 0.6;
+  margin-left: 0.5em;
+  display: inline-block;
+}
+
+.workspace .instrument .grab {
+  position: absolute;
+}
+
+.workspace .instrument .bottomRight {
+  cursor: nwse-resize;
+  bottom: 0;
+  right: 0;
+}
+
 .workspace .policy {
   position: absolute;
   color: rgba(0, 0, 0, 0.6);

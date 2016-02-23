@@ -1,24 +1,24 @@
 var Instrument = React.createClass({
 	handleMouseDown: function(){
-		this.props.onMouseDown(this.props.instrumentID, "instrument")
+		this.props.onMouseDown(this.props.id, "instrument")
 	},
 
 	bottomRight: function(event){
 		event.stopPropagation();
-		this.props.onMouseDown(this.props.instrumentID, "instrument", "bottom right")
+		this.props.onMouseDown(this.props.id, "instrument", "bottom right")
 	},
 
 	render: function() {
-		var hue = this.props.instrumentObject.view.hue;
+		console.log(this.props);
 		var style = {
-			width: this.props.instrumentObject.width,
-			height: this.props.instrumentObject.height,
-			top: this.props.instrumentObject.top,
-			left: this.props.instrumentObject.left
+			width: this.props.instrument.width,
+			height: this.props.instrument.height,
+			top: this.props.instrument.top,
+			left: this.props.instrument.left
 		}
 
 		var classString = "instrument";
-		if (this.props.isPendingDeletion == this.props.instrumentID){
+		if (this.props.isPendingDeletion == this.props.id){
 			classString += " pendingDeletion"
 		}
 		return (
@@ -26,10 +26,10 @@ var Instrument = React.createClass({
 				className = {classString} 
 				onMouseDown = {this.handleMouseDown} 
 				style = {style}>
-  				<div className="policyName">
-  					{this.props.instrumentObject.module.name}
-	  				<span className="policyVersion">
-	  					{this.props.instrumentObject.module.version}
+  				<div className="instrumentName">
+  					{this.props.instrument.module.name}
+	  				<span className="instrumentVersion">
+	  					{this.props.instrument.module.version}
 	  				</span>
   				</div>
   				<div>Instrument Content</div>

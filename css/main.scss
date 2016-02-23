@@ -411,6 +411,33 @@ body::-webkit-scrollbar {
 
 .workspace {
 	z-index: 0;
+
+	.instrument {
+		position: absolute;
+		color: hsla(0, 0%, 100%, 0.6);
+		background-color: hsla(0, 0%, 25%, 1);
+		padding: 6px 8px;
+		font-size: 12px;
+		display: flex;
+		flex-direction: column;
+		justify-content: left;
+		align-items: top;
+		.instrumentVersion {
+			@include subtext;
+			margin-left: 0.5em;
+			display: inline-block;
+		}
+		.grab {
+			position: absolute;
+		}
+
+		.bottomRight {
+			cursor: nwse-resize;
+			bottom: 0;
+			right: 0;
+		}
+	}
+
 	.policy {
 		position: absolute;
 		color: hsla(0, 0%, 0%, 0.6);

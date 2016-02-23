@@ -124,19 +124,15 @@ var IOConsole = React.createClass({
             targetSelectionID = sortedProjectArray[0]
         }
 
-        var selectedProject = rootProjectsObject[targetSelectionID];
+        //var selectedProject = rootProjectsObject[targetSelectionID];
 
-        this.doInstrumentData(selectedProject);
+        
 
         this.setState({
             selectedProjectID: targetSelectionID,
             projectsObject: rootProjectsObject,
             sortedProjectArray: sortedProjectArray
         });
-    },
-
-    doInstrumentData: function(project) {
-        var instruments = project.instruments
     },
 
     handleFirebaseModules: function(dataSnapshot) {
