@@ -9,7 +9,6 @@ var Instrument = React.createClass({
 	},
 
 	render: function() {
-		console.log(this.props);
 		var style = {
 			width: this.props.instrument.width,
 			height: this.props.instrument.height,

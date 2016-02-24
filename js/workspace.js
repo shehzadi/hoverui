@@ -79,19 +79,27 @@ var Workspace = React.createClass({
 			this.workspaceOriginY = workspaceBox.top;
 			this.startX = event.pageX - this.workspaceOriginX;
 			this.startY = event.pageY - this.workspaceOriginY;
-			if (objectType == "component"){
-				this.dragStartX = this.componentData[objectID].left;
-				this.dragStartY = this.componentData[objectID].top;
-			}
-			else if (objectType == "hostComponent"){
-				this.dragStartX = this.hostComponentData[objectID].left;
-				this.dragStartY = this.hostComponentData[objectID].top;
-			}
-			else if (objectType == "policy"){
-				this.dragStartX = this.policiesData[objectID].left;
-				this.dragStartY = this.policiesData[objectID].top;
-				this.dragStartW = this.policiesData[objectID].width;
-				this.dragStartH = this.policiesData[objectID].height;
+			switch(objectType) {
+				case "component":
+		    		this.dragStartX = this.componentData[objectID].left;
+					this.dragStartY = this.componentData[objectID].top;
+		    		break;
+		    	case "hostComponent":
+		    		this.dragStartX = this.hostComponentData[objectID].left;
+					this.dragStartY = this.hostComponentData[objectID].top;
+		    		break;
+		    	case "policy":
+		    		this.dragStartX = this.policiesData[objectID].left;
+					this.dragStartY = this.policiesData[objectID].top;
+					this.dragStartW = this.policiesData[objectID].width;
+					this.dragStartH = this.policiesData[objectID].height;
+		    		break;
+		    	case "instrument":
+		    		this.dragStartX = this.instrumentData[objectID].left;
+					this.dragStartY = this.instrumentData[objectID].top;
+					this.dragStartW = this.instrumentData[objectID].width;
+					this.dragStartH = this.instrumentData[objectID].height;
+		    		break;
 			}
 
 			this.setState({
@@ -822,13 +830,48 @@ var Workspace = React.createClass({
 		//render instruments
 		var instruments = [];
 		_.forEach(this.instrumentData, function(instrument, id){
+
+			if (id == this.state.dragging){ //component is being dragged
+				var deltaX = this.state.cursorX - this.startX;
+				var deltaY = this.state.cursorY - this.startY;
+
+				instrument.left = this.dragStartX + deltaX;
+				instrument.top = this.dragStartY + deltaY;	
+			}
+
 			instruments.push(
 				<Instrument
 					key = {id} 
 					id = {id} 
-					instrument = {instrument}/>
+					instrument = {instrument}
+					onMouseDown = {this.objectMouseDown}/>
 			);
-		});
+		}.bind(this));
+
+		//render instrument links
+		var instrumentLinks = [];
+		_.forEach(this.instrumentData, function(instrument, id){
+			var links = instrument.interfaces;
+			_.forEach(links, function(link, i){
+				var source = {
+					top: link.top,
+					left: link.left
+				}
+				var view = {
+					top: instrument.top,
+					left: instrument.left,
+					width: instrument.width,
+					height: instrument.height
+				}
+				instrumentLinks.push(
+					<InstrumentLink
+						key = {i} 
+						id = {id} 
+						source = {source}
+						view = {view}/>
+				);
+			}.bind(this));
+		}.bind(this));
 
 		//render wires
 		var wires = [];
@@ -886,13 +929,14 @@ var Workspace = React.createClass({
 				<svg className="wireContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{wires}
 					{wireInProgress}
+					{instrumentLinks}
 				</svg>		
 				{components}
 				{hostComponents}				
 				<svg className="ifcContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{ifcs}
 					{hostIfcArray}
-				</svg>	
+				</svg>
 				{instruments}	
 			</div>
 		);

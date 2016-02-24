@@ -395,6 +395,10 @@ body::-webkit-scrollbar {
   right: 0;
 }
 
+.workspace .instrumentLink {
+  stroke: rgba(64, 64, 64, 0.5);
+}
+
 .workspace .policy {
   position: absolute;
   color: rgba(0, 0, 0, 0.6);
