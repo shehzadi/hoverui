@@ -444,16 +444,16 @@ body::-webkit-scrollbar {
 }
 
 .workspace .policy .top, .workspace .policy .bottom {
-  height: 6px;
-  left: 12px;
-  right: 12px;
+  height: 15px;
+  left: 20px;
+  right: 20px;
   cursor: ns-resize;
 }
 
 .workspace .policy .left, .workspace .policy .right {
-  bottom: 12px;
-  top: 12px;
-  width: 6px;
+  bottom: 20px;
+  top: 20px;
+  width: 15px;
   cursor: ew-resize;
 }
 
@@ -466,8 +466,8 @@ body::-webkit-scrollbar {
 }
 
 .workspace .policy .topRight, .workspace .policy .topLeft, .workspace .policy .bottomRight, .workspace .policy .bottomLeft {
-  height: 12px;
-  width: 12px;
+  height: 20px;
+  width: 20px;
 }
 
 .workspace .policy .top, .workspace .policy .topRight, .workspace .policy .topLeft {

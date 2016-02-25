@@ -79,46 +79,40 @@ function checkTypeValidity(protocol1, mode1, protocol2, mode2){
 function sortTokenArrays(tokenArrays){
 	_.forEach(tokenArrays, function(tokenArray){
 		tokenArray.sort(function (tokenA, tokenB) {
-				if(!tokenA.wireTo || !tokenB.wireTo){
-					var l = 0
-				}
-				else if (tokenA.face == "left" || tokenA.face == "right"){
-					var delta = tokenA.wireTo.vector.y - tokenB.wireTo.vector.y;
-					var l;
-					if (delta < 0){l = -1}
-					else if (delta > 0){l = 1}
-					else {l = 0}
-				}
-				else if (tokenA.face == "top" || tokenA.face == "bottom") {
-					var delta = tokenA.wireTo.vector.x - tokenB.wireTo.vector.x;
-					var l;
-					if (delta < 0){l = -1}
-					else if (delta > 0){l = 1}
-					else {l = 0}
-				}
+			if(!tokenA.wireTo || !tokenB.wireTo){
+				var l = 0
+			}
+			else if (tokenA.face == "left" || tokenA.face == "right"){
+				var delta = tokenA.wireTo.vector.y - tokenB.wireTo.vector.y;
+				var l;
+				if (delta < 0){l = -1}
+				else if (delta > 0){l = 1}
+				else {l = 0}
+			}
+			else if (tokenA.face == "top" || tokenA.face == "bottom") {
+				var delta = tokenA.wireTo.vector.x - tokenB.wireTo.vector.x;
+				var l;
+				if (delta < 0){l = -1}
+				else if (delta > 0){l = 1}
+				else {l = 0}
+			}
 
-				if (l !== 0){
-					return l
-				}
-				else {
-
-
-
-				    var n = tokenA.protocol.localeCompare(tokenB.protocol);
-				    if (n !== 0) {
-				        return n;
-				    }
-				    else {
-				    	var p = tokenA.mode.localeCompare(tokenB.mode);
-				    	if (tokenB.face == "right" || tokenB.face == "bottom"){
-				    		p = -p //reverse order
-				    	}
-				    	return p;
-				    }
-
-				}
-
-
+			if (l !== 0){
+				return l
+			}
+			else {
+			    var n = tokenA.protocol.localeCompare(tokenB.protocol);
+			    if (n !== 0) {
+			        return n;
+			    }
+			    else {
+			    	var p = tokenA.mode.localeCompare(tokenB.mode);
+			    	if (tokenB.face == "right" || tokenB.face == "bottom"){
+			    		p = -p //reverse order
+			    	}
+			    	return p;
+			    }
+			}
 		});
 	})	
 	return tokenArrays
@@ -187,7 +181,6 @@ function getFaceString(firstObject, secondObject){
 			interfaceSide = "left";
 		}
 	}
-
 	else {
 		if ((vector.x * -refAngle) > vector.y){
 			interfaceSide = "top";
@@ -211,43 +204,6 @@ function getTokenForOtherEnd(startToken, componentData, hostComponentData){
 	
 	return endToken
 }
-
-/*
-function getOtherEndOfWire(componentID, interfaceID, selectedProject){
-	var returnValue = false;
-
-	if (componentID.indexOf('host') == 0){ //is an attachment wire
-		var interfaceObject = {
-			component: componentID
-		};
-	}
-
-	else {
-		var interfaceObject = {
-			component: componentID,
-			ifc: interfaceID
-		};
-	}
-	
-	var wiresObject = selectedProject.topology.wires;
-	for (var wire in wiresObject){
-		var endpoint1 = wiresObject[wire][0];
-		var endpoint2 = wiresObject[wire][1];
-
-		if (_.isEqual(interfaceObject, endpoint1)){
-			returnValue = endpoint2
-			break;
-		}
-
-		if (_.isEqual(interfaceObject, endpoint2)){
-			returnValue = endpoint1
-			break;
-		}
-	}
-
-	return returnValue
-}
-*/
 
 function defineSvgSize(componentData, hostComponentData, instrumentData, cursorX, cursorY){
 	var svgExtents = {
