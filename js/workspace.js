@@ -926,7 +926,7 @@ var Workspace = React.createClass({
 
 
 		//figure out size of svg container
-		this.svgExtents = defineSvgSize(this.componentData, this.hostComponentData, this.state.cursorX, this.state.cursorY)
+		this.svgExtents = defineSvgSize(this.componentData, this.hostComponentData, this.instrumentData, this.state.cursorX, this.state.cursorY)
 
 
 		//return

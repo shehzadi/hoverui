@@ -249,7 +249,7 @@ function getOtherEndOfWire(componentID, interfaceID, selectedProject){
 }
 */
 
-function defineSvgSize(componentData, hostComponentData, cursorX, cursorY){
+function defineSvgSize(componentData, hostComponentData, instrumentData, cursorX, cursorY){
 	var svgExtents = {
 		width: 0,
 		height: 0
@@ -277,6 +277,13 @@ function defineSvgSize(componentData, hostComponentData, cursorX, cursorY){
 		leftArray.push(thisComponent.ifcLeft);
 		topArray.push(thisComponent.ifcTop);
 	}
+
+	_.forEach(instrumentData, function(instrument){
+		//center of instrument will do because if a wire exists,
+		//it is connected to an interface and already covered.
+		leftArray.push(instrument.left);
+		topArray.push(instrument.top);
+	});
 
 	leftArray.push(cursorX);
 	topArray.push(cursorY);
