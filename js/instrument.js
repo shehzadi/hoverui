@@ -1,4 +1,13 @@
 var Instrument = React.createClass({
+
+	getDefaultProps: function(){
+		return {
+			margin: 8,
+			marginTop: 22,
+			marginBottom: 28,
+		};
+	},
+
 	handleMouseDown: function(){
 		this.props.onMouseDown(this.props.id, "instrument")
 	},
@@ -9,11 +18,18 @@ var Instrument = React.createClass({
 	},
 
 	render: function() {
-		var style = {
+		var containerStyle = {
 			width: this.props.instrument.width,
 			height: this.props.instrument.height,
 			top: this.props.instrument.top,
 			left: this.props.instrument.left
+		}
+
+		var contentStyle = {
+			width: this.props.instrument.width - (2*this.props.margin),
+			height: this.props.instrument.height - this.props.marginBottom - this.props.marginTop,
+			top: this.props.marginTop,
+			left: this.props.margin
 		}
 
 		var classString = "instrument";
@@ -24,14 +40,14 @@ var Instrument = React.createClass({
 			<div 
 				className = {classString} 
 				onMouseDown = {this.handleMouseDown} 
-				style = {style}>
+				style = {containerStyle}>
   				<div className="instrumentName">
   					{this.props.instrument.module.name}
 	  				<span className="instrumentVersion">
 	  					{this.props.instrument.module.version}
 	  				</span>
   				</div>
-  				<div>Instrument Content</div>
+  				<div className = "content" style = {contentStyle}></div>
   				<div className = "grab bottomRight" onMouseDown = {this.bottomRight}></div>
   			</div>		
 		);

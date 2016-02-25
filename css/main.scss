@@ -415,7 +415,7 @@ body::-webkit-scrollbar {
 	.instrument {
 		position: absolute;
 		color: hsla(0, 0%, 100%, 0.6);
-		background-color: hsla(0, 0%, 25%, 1);
+		background-color: hsla(0, 0%, 15%, 0.9);
 		padding: 6px 8px;
 		font-size: 12px;
 		display: flex;
@@ -427,8 +427,19 @@ body::-webkit-scrollbar {
 			margin-left: 0.5em;
 			display: inline-block;
 		}
+		.content {
+			position: absolute;
+			background-color: hsla(0, 0%, 100%, 0.1);
+		}
 		.grab {
 			position: absolute;
+			width: 18px;
+			height: 18px;
+			bottom: 0;
+			right: 0;
+		}
+		.grab:hover {
+			background-color: hsla(0, 0%, 100%, 0.1);
 		}
 
 		.bottomRight {
@@ -439,7 +450,14 @@ body::-webkit-scrollbar {
 	}
 
 	.instrumentLink {
-		stroke: hsla(0, 0%, 25%, 0.5);
+		path {
+			stroke: hsla(0, 0%, 25%, 0.5);
+			pointer-events: none;
+		}
+		circle {
+			stroke: hsla(0, 0%, 25%, 1);
+			fill: hsla(0, 0%, 75%, 1);
+		}
 	}
 
 	.policy {

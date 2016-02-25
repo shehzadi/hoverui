@@ -369,7 +369,7 @@ body::-webkit-scrollbar {
 .workspace .instrument {
   position: absolute;
   color: rgba(255, 255, 255, 0.6);
-  background-color: #404040;
+  background-color: rgba(38, 38, 38, 0.9);
   padding: 6px 8px;
   font-size: 12px;
   display: flex;
@@ -385,8 +385,21 @@ body::-webkit-scrollbar {
   display: inline-block;
 }
 
+.workspace .instrument .content {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 .workspace .instrument .grab {
   position: absolute;
+  width: 18px;
+  height: 18px;
+  bottom: 0;
+  right: 0;
+}
+
+.workspace .instrument .grab:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .workspace .instrument .bottomRight {
@@ -395,8 +408,14 @@ body::-webkit-scrollbar {
   right: 0;
 }
 
-.workspace .instrumentLink {
+.workspace .instrumentLink path {
   stroke: rgba(64, 64, 64, 0.5);
+  pointer-events: none;
+}
+
+.workspace .instrumentLink circle {
+  stroke: #404040;
+  fill: #bfbfbf;
 }
 
 .workspace .policy {

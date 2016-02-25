@@ -118,8 +118,6 @@ var Workspace = React.createClass({
 		var distance = Math.abs(deltaX) + Math.abs(deltaY);
 
 		if (this.state.dragging == false && distance > 4){ //dragging
-			
-
 			if (typeof this.state.mouseDown != "string"){ //dragging from interface
 				if (this.state.mouseDown.wire){ //dragging drom exiting wired interface
 					var wireType = "existing";
@@ -172,31 +170,40 @@ var Workspace = React.createClass({
 	getPolicyPosition: function(id, deltaX, deltaY, mode) {
 		var thisPolicy = this.policiesData[id];
 		if (mode){
-			if (_.contains(mode, 'top')) {
+			if (_.includes(mode, 'top')) {
 				thisPolicy.top = this.dragStartY + deltaY;
 			    thisPolicy.height = this.dragStartH - deltaY;
 			    if (thisPolicy.height <= minPolicyDim){thisPolicy.top = this.dragStartY + this.dragStartH - minPolicyDim}
 			}
-			if (_.contains(mode, 'right')) {
+			if (_.includes(mode, 'right')) {
 				thisPolicy.width = this.dragStartW + deltaX;
 			}
-			if (_.contains(mode, 'bottom')) {
+			if (_.includes(mode, 'bottom')) {
 				thisPolicy.height = this.dragStartH + deltaY;
 			}
-			if (_.contains(mode, 'left')) {
+			if (_.includes(mode, 'left')) {
 				thisPolicy.left = this.dragStartX + deltaX;
 			    thisPolicy.width = this.dragStartW - deltaX;
 			    if (thisPolicy.width <= minPolicyDim){thisPolicy.left = this.dragStartX + this.dragStartW - minPolicyDim}
-			}
-			   
+			}			   
 			if (thisPolicy.height <= minPolicyDim){thisPolicy.height = minPolicyDim}
 			if (thisPolicy.width <= minPolicyDim){thisPolicy.width = minPolicyDim}
-
-
 		}
 		else {
 			thisPolicy.left = this.dragStartX + deltaX;
 			thisPolicy.top = this.dragStartY + deltaY;
+		}
+	},
+
+	getInstrumentPosition: function(id, deltaX, deltaY, mode) {
+		var thisInstrument = this.instrumentData[id];
+		if (mode){
+			thisInstrument.width = _.clamp(this.dragStartW + deltaX, 120, Infinity);
+			thisInstrument.height =_.clamp(this.dragStartH + deltaY, 95, Infinity);
+		}
+		else {
+			thisInstrument.left = this.dragStartX + deltaX;
+			thisInstrument.top = this.dragStartY + deltaY;
 		}
 	},
 
@@ -209,14 +216,20 @@ var Workspace = React.createClass({
 		this.removeDocumentEvents();
 
 		if (this.state.dragging){
-			if (typeof this.state.dragging == "string"){ //dropping component
-				if (_.startsWith(this.state.dragging, 'policy')){
-					var thisPolicy = this.policiesData[this.state.dragging];
-					var policyPosition = this.getPolicyPosition(this.state.dragging, deltaX, deltaY, this.state.resizing);
-					this.handlePolicyUpdate(this.state.dragging, thisPolicy.left, thisPolicy.top, thisPolicy.height, thisPolicy.width)
+			dragee = this.state.dragging;
+			if (typeof dragee == "string"){ //dropping component
+				if (_.startsWith(dragee, 'policy')){
+					var thisPolicy = this.policiesData[dragee];
+					this.getPolicyPosition(dragee, deltaX, deltaY, this.state.resizing);
+					this.handlePolicyUpdate(dragee, thisPolicy.left, thisPolicy.top, thisPolicy.height, thisPolicy.width)
+				}
+				else if (_.startsWith(dragee, 'instrument')){
+					var thisInstrument = this.instrumentData[dragee];
+					this.getInstrumentPosition(dragee, deltaX, deltaY, this.state.resizing);
+					this.props.handleInstrumentUpdate(dragee, thisInstrument)
 				}
 				else {
-					this.props.handleObjectDrop(this.state.dragging, deltaX, deltaY);
+					this.props.handleObjectDrop(dragee, deltaX, deltaY);
 				}
 			}
 
@@ -271,7 +284,6 @@ var Workspace = React.createClass({
 			var componentViewData = selectedProject.view[componentID];
 
 			var interfaces = {};
-
 			if (thisComponent.interfaces){
 				for (var interfaceID in thisComponent.interfaces) {
 					thisInterface = thisComponent.interfaces[interfaceID];
@@ -284,8 +296,8 @@ var Workspace = React.createClass({
 					}
 				}
 			}
-			var componentInterfaces = thisComponent.interfaces;
 
+			var componentInterfaces = thisComponent.interfaces;
 			this.componentData[componentID] = {
 				left: componentViewData.x, 
 				top: componentViewData.y, 
@@ -627,8 +639,7 @@ var Workspace = React.createClass({
   					}
   					else {
   						tokenArrays.bottom.push(thisToken)
-  					}
-  					
+  					}				
   				}
   			})
 
@@ -642,7 +653,6 @@ var Workspace = React.createClass({
 					if (thisInterfaceFace == "left"){tokenArrays.left.push(thisInterface)}
 				}
   			}
-
   			thisComponent["tokenArrays"] = tokenArrays
 		};
 
@@ -726,6 +736,7 @@ var Workspace = React.createClass({
 				thisComponent.left = this.dragStartX + this.state.cursorX - this.startX;
 				thisComponent.top = this.dragStartY + this.state.cursorY - this.startY;	
 				this.positionInterfaces();	
+				this.addPositionsToInstruments();
 				this.applyPoliciesToInterfaces();	
 			}
 		
@@ -743,7 +754,6 @@ var Workspace = React.createClass({
 					componentID = {componentID}/>
   			);
 		};
-
 
 		//render interfaces
 		var ifcs = [];
@@ -780,7 +790,6 @@ var Workspace = React.createClass({
 			});
 		};
 
-
 		//render host components and interfaces
 		var hostComponents = [];
 		var hostIfcArray = [];
@@ -806,8 +815,7 @@ var Workspace = React.createClass({
 					hostComponent = {thisHostComponent} 
 					hostComponentID = {hostComponentID}/>
 			);
-
-			
+	
 			hostIfcArray.push(
 				<HostInterface 
 					key = {hostComponentID} 
@@ -826,52 +834,6 @@ var Workspace = React.createClass({
 					hostCompDims = {this.props.hostComponent}/>				
 			);
 		};
-
-		//render instruments
-		var instruments = [];
-		_.forEach(this.instrumentData, function(instrument, id){
-
-			if (id == this.state.dragging){ //component is being dragged
-				var deltaX = this.state.cursorX - this.startX;
-				var deltaY = this.state.cursorY - this.startY;
-
-				instrument.left = this.dragStartX + deltaX;
-				instrument.top = this.dragStartY + deltaY;	
-			}
-
-			instruments.push(
-				<Instrument
-					key = {id} 
-					id = {id} 
-					instrument = {instrument}
-					onMouseDown = {this.objectMouseDown}/>
-			);
-		}.bind(this));
-
-		//render instrument links
-		var instrumentLinks = [];
-		_.forEach(this.instrumentData, function(instrument, id){
-			var links = instrument.interfaces;
-			_.forEach(links, function(link, i){
-				var source = {
-					top: link.top,
-					left: link.left
-				}
-				var view = {
-					top: instrument.top,
-					left: instrument.left,
-					width: instrument.width,
-					height: instrument.height
-				}
-				instrumentLinks.push(
-					<InstrumentLink
-						key = {i} 
-						id = {id} 
-						source = {source}
-						view = {view}/>
-				);
-			}.bind(this));
-		}.bind(this));
 
 		//render wires
 		var wires = [];
@@ -902,6 +864,51 @@ var Workspace = React.createClass({
 			}
 		};
 
+		//render instruments
+		var instruments = [];
+		_.forEach(this.instrumentData, function(instrument, id){
+
+			if (id == this.state.dragging){ //component is being dragged
+				var deltaX = this.state.cursorX - this.startX;
+				var deltaY = this.state.cursorY - this.startY;
+				this.getInstrumentPosition(id, deltaX, deltaY, this.state.resizing)
+			}
+
+			instruments.push(
+				<Instrument
+					key = {id} 
+					id = {id} 
+					instrument = {instrument} 
+					isPendingDeletion = {this.isPendingDeletion} 
+					handleInstrumentUpdate = {this.handleInstrumentUpdate}
+					onMouseDown = {this.objectMouseDown}/>
+			);
+		}.bind(this));
+
+		//render instrument links
+		var instrumentLinks = [];
+		_.forEach(this.instrumentData, function(instrument, id){
+			var links = instrument.interfaces;
+			_.forEach(links, function(link, i){
+				var source = {
+					top: link.top,
+					left: link.left
+				}
+				var viewer = {
+					top: instrument.top,
+					left: instrument.left,
+					width: instrument.width,
+					height: instrument.height
+				}
+				instrumentLinks.push(
+					<InstrumentLink
+						key = {i} 
+						id = {id} 
+						source = {source}
+						viewer = {viewer}/>
+				);
+			}.bind(this));
+		}.bind(this));
 
 		//render wire in progress if required
 		if (this.state.wireType) {
@@ -929,7 +936,6 @@ var Workspace = React.createClass({
 				<svg className="wireContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{wires}
 					{wireInProgress}
-					{instrumentLinks}
 				</svg>		
 				{components}
 				{hostComponents}				
@@ -937,7 +943,10 @@ var Workspace = React.createClass({
 					{ifcs}
 					{hostIfcArray}
 				</svg>
-				{instruments}	
+				{instruments}
+				<svg className="linkContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
+					{instrumentLinks}
+				</svg>
 			</div>
 		);
 	},

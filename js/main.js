@@ -326,6 +326,22 @@ var IOConsole = React.createClass({
         }      
     },
 
+    handleInstrumentUpdate: function(id, instrument) {
+        var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
+        var instrumentView = newProjectObject.view[id];
+        instrumentView.left = instrument.left;
+        instrumentView.top = instrument.top;
+        instrumentView.height = instrument.height;
+        instrumentView.width = instrument.width;
+
+        if (instrumentView.left <= 0 || instrumentView.top <= headerHeight){
+            this.deleteObject(id) 
+        }
+        else {
+            this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
+        }      
+    },
+
     updatePoliciesData: function(policiesData) {
         var newProjectPoliciesObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].policies) || {};
         _.forEach(policiesData, function(policy, policyID){
@@ -824,6 +840,7 @@ var IOConsole = React.createClass({
 							ref = "workspace" 
 							className = "ui-module workspace" 
 							handleObjectDrop = {this.handleObjectDrop} 
+                            handleInstrumentUpdate = {this.handleInstrumentUpdate} 
                             handlePolicyUpdate = {this.handlePolicyUpdate} 
                             updatePoliciesData = {this.updatePoliciesData}
 							handleWireDrop = {this.handleNewWireDrop} 
