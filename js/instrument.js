@@ -4,12 +4,16 @@ var Instrument = React.createClass({
 		return {
 			margin: 8,
 			marginTop: 22,
-			marginBottom: 28,
+			marginBottom: 30,
 		};
 	},
 
 	handleMouseDown: function(){
 		this.props.onMouseDown(this.props.id, "instrument")
+	},
+
+	dragWire: function(event){
+		event.stopPropagation();
 	},
 
 	bottomRight: function(event){
@@ -49,6 +53,11 @@ var Instrument = React.createClass({
   				</div>
   				<div className = "content" style = {contentStyle}></div>
   				<div className = "grab bottomRight" onMouseDown = {this.bottomRight}></div>
+  				<div 
+  					className = "dragSource"
+  					onMouseDown = {this.dragWire}>
+  					Drag Wire
+  				</div>
   			</div>		
 		);
 	},
