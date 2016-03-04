@@ -53,10 +53,9 @@ var Instrument = React.createClass({
   				</div>
   				<div className = "content" style = {contentStyle}></div>
   				<div className = "grab bottomRight" onMouseDown = {this.bottomRight}></div>
-  				<div 
-  					className = "dragSource"
-  					onMouseDown = {this.dragWire}>
-  					Drag Wire
+  				<div className = "dragSource" onMouseDown = {this.dragWire}>
+  					<i></i>
+  					Drag
   				</div>
   			</div>		
 		);

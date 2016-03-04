@@ -409,7 +409,7 @@ body::-webkit-scrollbar {
 }
 
 .workspace .instrument .dragSource {
-  padding: 2px 6px;
+  padding: 0 6px 2px 2px;
   font-size: 9px;
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -419,12 +419,25 @@ body::-webkit-scrollbar {
   left: 9px;
   display: inline-block;
   visibility: hidden;
+  vertical-align: baseline;
 }
 
 .workspace .instrument .dragSource:hover {
   background-color: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.25);
   cursor: -webkit-grab;
+}
+
+.workspace .instrument .dragSource i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background-color: #b3b3b3;
+  border-radius: 20px;
+  margin-right: 3px;
+  position: relative;
+  top: 2px;
+  border: 1px solid #333333;
 }
 
 .workspace .instrument .isPendingDeletion {
