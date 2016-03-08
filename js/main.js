@@ -429,6 +429,7 @@ var IOConsole = React.createClass({
             //manage dependencies
             var topologyComponents = newProjectObject.topology.components;
             var policies = newProjectObject.policies;
+            var instruments = newProjectObject.instruments;
        		
             var moduleArray = [];
             _.forEach(topologyComponents, function(component){
@@ -437,6 +438,10 @@ var IOConsole = React.createClass({
             });
             _.forEach(policies, function(policy){
                 var module = policy.module;
+                moduleArray.push(module);
+            });
+            _.forEach(instruments, function(instrument){
+                var module = instrument.module;
                 moduleArray.push(module);
             });
             moduleArray = _.uniq(moduleArray);
