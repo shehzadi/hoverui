@@ -871,7 +871,13 @@ var Workspace = React.createClass({
 			if (id == this.state.dragging){ //component is being dragged
 				var deltaX = this.state.cursorX - this.startX;
 				var deltaY = this.state.cursorY - this.startY;
-				this.getInstrumentPosition(id, deltaX, deltaY, this.state.resizing)
+				this.getInstrumentPosition(id, deltaX, deltaY, this.state.resizing);
+
+				if (instrument.left <= 0 || instrument.top <= headerHeight) { //component is outside of canvas, e.g. during drag operation
+					this.isPendingDeletion = id
+				}
+
+
 			}
 
 			instruments.push(

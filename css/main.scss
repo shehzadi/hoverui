@@ -415,6 +415,7 @@ body::-webkit-scrollbar {
 	.instrument {
 		position: absolute;
 		color: hsla(0, 0%, 100%, 0.6);
+		border: 1px solid hsla(0, 0%, 0%, 0.5);
 		background-color: hsla(0, 0%, 15%, 0.9);
 		padding: 6px 8px;
 		font-size: 12px;
@@ -478,12 +479,13 @@ body::-webkit-scrollbar {
 				border: 1px solid hsla(0, 0%, 20%, 1);
 			}
 		}
-		.isPendingDeletion {
-			outline: 1px dashed black;
-			opacity: 0.5;
-		}
 		&:hover .dragSource {
 			visibility: visible;
+		}
+
+		&.pendingDeletion {
+			border: 1px dashed hsla(0, 0%, 0%, 1);
+			opacity: 0.4;
 		}
 	}
 
@@ -553,11 +555,12 @@ body::-webkit-scrollbar {
 		.left, .topLeft, .bottomLeft{
 			left: 0;
 		}
+		&.pendingDeletion {
+			opacity: 0.7;
+			border-style: dashed;
+		}
 	}
 
-	.policy.pendingDeletion {
-		opacity: 0.5;
-	}
 
 	.component {
 		padding: 10px 14px;
