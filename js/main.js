@@ -255,6 +255,7 @@ var IOConsole = React.createClass({
      	var newProjectViewObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].view) || {};
     	var newProjectComponentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].topology.components) || {};
         var newProjectPoliciesObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].policies) || {};
+        var newProjectInstrumentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].instruments) || {};
         var projectDependenciesObject = this.state.projectsObject[this.state.selectedProjectID].dependencies || {};
         
         if (moduleType == "component"){
@@ -280,7 +281,20 @@ var IOConsole = React.createClass({
                 "module": moduleID
             };
             newProjectPoliciesObject[newID] = newPolicyData;
-        }        
+        }
+        else if (moduleType == "instrument"){
+            var newID = "instrument-" + ioid();
+            var newViewData = {
+                "left": posX,
+                "top": posY,
+                "width": moduleObject.view.width,
+                "height": moduleObject.view.height
+            };
+            var newInstrumentData = {
+                "module": moduleID
+            };
+            newProjectInstrumentsObject[newID] = newInstrumentData;
+        }  
 
         //dependencies
         if (!projectDependenciesObject[moduleID]){ // module is NOT already a dependency, so deal with dependencies
@@ -307,7 +321,8 @@ var IOConsole = React.createClass({
     	newProjectViewObject[newID] = newViewData;
     	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("view").set(newProjectViewObject);
         this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("components").set(newProjectComponentsObject);
-        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("policies").set(newProjectPoliciesObject)
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("policies").set(newProjectPoliciesObject);
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("instruments").set(newProjectInstrumentsObject)
 	},
 
     handlePolicyUpdate: function(id, left, top, height, width) {
@@ -600,6 +615,9 @@ var IOConsole = React.createClass({
         else if (dropType == "policy") {
             var dims = this.props.policyInProgress
         }
+        else if (dropType == "instrument") {
+            var dims = dropObject.view
+        }
 
 		var newComponentX = event.pageX - workspaceOriginX - (dims.width / 2);
 		var newComponentY = event.pageY - workspaceOriginY - (dims.height / 2);
@@ -779,6 +797,7 @@ var IOConsole = React.createClass({
 
 		var componentInProgress;
         var policyInProgress;
+        var instrumentInProgress;
 		if (this.state.dragging){
             var moduleID = this.state.mouseDown;
             var moduleObject = this.state.modulesObject[moduleID];
@@ -791,6 +810,13 @@ var IOConsole = React.createClass({
                     moduleID = {moduleID} 
                     module = {moduleObject} 
                     dims = {this.props.policyInProgress} 
+                    thisX = {this.state.cursorX} 
+                    thisY = {this.state.cursorY}/>
+            }
+            else if (moduleType == "instrument"){
+               instrumentInProgress = <InstrumentInProgress
+                    moduleID = {moduleID} 
+                    module = {moduleObject} 
                     thisX = {this.state.cursorX} 
                     thisY = {this.state.cursorY}/>
             }
@@ -885,6 +911,7 @@ var IOConsole = React.createClass({
 				</div>
 				{componentInProgress}
                 {policyInProgress}
+                {instrumentInProgress}
 				{modalDialogues}
                 {popover}
                 <a 

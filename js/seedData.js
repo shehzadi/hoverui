@@ -134,8 +134,13 @@ var modulesSeed = {
       "categories" : {
         "instrumentation" : true
       },
+      "type" : "instrument",
       "description" : "Count packets and events.",
       "name" : "Count",
+      "view" : {
+        "height" : 95,
+        "width" : 120
+      },
       "topology" : {
         "interfaces" : [
           {
@@ -152,7 +157,12 @@ var modulesSeed = {
         "instrumentation" : true
       },
       "description" : "Plot packets and events.",
+      "type" : "instrument",
       "name" : "Plot",
+      "view" : {
+        "height": 200,
+        "width" : 300
+      },
       "topology" : {
         "interfaces" : [
           {
@@ -214,7 +224,12 @@ var modulesSeed = {
         "instrumentation" : true
       },
       "description" : "Show statistical analyses of event flow data.",
+      "type" : "instrument",
       "name" : "Histogram",
+      "view" : {
+        "height" : 200,
+        "width" : 300
+      },
       "topology" : {
         "interfaces" : [
           {

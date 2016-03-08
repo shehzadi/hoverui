@@ -409,6 +409,31 @@ body::-webkit-scrollbar {
 	}
 }
 
+.instrumentInProgress {
+	position: absolute;
+	color: hsla(0, 0%, 0%, 0.6);
+	z-index: 1000;
+	padding: 6px 8px;
+	border-width: 1px;
+	border-style: dashed;
+	background-color: hsla(0, 0%, 0%, 0.4);
+	border-color: hsla(0, 0%, 0%, 0.8);
+	font-size: 12px;
+	display: flex;
+	flex-direction: column;
+	cursor: -webkit-grab;
+	justify-content: left;
+	align-items: top;
+		.instrumentVersion {
+			@include subtext;
+			margin-left: 0.5em;
+			display: inline-block;
+		}
+	* {
+		cursor: -webkit-grab;
+	}
+}
+
 .workspace {
 	z-index: 0;
 

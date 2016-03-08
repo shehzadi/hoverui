@@ -362,6 +362,34 @@ body::-webkit-scrollbar {
   cursor: -webkit-grab;
 }
 
+.instrumentInProgress {
+  position: absolute;
+  color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  padding: 6px 8px;
+  border-width: 1px;
+  border-style: dashed;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-color: rgba(0, 0, 0, 0.8);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  cursor: -webkit-grab;
+  justify-content: left;
+  align-items: top;
+}
+
+.instrumentInProgress .instrumentVersion {
+  font-size: 85%;
+  opacity: 0.6;
+  margin-left: 0.5em;
+  display: inline-block;
+}
+
+.instrumentInProgress * {
+  cursor: -webkit-grab;
+}
+
 .workspace {
   z-index: 0;
 }
