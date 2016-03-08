@@ -1,6 +1,5 @@
 var InstrumentLink = React.createClass({
 	render: function() {
-
 		// make path string
 		var pathString = "M" + this.props.source.left + " " + this.props.source.top;
 
@@ -8,9 +7,6 @@ var InstrumentLink = React.createClass({
 			left: this.props.viewer.left + (this.props.viewer.width / 2),
 			top: this.props.viewer.top + (this.props.viewer.height / 2)
 		}
-
-		
-
 
 		var intersection = {
 			left: this.props.viewer.left,
@@ -21,8 +17,6 @@ var InstrumentLink = React.createClass({
 			x: this.props.source.left - viewerCenter.left,
 			y: this.props.source.top - viewerCenter.top,
 		}
-
-
 		
 			if ((vector.x * refAngle) <= vector.y){
 				if ((vector.x * -refAngle) < vector.y){

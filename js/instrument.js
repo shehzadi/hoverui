@@ -40,6 +40,7 @@ var Instrument = React.createClass({
 		if (this.props.isPendingDeletion == this.props.id){
 			classString += " pendingDeletion"
 		}
+		
 		return (
 			<div 
 				className = {classString} 

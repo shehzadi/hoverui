@@ -428,6 +428,10 @@ body::-webkit-scrollbar {
   cursor: -webkit-grab;
 }
 
+.workspace .instrument .dragSource * {
+  pointer-events: none;
+}
+
 .workspace .instrument .dragSource i {
   display: inline-block;
   width: 10px;

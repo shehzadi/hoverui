@@ -463,6 +463,9 @@ body::-webkit-scrollbar {
 				border: 1px solid hsla(0, 0%, 100%, 0.25);
 				cursor: -webkit-grab;
 			}
+			* {
+				pointer-events: none;
+			}
 			i {
 				display: inline-block;
 				width: 10px;

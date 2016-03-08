@@ -1,6 +1,7 @@
 var headerHeight = 40;
 var minPolicyDim = 40;
 
+
 function getInterfaceArray(policy, components, hostComponents){
 	var policyLeft = policy.left;
 	var policyRight = policyLeft + policy.width;
