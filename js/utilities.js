@@ -249,8 +249,8 @@ function defineSvgSize(componentData, hostComponentData, instrumentData, cursorX
 	svgExtents.height = Math.max.apply(Math, topArray);
 
 	// Add a bit extra
-	svgExtents.width += 30;
-	svgExtents.height += 30;
+	svgExtents.width += 60;
+	svgExtents.height += 60;
 
 	return svgExtents
 }
