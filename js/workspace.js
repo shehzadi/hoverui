@@ -142,7 +142,7 @@ var Workspace = React.createClass({
 					var isPendingUpdate = this.state.mouseDown.wire;
 					var sourceObject = getTokenForOtherEnd(this.state.mouseDown, this.componentData, this.hostComponentData);
 				}
-				else if (this.state.mouseDown.height){ //dragging from instrument drag
+				else if (this.state.mouseDown.type == "instrument"){ //dragging from instrument drag
 					console.log("Instrument drag");
 					var wireType = "instrument";
 					var isPendingUpdate = false;
@@ -187,6 +187,9 @@ var Workspace = React.createClass({
 		}
 		else if (this.state.wireType == "new"){
 			this.props.handleWireDrop(this.state.dragging, this.state.isSnapping);
+		}
+		else if (this.state.wireType == "instrument"){
+			this.props.handleLinkDrop(this.state.dragging, this.state.isSnapping);
 		}
 		
 	},
@@ -323,6 +326,7 @@ var Workspace = React.createClass({
 
 			var componentInterfaces = thisComponent.interfaces;
 			this.componentData[componentID] = {
+				type: "component",
 				left: componentViewData.x, 
 				top: componentViewData.y, 
 				width: this.props.component.width, 
@@ -339,6 +343,7 @@ var Workspace = React.createClass({
 			var thisHostComponent = hostComponentsObject[hostComponentID];
 			var hostComponentViewData = selectedProject.view[hostComponentID];
 			this.hostComponentData[hostComponentID] = {
+				type: "host_component",
 				hostComponentID: hostComponentID,
 				left: hostComponentViewData.x,
 				top: hostComponentViewData.y,
@@ -460,6 +465,7 @@ var Workspace = React.createClass({
 			var policyView = selectedProject.dependencies[moduleID].view;
 			//debugger
 			this.policiesData[policyID] = {
+				type: "policy",
 				moduleID: moduleID,
 				module: dependenciesObject[moduleID], 
 				interfaces: policy.interfaces || null, 
@@ -478,6 +484,8 @@ var Workspace = React.createClass({
             var moduleID = instrument.module;
             var instrumentViewData = selectedProject.view[id];
             this.instrumentData[id] = {
+            	type: "instrument",
+            	uuid: id,
                 module: dependenciesObject[moduleID],
                 interfaces: [],
                 top: instrumentViewData.top,
@@ -505,9 +513,16 @@ var Workspace = React.createClass({
 		_.forEach(this.instrumentData, function(instrument, id){
 			var interfaces = instrument.interfaces;
 			_.forEach(interfaces, function(ifc){
-				var thisIfc = this.componentData[ifc.component].interfaces[ifc.ifc];
-				ifc["left"] = thisIfc.left;
-				ifc["top"] = thisIfc.top;			
+				if (ifc.ifc){// component
+					var thisIfc = this.componentData[ifc.component].interfaces[ifc.ifc];
+					ifc["left"] = thisIfc.left;
+					ifc["top"] = thisIfc.top;
+				}
+				else { //host component
+					var thisIfc = this.hostComponentData[ifc.component];
+					ifc["left"] = thisIfc.ifcLeft;
+					ifc["top"] = thisIfc.ifcTop;
+				}	
 			}.bind(this))
 		}.bind(this))
     },
@@ -826,7 +841,8 @@ var Workspace = React.createClass({
 				thisHostComponent.top = this.dragStartY + this.state.cursorY - this.startY;
 				if (thisHostComponent.top <= headerHeight + 2){thisHostComponent.top = headerHeight + 2}
 				if (thisHostComponent.left <= 2){thisHostComponent.left = 2}	
-				this.positionInterfaces();	
+				this.positionInterfaces();
+				this.addPositionsToInstruments();
 				this.applyPoliciesToInterfaces();	
 			}
 
@@ -933,7 +949,7 @@ var Workspace = React.createClass({
 				}
 				instrumentLinks.push(
 					<InstrumentLink
-						key = {i} 
+						key = {id + i} 
 						id = {id} 
 						source = {source}
 						viewer = {viewer}/>
@@ -958,7 +974,6 @@ var Workspace = React.createClass({
 		//render link in progress if required
 		if (this.state.wireType == "instrument") {
 			var instrument = this.state.mouseDown;
-			console.log(instrument);
 			var source = {
 				top: this.state.cursorY,
 				left: this.state.cursorX
@@ -970,8 +985,10 @@ var Workspace = React.createClass({
 				height: instrument.height
 			}
 			var linkInProgress = <InstrumentLink
+									type = "inProgress" 
 									source = {source}
-									viewer = {viewer}/>	
+									viewer = {viewer}
+									isSnapping = {this.state.isSnapping} />	
 		}
 
 

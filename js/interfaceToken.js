@@ -88,6 +88,15 @@ var InterfaceToken = React.createClass({
 				isValid: isValid
     		});
 		}
+		else if (this.props.dragging.type == "instrument"){
+			var isValid = false;
+			if (this.props.tokenObject.wire){//existing wire
+				isValid = true
+			}
+			this.setState({
+				isValid: isValid
+    		});
+		}
 		else {
 			this.setState({
 				isValid: true

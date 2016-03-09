@@ -1,7 +1,25 @@
 var InstrumentLink = React.createClass({
 	render: function() {
+		// if snapping
+		var sourceRadius = 5;
+		if (this.props.type == "inProgress"){
+			sourceRadius = 2.5;
+		}
+		var sourceLeft = this.props.source.left;
+		var sourceTop = this.props.source.top;
+		if (this.props.isSnapping){
+			sourceRadius = 8;
+			sourceLeft = this.props.isSnapping.left;
+			sourceTop = this.props.isSnapping.top;
+			if (this.props.isSnapping.type == "host_component"){
+				sourceLeft = this.props.isSnapping.ifcLeft;
+				sourceTop = this.props.isSnapping.ifcTop;
+			}
+			
+		}
+
 		// make path string
-		var pathString = "M" + this.props.source.left + " " + this.props.source.top;
+		var pathString = "M" + sourceLeft + " " + sourceTop;
 
 		var viewerCenter = {
 			left: this.props.viewer.left + (this.props.viewer.width / 2),
@@ -14,8 +32,8 @@ var InstrumentLink = React.createClass({
 		};
 		var refAngle =  this.props.viewer.height / this.props.viewer.width;
 		var vector = {
-			x: this.props.source.left - viewerCenter.left,
-			y: this.props.source.top - viewerCenter.top,
+			x: sourceLeft - viewerCenter.left,
+			y: sourceTop - viewerCenter.top,
 		}
 		
 			if ((vector.x * refAngle) <= vector.y){
@@ -50,10 +68,12 @@ var InstrumentLink = React.createClass({
 		
 		pathString += " L" + intersection.left + " " + intersection.top;
 
+
+
 		return (
 			<g className = "instrumentLink">
 				<path d = {pathString}/>
-				<circle cx={this.props.source.left} cy={this.props.source.top} r="2.5" />
+				<circle cx={sourceLeft} cy={sourceTop} r={sourceRadius} />
 				<circle cx={intersection.left} cy={intersection.top} r="4.5" />
 			</g>
 		);

@@ -124,10 +124,6 @@ var IOConsole = React.createClass({
             targetSelectionID = sortedProjectArray[0]
         }
 
-        //var selectedProject = rootProjectsObject[targetSelectionID];
-
-        
-
         this.setState({
             selectedProjectID: targetSelectionID,
             projectsObject: rootProjectsObject,
@@ -190,7 +186,7 @@ var IOConsole = React.createClass({
 
    	deleteWire: function(interfaceToken) {
    		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
-   		var updatedProjectTopologyObject = _.cloneDeep(selectedProject.topology);
+   		var updatedProjectObject = _.cloneDeep(selectedProject);
 
         var thisWire = interfaceToken.wire;
         var interface1Component = interfaceToken.componentID;
@@ -199,18 +195,42 @@ var IOConsole = React.createClass({
         var interface2Component = interfaceToken.wireTo.component;
         var interface2Interface = interfaceToken.wireTo.ifc || null;
 
-        updatedProjectTopologyObject.wires[thisWire] = null;
+        updatedProjectObject.topology.wires[thisWire] = null;
 
         if (interface1Interface){
-            updatedProjectTopologyObject.components[interface1Component].interfaces[interface1Interface] = null
+           delete updatedProjectObject.topology.components[interface1Component].interfaces[interface1Interface]
         }
 
         if (interface2Interface){
-            updatedProjectTopologyObject.components[interface2Component].interfaces[interface2Interface] = null
+           delete updatedProjectObject.topology.components[interface2Component].interfaces[interface2Interface]
         }
 
-		this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").set(updatedProjectTopologyObject);
+        //find instrument wires and delete them
+        updatedProjectObject = this.updateInstrumentLinks(updatedProjectObject);
 
+
+
+		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(updatedProjectObject);
+
+    },
+
+    updateInstrumentLinks: function(projectObject){
+        _.forEach(projectObject.instruments, function(instrument, instrumentID){
+            //console.log(instrumentID);
+            _.forEach(instrument.interfaces, function(ifc, i){
+                var thisComponent = ifc.component;
+                var thisInterface = ifc.ifc;
+                // check if this interface exists, delete wire if not
+                console.log("Instrument: ", thisComponent, thisInterface);
+
+                if (!(projectObject.topology.components[thisComponent] && projectObject.topology.components[thisComponent].interfaces[thisInterface])){
+                    delete projectObject.instruments[instrumentID].interfaces[i]
+                }
+
+            })  
+        })
+
+        return projectObject
     },
 
 	handleNewWireDrop: function(tokenObject1, tokenObject2) {
@@ -246,6 +266,30 @@ var IOConsole = React.createClass({
         newProjectTopologyObject.wires[newWireID] = newWire;
 
 		this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").set(newProjectTopologyObject);
+
+    },
+
+    handleNewLinkDrop: function(instrument, source) {
+        console.log("Source: ", source);
+        if (!source.wireTo){return false};
+
+        var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
+        newInstrumentObject = _.cloneDeep(selectedProject.instruments[instrument.uuid]);
+        //console.log(newProjectInstrumentObject);
+
+        if (!newInstrumentObject.interfaces){
+           newInstrumentObject.interfaces = [] 
+        }
+
+        var newInterface = {
+            "component": source.componentID || source.hostComponentID,
+            "ifc": source.interfaceID || null
+        };
+
+        newInstrumentObject.interfaces.push(newInterface)
+        newInstrumentObject.interfaces = _.uniqWith(newInstrumentObject.interfaces, _.isEqual);
+
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("instruments").child(instrument.uuid).set(newInstrumentObject);
 
     },
 
@@ -435,20 +479,7 @@ var IOConsole = React.createClass({
                 }
 
                 //find instrument wires and delete them
-                _.forEach(newProjectObject.instruments, function(instrument, instrumentID){
-                    //console.log(instrumentID);
-                    _.forEach(instrument.interfaces, function(ifc, i){
-                        var thisComponent = ifc.component;
-                        var thisInterface = ifc.ifc;
-                        // check if this interface exists, delete wire if not
-                        console.log("Instrument: ", thisComponent, thisInterface);
-
-                        if (!(newProjectObject.topology.components[thisComponent] && newProjectObject.topology.components[thisComponent].interfaces[thisInterface])){
-                            newProjectObject.instruments[instrumentID].interfaces[i] = null
-                        }
-
-                    })  
-                })
+                newProjectObject = this.updateInstrumentLinks(newProjectObject);
            
             }
             else if (objectID.indexOf('policy') == 0){
@@ -508,6 +539,9 @@ var IOConsole = React.createClass({
             
             newProjectObject.dependencies = newProjectDependencies;
        		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
+        }
+        else {
+            //TODO: Reset location of dragged opbject to database view
         }
     },
 
@@ -904,6 +938,7 @@ var IOConsole = React.createClass({
                             handlePolicyUpdate = {this.handlePolicyUpdate} 
                             updatePoliciesData = {this.updatePoliciesData}
 							handleWireDrop = {this.handleNewWireDrop} 
+                            handleLinkDrop = {this.handleNewLinkDrop} 
 							deleteWire= {this.deleteWire}
 							protocols = {this.state.protocolsObject} 
 							selectedProject = {selectedProject}/>
