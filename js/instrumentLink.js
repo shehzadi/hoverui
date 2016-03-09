@@ -12,6 +12,10 @@ var InstrumentLink = React.createClass({
     	});
 	},
 
+	handleMouseDown: function() {	
+		this.props.linkMouseDown(this.props.instrument, this.props.linkTo)
+	},
+
 	handleMouseLeave: function() {	
     	this.setState({
 			isSourceHover: false
@@ -31,8 +35,8 @@ var InstrumentLink = React.createClass({
 		if (this.state.isSourceHover && this.props.type != "inProgress"){
 			sourceRadius = 7;
 		}
-		var sourceLeft = this.props.source.left;
-		var sourceTop = this.props.source.top;
+		var sourceLeft = this.props.linkTo.left;
+		var sourceTop = this.props.linkTo.top;
 		if (this.props.isSnapping){
 			sourceRadius = 7;
 			sourceLeft = this.props.isSnapping.left;
@@ -48,15 +52,15 @@ var InstrumentLink = React.createClass({
 		var pathString = "M" + sourceLeft + " " + sourceTop;
 
 		var viewerCenter = {
-			left: this.props.viewer.left + (this.props.viewer.width / 2),
-			top: this.props.viewer.top + (this.props.viewer.height / 2)
+			left: this.props.instrument.left + (this.props.instrument.width / 2),
+			top: this.props.instrument.top + (this.props.instrument.height / 2)
 		}
 
 		var intersection = {
-			left: this.props.viewer.left,
-			top: this.props.viewer.top
+			left: this.props.instrument.left,
+			top: this.props.instrument.top
 		};
-		var refAngle =  this.props.viewer.height / this.props.viewer.width;
+		var refAngle =  this.props.instrument.height / this.props.instrument.width;
 		var vector = {
 			x: sourceLeft - viewerCenter.left,
 			y: sourceTop - viewerCenter.top,
@@ -65,14 +69,14 @@ var InstrumentLink = React.createClass({
 			if ((vector.x * refAngle) <= vector.y){
 				if ((vector.x * -refAngle) < vector.y){
 					intersection = {
-						top: this.props.viewer.top + this.props.viewer.height,
-						left: viewerCenter.left + ((vector.x / vector.y) * (this.props.viewer.height / 2))
+						top: this.props.instrument.top + this.props.instrument.height,
+						left: viewerCenter.left + ((vector.x / vector.y) * (this.props.instrument.height / 2))
 					};
 				}
 				else {
 					intersection = {
-						left: this.props.viewer.left,
-						top: viewerCenter.top - ((vector.y / vector.x) * (this.props.viewer.width / 2))
+						left: this.props.instrument.left,
+						top: viewerCenter.top - ((vector.y / vector.x) * (this.props.instrument.width / 2))
 					};
 				}
 			}
@@ -80,14 +84,14 @@ var InstrumentLink = React.createClass({
 			else {
 				if ((vector.x * -refAngle) > vector.y){
 					intersection = {
-						top: this.props.viewer.top,
-						left: viewerCenter.left - ((vector.x / vector.y) * (this.props.viewer.height / 2))
+						top: this.props.instrument.top,
+						left: viewerCenter.left - ((vector.x / vector.y) * (this.props.instrument.height / 2))
 					};
 				}
 				else {
 					intersection = {
-						left: this.props.viewer.left + this.props.viewer.width,
-						top: viewerCenter.top + ((vector.y / vector.x) * (this.props.viewer.width / 2))
+						left: this.props.instrument.left + this.props.instrument.width,
+						top: viewerCenter.top + ((vector.y / vector.x) * (this.props.instrument.width / 2))
 					};
 				}
 			}
@@ -106,11 +110,13 @@ var InstrumentLink = React.createClass({
 					r={sourceRadius} 
 					style={style}
 					onMouseEnter={this.handleMouseEnter} 
+					onMouseDown={this.handleMouseDown} 
 					onMouseLeave={this.handleMouseLeave}/>
 				<circle 
+					className="viewer"
 					cx={intersection.left} 
 					cy={intersection.top} 
-					r="4.5" />
+					r="1.5" />
 			</g>
 		);
 	}

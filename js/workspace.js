@@ -54,6 +54,10 @@ var Workspace = React.createClass({
 		}
 	},
 
+	linkMouseDown: function(instrument, link){
+		console.log("Mouse down: ", instrument, link)
+	},
+
 	dragMouseDown: function(instrumentID, instrumentObject) {			
 		if (event.button == 0){	
 			event.stopPropagation();
@@ -937,22 +941,13 @@ var Workspace = React.createClass({
 		_.forEach(this.instrumentData, function(instrument, id){
 			var links = instrument.interfaces;
 			_.forEach(links, function(link, i){
-				var source = {
-					top: link.top,
-					left: link.left
-				}
-				var viewer = {
-					top: instrument.top,
-					left: instrument.left,
-					width: instrument.width,
-					height: instrument.height
-				}
+				link["type"] = "link";
 				instrumentLinks.push(
 					<InstrumentLink
 						key = {id + i} 
-						id = {id} 
-						source = {source}
-						viewer = {viewer}/>
+						linkTo = {link}
+						linkMouseDown = {this.linkMouseDown}
+						instrument = {instrument}/>
 				);
 			}.bind(this));
 		}.bind(this));
@@ -974,7 +969,7 @@ var Workspace = React.createClass({
 		//render link in progress if required
 		if (this.state.wireType == "instrument") {
 			var instrument = this.state.mouseDown;
-			var source = {
+			var link = {
 				top: this.state.cursorY,
 				left: this.state.cursorX
 			}
@@ -986,8 +981,8 @@ var Workspace = React.createClass({
 			}
 			var linkInProgress = <InstrumentLink
 									type = "inProgress" 
-									source = {source}
-									viewer = {viewer}
+									linkTo = {link}
+									instrument = {instrument}
 									isSnapping = {this.state.isSnapping} />	
 		}
 

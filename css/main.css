@@ -493,6 +493,10 @@ body::-webkit-scrollbar {
   pointer-events: fill;
 }
 
+.workspace .instrumentLink circle.viewer {
+  fill: #404040;
+}
+
 .workspace .policy {
   position: absolute;
   color: rgba(0, 0, 0, 0.6);
