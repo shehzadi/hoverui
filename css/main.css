@@ -490,6 +490,7 @@ body::-webkit-scrollbar {
 .workspace .instrumentLink circle {
   stroke: #404040;
   fill: #bfbfbf;
+  pointer-events: fill;
 }
 
 .workspace .policy {

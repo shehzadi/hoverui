@@ -1,14 +1,40 @@
 var InstrumentLink = React.createClass({
+	getInitialState: function() {
+		return {
+			isSourceHover: false,
+		};
+	},
+
+	handleMouseEnter: function() {	
+		console.log("Entered source");
+    	this.setState({
+			isSourceHover: true
+    	});
+	},
+
+	handleMouseLeave: function() {	
+    	this.setState({
+			isSourceHover: false
+		});
+	},
+
 	render: function() {
 		// if snapping
-		var sourceRadius = 5;
+		var sourceRadius = 3;
+		var style = {};
+
 		if (this.props.type == "inProgress"){
-			sourceRadius = 2.5;
+			style = {pointerEvents: "none"}
+		}
+
+
+		if (this.state.isSourceHover && this.props.type != "inProgress"){
+			sourceRadius = 7;
 		}
 		var sourceLeft = this.props.source.left;
 		var sourceTop = this.props.source.top;
 		if (this.props.isSnapping){
-			sourceRadius = 8;
+			sourceRadius = 7;
 			sourceLeft = this.props.isSnapping.left;
 			sourceTop = this.props.isSnapping.top;
 			if (this.props.isSnapping.type == "host_component"){
@@ -72,9 +98,19 @@ var InstrumentLink = React.createClass({
 
 		return (
 			<g className = "instrumentLink">
-				<path d = {pathString}/>
-				<circle cx={sourceLeft} cy={sourceTop} r={sourceRadius} />
-				<circle cx={intersection.left} cy={intersection.top} r="4.5" />
+				<path 
+					d = {pathString}/>
+				<circle 
+					cx={sourceLeft} 
+					cy={sourceTop} 
+					r={sourceRadius} 
+					style={style}
+					onMouseEnter={this.handleMouseEnter} 
+					onMouseLeave={this.handleMouseLeave}/>
+				<circle 
+					cx={intersection.left} 
+					cy={intersection.top} 
+					r="4.5" />
 			</g>
 		);
 	}
