@@ -54,6 +54,23 @@ var Workspace = React.createClass({
 		}
 	},
 
+	dragMouseDown: function(instrumentID, instrumentObject) {			
+		if (event.button == 0){	
+			event.stopPropagation();
+			this.addDocumentEvents();
+
+			var workspaceBox = React.findDOMNode(this).getBoundingClientRect();
+			this.workspaceOriginX = workspaceBox.left;
+			this.workspaceOriginY = workspaceBox.top;
+			this.startX = event.pageX - this.workspaceOriginX;
+    		this.startY = event.pageY - this.workspaceOriginY;
+			
+    		this.setState({
+    			mouseDown: instrumentObject
+    		});
+		}
+	},
+
 
 	ifcMouseLeave: function(tokenObject) {
 		if (this.state.wireType){
@@ -118,11 +135,18 @@ var Workspace = React.createClass({
 		var distance = Math.abs(deltaX) + Math.abs(deltaY);
 
 		if (this.state.dragging == false && distance > 4){ //dragging
+			console.log(this.state.mouseDown);
 			if (typeof this.state.mouseDown != "string"){ //dragging from interface
 				if (this.state.mouseDown.wire){ //dragging drom exiting wired interface
 					var wireType = "existing";
 					var isPendingUpdate = this.state.mouseDown.wire;
 					var sourceObject = getTokenForOtherEnd(this.state.mouseDown, this.componentData, this.hostComponentData);
+				}
+				else if (this.state.mouseDown.height){ //dragging from instrument drag
+					console.log("Instrument drag");
+					var wireType = "instrument";
+					var isPendingUpdate = false;
+					var sourceObject = this.state.mouseDown;
 				}
 				else {
 					var wireType = "new";
@@ -887,6 +911,7 @@ var Workspace = React.createClass({
 					instrument = {instrument} 
 					isPendingDeletion = {this.isPendingDeletion} 
 					handleInstrumentUpdate = {this.handleInstrumentUpdate}
+					dragMouseDown = {this.dragMouseDown}
 					onMouseDown = {this.objectMouseDown}/>
 			);
 		}.bind(this));
@@ -917,7 +942,7 @@ var Workspace = React.createClass({
 		}.bind(this));
 
 		//render wire in progress if required
-		if (this.state.wireType) {
+		if (this.state.wireType == "new" || this.state.wireType == "existing") {
 			var wireInProgress = <WireInProgress
 				protocols = {this.props.protocols} 
 				dragging = {this.state.dragging} 
@@ -928,6 +953,25 @@ var Workspace = React.createClass({
 				hostComponentData = {this.hostComponentData}
 				cursorX = {this.state.cursorX} 
 				cursorY = {this.state.cursorY}/>	
+		}
+
+		//render link in progress if required
+		if (this.state.wireType == "instrument") {
+			var instrument = this.state.mouseDown;
+			console.log(instrument);
+			var source = {
+				top: this.state.cursorY,
+				left: this.state.cursorX
+			}
+			var viewer = {
+				top: instrument.top,
+				left: instrument.left,
+				width: instrument.width,
+				height: instrument.height
+			}
+			var linkInProgress = <InstrumentLink
+									source = {source}
+									viewer = {viewer}/>	
 		}
 
 
@@ -952,6 +996,7 @@ var Workspace = React.createClass({
 				{instruments}
 				<svg className="linkContainer" width={this.svgExtents.width} height={this.svgExtents.height}>
 					{instrumentLinks}
+					{linkInProgress}
 				</svg>
 			</div>
 		);
