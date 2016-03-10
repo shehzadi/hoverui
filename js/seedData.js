@@ -2,7 +2,7 @@ var modulesSeed = {
   "data" : {
     "module-seed-0001" : {
       "categories" : {
-        "routing" : true
+        "topology" : true
       },
       "description" : "Mirror flow to up to 8 interfaces.",
       "name" : "Mirror-8",
@@ -24,10 +24,10 @@ var modulesSeed = {
     },
     "module-seed-0002" : {
       "categories" : {
-        "routing" : true
+        "topology" : true
       },
       "description" : "Merge flows from up to 8 interfaces to a single interface.",
-      "name" : "Merge-8",
+      "name" : "Merge-256",
       "topology" : {
         "interfaces" : [
           {
@@ -36,7 +36,7 @@ var modulesSeed = {
             "protocol" : "protocol-3we4"
           },
           {
-            "capacity" : 8,
+            "capacity" : 256,
             "mode" : "in",
             "protocol" : "protocol-3we4"
           }
@@ -46,7 +46,7 @@ var modulesSeed = {
     },
     "module-seed-0003" : {
       "categories" : {
-        "routing" : true
+        "topology" : true
       },
       "description" : "Divide bidirectional flow in to two unidirectional flows",
       "name" : "Divide",
@@ -103,10 +103,8 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
-
     "module-seed-0005" : {
       "categories" : {
-        "security" : true,
         "translation" : true
       },
       "description" : "Filter event streams.",
@@ -132,13 +130,17 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
-
     "module-seed-0006" : {
       "categories" : {
-        "analysis" : true
+        "instrumentation" : true
       },
+      "type" : "instrument",
       "description" : "Count packets and events.",
       "name" : "Count",
+      "view" : {
+        "height" : 95,
+        "width" : 120
+      },
       "topology" : {
         "interfaces" : [
           {
@@ -150,13 +152,17 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
-
     "module-seed-0007" : {
       "categories" : {
-        "analysis" : true
+        "instrumentation" : true
       },
       "description" : "Plot packets and events.",
+      "type" : "instrument",
       "name" : "Plot",
+      "view" : {
+        "height": 200,
+        "width" : 300
+      },
       "topology" : {
         "interfaces" : [
           {
@@ -168,51 +174,32 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
-
     "module-seed-0008" : {
       "categories" : {
-        "security" : true
+        "policy" : true
       },
-      "description" : "Apply security policy rules to event streams.",
-      "name" : "Policy",
-      "topology" : {
-        "interfaces" : [
-          {
-            "capacity" : 1,
-            "mode" : "in",
-            "protocol" : "protocol-3we4"
-          },
-          {
-            "capacity" : 1,
-            "mode" : "out",
-            "protocol" : "protocol-3we4"
-          }
-        ]
-      },
-      "version" : "0.0.1"
+      "description" : "Basic security policy.",
+      "name" : "Security Policy",
+      "rules" : [
+        {
+          "priority" : "1"
+        },
+        {
+          "priority" : "1"
+        },
+        {
+          "priority" : "1"
+        }
+      ],
+      "type" : "policy",
+      "version" : "0.0.1",
+      "view" : {
+        "hue" : 0
+      }
     },
-
-    "module-seed-0010" : {
-      "categories" : {
-        "analysis" : true
-      },
-      "description" : "Show statistical analyses of event flow data.",
-      "name" : "Histogram",
-      "topology" : {
-        "interfaces" : [
-          {
-            "capacity" : 1,
-            "mode" : "in",
-            "protocol" : "protocol-3we4"
-          }
-        ]
-      },
-      "version" : "0.0.1"
-    },
-
     "module-seed-0009" : {
       "categories" : {
-        "routing" : true
+        "topology" : true
       },
       "description" : "Load balance flows between up to 256 interfaces.",
       "name" : "Balance-256",
@@ -231,11 +218,33 @@ var modulesSeed = {
         ]
       },
       "version" : "0.0.1"
+    },
+    "module-seed-0010" : {
+      "categories" : {
+        "instrumentation" : true
+      },
+      "description" : "Show statistical analyses of event flow data.",
+      "type" : "instrument",
+      "name" : "Histogram",
+      "view" : {
+        "height" : 200,
+        "width" : 300
+      },
+      "topology" : {
+        "interfaces" : [
+          {
+            "capacity" : 1,
+            "mode" : "in",
+            "protocol" : "protocol-3we4"
+          }
+        ]
+      },
+      "version" : "0.0.1"
     }
   },
   "shared" : {
     "categories" : {
-      "analysis" : {
+      "instrumentation" : {
         "description" : "Modules for visualizing event streams and flows.",
         "modules" : {
           "module-seed-0006" : true,
@@ -243,20 +252,19 @@ var modulesSeed = {
           "module-seed-0010" : true
         }
       },
-      "routing" : {
+      "policy" : {
+        "description" : "Modules for adding security features to traffic flows.",
+        "modules" : {
+          "module-seed-0008" : true
+        }
+      },
+      "topology" : {
         "description" : "Modules for routing traffic flows and for creating network topology.",
         "modules" : {
           "module-seed-0001" : true,
           "module-seed-0002" : true,
           "module-seed-0003" : true,
           "module-seed-0009" : true
-        }
-      },
-      "security" : {
-        "description" : "Modules for adding security features to traffic flows.",
-        "modules" : {
-          "module-seed-0005" : true,
-          "module-seed-0008" : true
         }
       },
       "translation" : {
@@ -314,19 +322,19 @@ var projectTemplate = {
   "view": {
     "host-0001": {
       "x": 20,
-      "y": headerHeight + 15
+      "y": headerHeight + 35
     },
     "host-0002": {
       "x": 130,
-      "y": headerHeight + 15
+      "y": headerHeight + 35
     },
     "host-0003": {
       "x": 240,
-      "y": headerHeight + 15
+      "y": headerHeight + 35
     },
     "host-0004": {
       "x": 350,
-      "y": headerHeight + 15
+      "y": headerHeight + 35
     }
   }
 }

@@ -1,7 +1,7 @@
 var IOConsole = React.createClass({
 	getInitialState: function() {
-		var projectsSrc = this.getLocalSetting("projectsSrc") || "https://boiling-torch-3324.firebaseio.com/v2/users/maxb/projects";
-		var modulesSrc = this.getLocalSetting("modulesSrc") || "https://boiling-torch-3324.firebaseio.com/v2/modules";
+		var projectsSrc = this.getLocalSetting("projectsSrc") || "https://boiling-torch-3324.firebaseio.com/v3/users/maxb/projects";
+		var modulesSrc = this.getLocalSetting("modulesSrc") || "https://boiling-torch-3324.firebaseio.com/v3/modules";
         
         var categoryVisibility = this.getLocalSetting("categoryVisibility") || {};
 		
@@ -34,7 +34,11 @@ var IOConsole = React.createClass({
     		componentInProgress: {
     			width: 145,
     			height: 76
-    		}
+    		},
+            policyInProgress: {
+                width: 200,
+                height: 120
+            }
     	};
 	},
 
@@ -57,9 +61,7 @@ var IOConsole = React.createClass({
 
             this.firebaseProjectsRef.on("value", function(dataSnapshot) {                
                 var isSeeded = dataSnapshot.exists() && dataSnapshot.val() !== true;
-                console.log(isSeeded, dataSnapshot.val());
                 if (!isSeeded){
-                    console.log("project seed: ", projectsSeed);
                     this.firebaseProjectsRef.set(projectsSeed);
                 }
                 else {
@@ -164,14 +166,56 @@ var IOConsole = React.createClass({
 
     handleActions: function(event){
         var eventName = event.target.name;
-        if (eventName == "newProject"){this.createNewProject(projectTemplate)}
-        if (eventName == "repositories"){this.openModal("librariesSettings")}
+
+        switch(eventName) {
+            case "newProject":
+                this.createNewProject(projectTemplate); break;
+            case "repositories":
+                this.openModal("librariesSettings"); break;
+            case "downloadJSON":
+                document.getElementById('download').click(); break;
+            case "deleteProject":
+                this.deleteProject(); break;
+            case "saveIOModule":
+                this.openModal("saveAsModule"); break;
+            default:
+                alert("No Event Handler", event)
+        }
         
+    },
+
+    deleteLink: function(linkObject){
+        console.log("Deleting Link: ", linkObject);
+        var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
+        var updatedProjectObject = _.cloneDeep(selectedProject);
+
+        var instrumentID = linkObject.instrument.uuid;
+        var componentID = linkObject.component;
+        var interfaceID = linkObject.ifc || false;
+
+        var interfaceArray = updatedProjectObject.instruments[instrumentID].interfaces || [];
+        
+        var pull = null;
+        _.forEach(interfaceArray, function(ifc, i){
+            if (!ifc.ifc){
+                if (ifc.component == componentID){
+                    pull = i
+                }
+            }
+            else {
+                if (ifc.component == componentID && ifc.ifc == interfaceID){
+                    pull = i
+                }
+            }
+        })
+        interfaceArray = _.pullAt(interfaceArray, pull);
+        interfaceArray = _.uniqWith(interfaceArray, _.isEqual);
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).set(updatedProjectObject);
     },
 
    	deleteWire: function(interfaceToken) {
    		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
-   		var updatedProjectTopologyObject = _.cloneDeep(selectedProject.topology);
+   		var updatedProjectObject = _.cloneDeep(selectedProject);
 
         var thisWire = interfaceToken.wire;
         var interface1Component = interfaceToken.componentID;
@@ -180,18 +224,42 @@ var IOConsole = React.createClass({
         var interface2Component = interfaceToken.wireTo.component;
         var interface2Interface = interfaceToken.wireTo.ifc || null;
 
-        updatedProjectTopologyObject.wires[thisWire] = null;
+        updatedProjectObject.topology.wires[thisWire] = null;
 
         if (interface1Interface){
-            updatedProjectTopologyObject.components[interface1Component].interfaces[interface1Interface] = null
+           delete updatedProjectObject.topology.components[interface1Component].interfaces[interface1Interface]
         }
 
         if (interface2Interface){
-            updatedProjectTopologyObject.components[interface2Component].interfaces[interface2Interface] = null
+           delete updatedProjectObject.topology.components[interface2Component].interfaces[interface2Interface]
         }
 
-		this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").set(updatedProjectTopologyObject);
+        //find instrument wires and delete them
+        updatedProjectObject = this.updateInstrumentLinks(updatedProjectObject);
 
+
+
+		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(updatedProjectObject);
+
+    },
+
+    updateInstrumentLinks: function(projectObject){
+        _.forEach(projectObject.instruments, function(instrument, instrumentID){
+            //console.log(instrumentID);
+            _.forEach(instrument.interfaces, function(ifc, i){
+                var thisComponent = ifc.component;
+                var thisInterface = ifc.ifc;
+                // check if this interface exists, delete wire if not
+                console.log("Instrument: ", thisComponent, thisInterface);
+
+                if (!(projectObject.topology.components[thisComponent] && projectObject.topology.components[thisComponent].interfaces[thisInterface])){
+                    delete projectObject.instruments[instrumentID].interfaces[i]
+                }
+
+            })  
+        })
+
+        return projectObject
     },
 
 	handleNewWireDrop: function(tokenObject1, tokenObject2) {
@@ -230,21 +298,85 @@ var IOConsole = React.createClass({
 
     },
 
-	handleNewComponentDrop: function(moduleID, posX, posY){
+    handleNewLinkDrop: function(data, source) {
+        console.log("Dropping Link: ", data, source);
+
+        if (!source.wireTo){return false};
+
+        var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
+        newInstrumentObject = _.cloneDeep(selectedProject.instruments[data.instrument.uuid]);
+        //console.log(newProjectInstrumentObject);
+
+        if (!newInstrumentObject.interfaces){
+           newInstrumentObject.interfaces = [] 
+        }
+
+        if (source.interfaceID){
+            var newInterface = {
+                "component": source.componentID,
+                "ifc": source.interfaceID
+            };
+        }
+        else {
+            var newInterface = {
+                "component": source.hostComponentID,
+            };
+        }
+
+        newInstrumentObject.interfaces.push(newInterface)
+        newInstrumentObject.interfaces = _.uniqWith(newInstrumentObject.interfaces, _.isEqual);
+        console.log("interfaces: ", newInstrumentObject.interfaces);
+
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("instruments").child(data.instrument.uuid).set(newInstrumentObject);
+
+    },
+
+	handleNewObjectDrop: function(moduleID, posX, posY){
+        var moduleObject = this.state.modulesObject[moduleID];
+        var moduleType = moduleObject.type || "component";
      	var newProjectViewObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].view) || {};
     	var newProjectComponentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].topology.components) || {};
-        
+        var newProjectPoliciesObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].policies) || {};
+        var newProjectInstrumentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].instruments) || {};
         var projectDependenciesObject = this.state.projectsObject[this.state.selectedProjectID].dependencies || {};
         
-        //new component stuff
-    	var newComponentID = "comp-" + ioid();
-        var newViewData = {
-    		"x": posX,
-    		"y": posY
-        };
-        var newComponentData = {
-            "module": moduleID
-        };
+        if (moduleType == "component"){
+            var newID = "comp-" + ioid();
+            var newViewData = {
+                "x": posX,
+                "y": posY
+            };
+            var newComponentData = {
+                "module": moduleID
+            };
+            newProjectComponentsObject[newID] = newComponentData;
+        }
+        else if (moduleType == "policy"){
+            var newID = "policy-" + ioid();
+            var newViewData = {
+                "left": posX,
+                "top": posY,
+                "width": this.props.policyInProgress.width,
+                "height": this.props.policyInProgress.height
+            };
+            var newPolicyData = {
+                "module": moduleID
+            };
+            newProjectPoliciesObject[newID] = newPolicyData;
+        }
+        else if (moduleType == "instrument"){
+            var newID = "instrument-" + ioid();
+            var newViewData = {
+                "left": posX,
+                "top": posY,
+                "width": moduleObject.view.width,
+                "height": moduleObject.view.height
+            };
+            var newInstrumentData = {
+                "module": moduleID
+            };
+            newProjectInstrumentsObject[newID] = newInstrumentData;
+        }  
 
         //dependencies
         if (!projectDependenciesObject[moduleID]){ // module is NOT already a dependency, so deal with dependencies
@@ -268,103 +400,187 @@ var IOConsole = React.createClass({
             this.firebaseProjectsRef.child(this.state.selectedProjectID).child("dependencies").set(newProjectDependenciesObject);
         }
 
-    	newProjectViewObject[newComponentID] = newViewData;
-    	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("view").set(newProjectViewObject)
-
-    	newProjectComponentsObject[newComponentID] = newComponentData;
-    	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("components").set(newProjectComponentsObject)
+    	newProjectViewObject[newID] = newViewData;
+    	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("view").set(newProjectViewObject);
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("components").set(newProjectComponentsObject);
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("policies").set(newProjectPoliciesObject);
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("instruments").set(newProjectInstrumentsObject)
 	},
 
-	handleComponentDrop: function(dropComponent, deltaX, deltaY) {
+    handlePolicyUpdate: function(id, left, top, height, width) {
+        var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
+        var policyView = newProjectObject.view[id];
+        policyView.left = left;
+        policyView.top = top;
+        policyView.height = height;
+        policyView.width = width;
+
+        if (policyView.left <= 0 || policyView.top <= headerHeight){
+            this.deleteObject(id) 
+        }
+        else {
+            this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
+        }      
+    },
+
+    handleInstrumentUpdate: function(id, instrument) {
+        var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
+        var instrumentView = newProjectObject.view[id];
+        instrumentView.left = instrument.left;
+        instrumentView.top = instrument.top;
+        instrumentView.height = instrument.height;
+        instrumentView.width = instrument.width;
+
+        if (instrumentView.left <= 0 || instrumentView.top <= headerHeight){
+            this.deleteObject(id) 
+        }
+        else {
+            this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
+        }      
+    },
+
+    updatePoliciesData: function(policiesData) {
+        var newProjectPoliciesObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].policies) || {};
+        _.forEach(policiesData, function(policy, policyID){
+            var computedInterfaces = policy.computedInterfaces;
+            _.set(newProjectPoliciesObject[policyID], 'interfaces', computedInterfaces);
+        })
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("policies").set(newProjectPoliciesObject)
+    },
+
+	handleObjectDrop: function(objectID, deltaX, deltaY) {
     	var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
 
-    	newProjectObject.view[dropComponent].x += deltaX;
-    	newProjectObject.view[dropComponent].y += deltaY;
+    	if (objectID.indexOf('host') == 0){
+            newProjectObject.view[objectID].x += deltaX;
+            newProjectObject.view[objectID].y += deltaY;
 
-    	if (dropComponent.indexOf('host') == 0){
-    		if (newProjectObject.view[dropComponent].x <= 2){
-				newProjectObject.view[dropComponent].x = 2
+    		if (newProjectObject.view[objectID].x <= 2){
+				newProjectObject.view[objectID].x = 2
 	    	}
-	    	if (newProjectObject.view[dropComponent].y <= headerHeight + 2){
-				newProjectObject.view[dropComponent].y = headerHeight + 2	
+	    	if (newProjectObject.view[objectID].y <= headerHeight + 2){
+				newProjectObject.view[objectID].y = headerHeight + 2	
 	    	}
 
     		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
     	}
     	
-	    else {
+	    else if (objectID.indexOf('comp') == 0){
+            newProjectObject.view[objectID].x += deltaX;
+            newProjectObject.view[objectID].y += deltaY;
 
-	    	if (newProjectObject.view[dropComponent].x <= 0 || newProjectObject.view[dropComponent].y <= headerHeight){
-				this.deleteComponent(dropComponent)	
+	    	if (newProjectObject.view[objectID].x <= 0 || newProjectObject.view[objectID].y <= headerHeight){
+				this.deleteObject(objectID)	
 	    	}
 
 	    	else {
 	    		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
 	    	}
-	    }	
+	    }
     },
 
-   	deleteComponent: function(componentID) {
-        var selectedProject = this.state.projectsObject[this.state.selectedProjectID];        
+   	deleteObject: function(objectID) {
+        var confirmObjectDeletion = confirm("Delete this item?");
+        if (confirmObjectDeletion == true) {
+            var selectedProject = this.state.projectsObject[this.state.selectedProjectID];        
 
-   		var newProjectObject = _.cloneDeep(selectedProject);
-        var moduleDependencyID = newProjectObject.topology.components[componentID].module;
-   		
-        //delete view data
-        newProjectObject.view[componentID] = null;
+            var newProjectObject = _.cloneDeep(selectedProject);
+       		
+            if (objectID.indexOf('comp') == 0){
+                var moduleDependencyID = selectedProject.topology.components[objectID].module;
 
-        //delete component from topology
-        //_.unset(newProjectObject.topology, "topology.components[componentID]");
-        delete newProjectObject.topology.components[componentID];
+                //delete component from topology
+                delete newProjectObject.topology.components[objectID];
 
-        var topologyComponents = newProjectObject.topology.components;
-   		
-        var moduleArray = [];
-        _.forEach(topologyComponents, function(component){
-            var module = component.module;
-            moduleArray.push(module);
-        });
-        moduleArray = _.uniq(moduleArray);
-
-   		//find wires and delete them
-   		if (newProjectObject.topology.wires){
-	   		for (var wire in newProjectObject.topology.wires){
-	   			var wireObject = newProjectObject.topology.wires[wire];
-	   			if (wireObject[0].component == componentID){
-	   				newProjectObject.topology.wires[wire] = null;
-                    //find interface on other component and delete
-                    if (newProjectObject.topology.components[wireObject[1].component]){
-                        newProjectObject.topology.components[wireObject[1].component].interfaces[wireObject[1].ifc] = null
-                    }
-	   			}
-                if (wireObject[1].component == componentID){
-                    newProjectObject.topology.wires[wire] = null;
-                    //find interface on other component and delete
-                    if (newProjectObject.topology.components[wireObject[0].component]){
-                        newProjectObject.topology.components[wireObject[0].component].interfaces[wireObject[0].ifc] = null
+                //find wires and delete them
+                if (newProjectObject.topology.wires){
+                    for (var wire in newProjectObject.topology.wires){
+                        var wireObject = newProjectObject.topology.wires[wire];
+                        if (wireObject[0].component == objectID){
+                            newProjectObject.topology.wires[wire] = null;
+                            //find interface on other component and delete
+                            var otherComponent = newProjectObject.topology.components[wireObject[1].component] || false;
+                            if (otherComponent){
+                                otherComponent.interfaces[wireObject[1].ifc] = null
+                            }
+                        }
+                        //repeat for other end
+                        if (wireObject[1].component == objectID){
+                            newProjectObject.topology.wires[wire] = null;
+                            //find interface on other component and delete
+                            var otherComponent = newProjectObject.topology.components[wireObject[0].component] || false;
+                            if (otherComponent){
+                                otherComponent.interfaces[wireObject[0].ifc] = null
+                            }
+                        }
                     }
                 }
-	   		}
-   		}
 
-        _.forEach(moduleArray, function(id){
-            var directDependency = selectedProject.dependencies[id];
-            if (directDependency.dependencies){
-                _.forEach(directDependency.dependencies, function(value, key){
-                    moduleArray.push(key)     
-                });
+                //find instrument wires and delete them
+                newProjectObject = this.updateInstrumentLinks(newProjectObject);
+           
             }
-        });
-        moduleArray = _.uniq(moduleArray);
+            else if (objectID.indexOf('policy') == 0){
+                var moduleDependencyID = selectedProject.policies[objectID].module;
 
-        var newProjectDependencies = {};
-        _.forEach(moduleArray, function(id){
-            var newDependency = selectedProject.dependencies[id];
-            newProjectDependencies[id] = newDependency          
-        });
-        
-        newProjectObject.dependencies = newProjectDependencies;
-   		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
+                //delete policy from policies
+                delete newProjectObject.policies[objectID];
+            }
+
+            else if (objectID.indexOf('instrument') == 0){
+                var moduleDependencyID = selectedProject.instruments[objectID].module;
+
+                //delete instrument from instruments
+                delete newProjectObject.instruments[objectID];
+            }
+           	
+            //delete view data
+            delete newProjectObject.view[objectID];
+
+            //manage dependencies
+            var topologyComponents = newProjectObject.topology.components;
+            var policies = newProjectObject.policies;
+            var instruments = newProjectObject.instruments;
+       		
+            var moduleArray = [];
+            _.forEach(topologyComponents, function(component){
+                var module = component.module;
+                moduleArray.push(module);
+            });
+            _.forEach(policies, function(policy){
+                var module = policy.module;
+                moduleArray.push(module);
+            });
+            _.forEach(instruments, function(instrument){
+                var module = instrument.module;
+                moduleArray.push(module);
+            });
+            moduleArray = _.uniq(moduleArray);
+
+
+
+            _.forEach(moduleArray, function(id){
+                var directDependency = selectedProject.dependencies[id];
+                if (directDependency.dependencies){
+                    _.forEach(directDependency.dependencies, function(value, key){
+                        moduleArray.push(key)     
+                    });
+                }
+            });
+            moduleArray = _.uniq(moduleArray);
+
+            var newProjectDependencies = {};
+            _.forEach(moduleArray, function(id){
+                var newDependency = selectedProject.dependencies[id];
+                newProjectDependencies[id] = newDependency          
+            });
+            
+            newProjectObject.dependencies = newProjectDependencies;
+       		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
+        }
+        else {
+            //TODO: Reset location of dragged opbject to database view
+        }
     },
 
 	createNewProject: function(projectTemplate) {
@@ -434,46 +650,60 @@ var IOConsole = React.createClass({
 		}
 	},
 
+    onMouseMove: function(event) { //captured on document
+        var cursorX = event.pageX;
+        var cursorY = event.pageY;
+        var deltaX = cursorX - this.state.startX;
+        var deltaY = cursorY - this.state.startY;
+        var distance = Math.abs(deltaX) + Math.abs(deltaY);
+
+        if (this.state.dragging == false && distance > 4){ //dragging
+            this.setState({
+                dragging: this.state.mouseDown
+            });
+        }
+
+        if (this.state.dragging){   
+            this.setState({
+                cursorX: cursorX,
+                cursorY: cursorY
+            });
+        }
+    },
+
 	onMouseUp: function(event) { //captured on document
-		this.removeDocumentEvents();
+		var dropID = this.state.dragging;
+        var dropObject = this.state.modulesObject[dropID];
+
+        var dropType = dropObject.type || "component";
 
 		var workspaceElement = this.refs.workspace.getDOMNode().getBoundingClientRect();
-
 		var workspaceOriginX = workspaceElement.left;
 		var workspaceOriginY = workspaceElement.top;
 
-		var newComponentX = event.pageX - workspaceOriginX - (this.props.componentInProgress.width / 2);
-		var newComponentY = event.pageY - workspaceOriginY - (this.props.componentInProgress.height / 2);
+        if (dropType == "component"){
+            var dims = this.props.componentInProgress
+        }
+        else if (dropType == "policy") {
+            var dims = this.props.policyInProgress
+        }
+        else if (dropType == "instrument") {
+            var dims = dropObject.view
+        }
+
+		var newComponentX = event.pageX - workspaceOriginX - (dims.width / 2);
+		var newComponentY = event.pageY - workspaceOriginY - (dims.height / 2);
 
 		if (newComponentX > 0 && newComponentY > headerHeight){
-			this.handleNewComponentDrop(this.state.mouseDown, newComponentX, newComponentY)
+			this.handleNewObjectDrop(this.state.dragging, newComponentX, newComponentY)
 		}
+
+        this.removeDocumentEvents();
 
 		this.setState({
     		mouseDown: false,
     		dragging: false
     	});
-	},
-
-	onMouseMove: function(event) { //captured on document
-		var cursorX = event.pageX;
-		var cursorY = event.pageY;
-		var deltaX = cursorX - this.state.startX;
-		var deltaY = cursorY - this.state.startY;
-		var distance = Math.abs(deltaX) + Math.abs(deltaY);
-
-		if (this.state.dragging == false && distance > 4){ //dragging
-			this.setState({
-				dragging: true,
-			});
-		}
-
-		if (this.state.dragging){	
-			this.setState({
-				cursorX: cursorX,
-    			cursorY: cursorY
-			});
-		}
 	},
 
 	addDocumentEvents: function() {
@@ -633,25 +863,50 @@ var IOConsole = React.createClass({
             return false
         }
 
-        var nProjects = Object.keys(this.state.projectsObject).length;
+        //var nProjects = Object.keys(this.state.projectsObject).length;
+
+        var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
 
 		var componentInProgress;
+        var policyInProgress;
+        var instrumentInProgress;
 		if (this.state.dragging){
-			var moduleName = this.state.modulesObject[this.state.mouseDown].name;
-			var moduleVersion = this.state.modulesObject[this.state.mouseDown].version;
-			componentInProgress = <ComponentInProgress
-				thisModuleID = {this.state.mouseDown} 
-				moduleName = {moduleName} 
-				moduleVersion = {moduleVersion} 
-				thisWidth = {this.props.componentInProgress.width} 
-				thisHeight = {this.props.componentInProgress.height} 
-				thisX = {this.state.cursorX} 
-				thisY = {this.state.cursorY}/>
+            var moduleID = this.state.mouseDown;
+            var moduleObject = this.state.modulesObject[moduleID];
+			var moduleName = moduleObject.name;
+			var moduleVersion = moduleObject.version;
+            var moduleType = moduleObject.type || "component";
+
+            if (moduleType == "policy"){
+               policyInProgress = <PolicyInProgress
+                    moduleID = {moduleID} 
+                    module = {moduleObject} 
+                    dims = {this.props.policyInProgress} 
+                    thisX = {this.state.cursorX} 
+                    thisY = {this.state.cursorY}/>
+            }
+            else if (moduleType == "instrument"){
+               instrumentInProgress = <InstrumentInProgress
+                    moduleID = {moduleID} 
+                    module = {moduleObject} 
+                    thisX = {this.state.cursorX} 
+                    thisY = {this.state.cursorY}/>
+            }
+            else if (moduleType == "component"){
+                componentInProgress = <ComponentInProgress
+                    thisModuleID = {moduleID} 
+                    moduleName = {moduleName} 
+                    moduleVersion = {moduleVersion} 
+                    thisWidth = {this.props.componentInProgress.width} 
+                    thisHeight = {this.props.componentInProgress.height} 
+                    thisX = {this.state.cursorX} 
+                    thisY = {this.state.cursorY}/>
+            }			
 		}
 
 		var modalDialogues = [];
 		if (this.state.modalArray.length > 0){
-			var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
+			
 			var that = this;
 			_.forEach(this.state.modalArray, function(modalName) {
     			var modalDialogue = (<ModalDialogue
@@ -674,11 +929,15 @@ var IOConsole = React.createClass({
         if (this.state.popoverTarget != false){
             popover = (
                 <Popover
+                    projects = {this.state.projectsObject} 
+                    selectedProject = {selectedProject} 
                     handleActions = {this.handleActions} 
                     closePopover = {this.closePopover} 
                     popoverTarget = {this.state.popoverTarget}/>
             );
         }
+
+        var downloadData = "data: text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(selectedProject));
 
 		return (
 			<div id="IOConsole">
@@ -701,27 +960,41 @@ var IOConsole = React.createClass({
 				<div id="main">
 					<div id="header">
 						<Tools 
-							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]}
-                            nProjects = {nProjects} 
-							deleteProject = {this.deleteProject} 
-							openModal = {this.openModal}
+							selectedProject = {selectedProject}
+                            //nProjects = {nProjects} 
+							//deleteProject = {this.deleteProject} 
+							openModal = {this.openModal} 
+                            openPopover = {this.openPopover}
 							renameProject = {this.renameProject}/>
 					</div>
 					<div id="workspace">
 						<Workspace 
 							ref = "workspace" 
 							className = "ui-module workspace" 
-							handleComponentDrop = {this.handleComponentDrop} 
+							handleObjectDrop = {this.handleObjectDrop} 
+                            handleInstrumentUpdate = {this.handleInstrumentUpdate} 
+                            handlePolicyUpdate = {this.handlePolicyUpdate} 
+                            updatePoliciesData = {this.updatePoliciesData}
 							handleWireDrop = {this.handleNewWireDrop} 
-							deleteWire= {this.deleteWire}
+                            handleLinkDrop = {this.handleNewLinkDrop} 
+							deleteWire = {this.deleteWire}
+                            deleteLink = {this.deleteLink}
 							protocols = {this.state.protocolsObject} 
-							selectedProject = {this.state.projectsObject[this.state.selectedProjectID]}/>
+							selectedProject = {selectedProject}/>
 					</div>
 				</div>
 				{componentInProgress}
+                {policyInProgress}
+                {instrumentInProgress}
 				{modalDialogues}
                 {popover}
+                <a 
+                    href = {downloadData}
+                    download = {selectedProject.name + " (" + selectedProject.version + ").json"}
+                    id = "download"
+                    hidden></a>
 			</div>
+
 		);
 	},
 });
@@ -769,94 +1042,10 @@ var Home = React.createClass({
 		return (
 			<div className="home">
 				<img className="logo" src="img/logo.png"/>
-				<h1>IO Visor Console</h1>
+				<h1>Hover Console</h1>
 				<button className={addObjectClass} name="addObject" onClick={this.openPopover}>+</button>
 				<button className={homeActionsClass} name="homeActions" onClick={this.openPopover}></button>
 			</div>
-		);
-	},
-});
-
-var PrimaryNav = React.createClass({
-	render: function() {	
-		return (
-			<div className="primaryNav">
-				<ProjectSection 
-					onProjectClick = {this.props.onProjectClick} 
-					projects = {this.props.projects} 
-					sortedProjectArray = {this.props.sortedProjectArray} 
-					selectedProjectID = {this.props.selectedProjectID}/>
-
-				<ModuleSection 
-					modules = {this.props.modules} 
-					sortedModuleArray = {this.props.sortedModuleArray} 
-					categories = {this.props.categories} 
-					onCategoryClick = {this.props.onCategoryClick} 
-					categoryVisibility = {this.props.categoryVisibility}
-					onModuleMouseDown = {this.props.onModuleMouseDown} />
-			</div>
-		);
-	},
-});
-
-var ProjectSection = React.createClass({
-
-	getInitialState: function() {
-    	return {
-    		isScrollAtTop: true
-    	};
-  	},
-
-	handleSectionScroll: function() {
-		var sectionElement = this.refs.projects.getDOMNode();
-		this.setState({
-			isScrollAtTop: sectionElement.scrollTop == 0
-		});
-	},
-
-	render: function() {
-		var projectsObject = this.props.projects;
-		var sortedProjectArray = this.props.sortedProjectArray;
-		if (projectsObject){
-			var projectsCode = [];
-
-			for (var i = 0; i < sortedProjectArray.length; i++){
-				var projectID = sortedProjectArray[i];
-				var thisProject = projectsObject[projectID];
-				var projectClass = "project";
-				if (projectID == this.props.selectedProjectID){
-					projectClass += " selected"
-				}
-				
-      			projectsCode.push(
-	      			<div 
-	      				className={projectClass} 
-	      				key={projectID} 
-	      				onClick={this.props.onProjectClick.bind(null, {projectID})}>
-      					<h2>
-      						<span>{thisProject.name}</span>
-      						<span className="version">{thisProject.version}</span>
-      					</h2>
-      				</div>
-      			);
-			};
-
-		}
-
-		var classString = "projects";
-    	if (this.state.isScrollAtTop == false){
-    		classString += " scrolled"
-    	}
-		
-		return (
-			<section 
-				ref = "projects"
-				className = {classString}
-				onScroll = {this.handleSectionScroll}>
-				<h1>Projects
-				</h1>
-				<div>{projectsCode}</div>
-			</section>
 		);
 	},
 });

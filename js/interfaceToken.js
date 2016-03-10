@@ -23,11 +23,11 @@ var InterfaceToken = React.createClass({
 
 	onMouseLeave: function() {			
 		if (this.state.isValid){
-			this.setState({
-				isHover: false
-	    	});
 	    	this.props.onMouseLeave(this.props.tokenObject);
     	}
+    	this.setState({
+			isHover: false
+    	});
 	},
 
 	onMouseDown: function() {	
@@ -54,6 +54,7 @@ var InterfaceToken = React.createClass({
 
 			var isThisValidType = checkTypeValidity(sourceProtocol, sourceMode, thisProtocol, thisMode);
 			var isValid = isThisValidType;
+			//this.isSource = false;
 		
 			if (this.props.tokenObject.wire){//existing wire
 				isValid = false
@@ -68,7 +69,8 @@ var InterfaceToken = React.createClass({
 			}
 
 			if (_.isEqual(this.props.tokenObject, this.props.dragging)){
-				isValid = true
+				isValid = false;
+				//this.isSource = true
 			}
 
 			if (this.props.wireType == "existing"){
@@ -80,6 +82,17 @@ var InterfaceToken = React.createClass({
 				}
 			}
 
+			if (this.isSource == true){}
+
+			this.setState({
+				isValid: isValid
+    		});
+		}
+		else if (this.props.dragging.type == "newLink" || this.props.dragging.type == "linkSource"){
+			var isValid = false;
+			if (this.props.tokenObject.wire){//existing wire
+				isValid = true
+			}
 			this.setState({
 				isValid: isValid
     		});
@@ -122,14 +135,16 @@ var InterfaceToken = React.createClass({
 			thisOpacity = 0.2
 		}
 
+		if (_.isEqual(this.props.tokenObject, this.props.dragging)){ //is source
+			thisOpacity = 1
+		}
+
 		var polygon = {	
 			width: this.props.ifcDims.width + growthW,
 			height: this.props.ifcDims.height + growthH,
 			left: leftCenterPoint - (this.props.ifcDims.width/2) - growthW/2,
 			top: topCenterPoint - (this.props.ifcDims.height/2) - growthH/2 
 		};
-
-		console.log(polygon.width, polygon.height);
 		
 		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "darker");
 
@@ -191,10 +206,50 @@ var InterfaceToken = React.createClass({
 
 		var transformString = "rotate(" + rotation + " " + leftCenterPoint + " " + topCenterPoint + ")";
 		var textTransformString = "rotate(" + (-rotation) + " " + textX + " " + textY + ")";
+
+		// policy indicator
+
+		
+		var indicatorX = textX;
+		var indicatorY = textY + 2;
+
+		var indicators = [];
+		var indicatorOpacity = 1;
+		if (this.props.wireType){
+			indicatorOpacity = 0.3
+		}
+		var moduleArray = [];
+		_.forEach(this.props.tokenObject.policies, function(policyID, i){
+			var moduleID = this.props.policiesData[policyID].moduleID;
+			var hue = this.props.policiesData[policyID].view.hue;
+			moduleArray.push(moduleID)
+		}.bind(this))
+
+		moduleArray = _.uniq(moduleArray);
+
+		_.forEach(moduleArray, function(moduleID, i){
+			var hue = this.props.dependencies[moduleID].view.hue;
+			var cy = indicatorY - (7 * i);
+			var indicatorStyle = {
+				fill: getHSL(hue, "lighter"),
+				stroke: getHSL(hue),
+				opacity: indicatorOpacity
+			}
+			indicators.push(<circle key={i} cx={indicatorX} cy={cy} style={indicatorStyle} r="2.5" />)
+		}.bind(this))
+		
+
+		/*
+		var circle;
+		if (!_.isEmpty(this.props.tokenObject.policies)){
+			circle = (
+				<circle cx={textX} cy={textY} r="3" transform = {textTransformString}/>
+			)
+		}
+		*/
  
 		return (
-			<g
-				transform = {transformString}>
+			<g transform = {transformString}>
 				<polygon 
 					className = "interface" 
 					style = {style} 
@@ -211,6 +266,8 @@ var InterfaceToken = React.createClass({
 					transform = {textTransformString}>
 					{text}
 				</text>
+				{indicators}
+				
 			</g>
   		)
 	},
