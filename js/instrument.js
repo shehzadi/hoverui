@@ -57,7 +57,7 @@ var Instrument = React.createClass({
   				<div className = "grab bottomRight" onMouseDown = {this.bottomRight}></div>
   				<div className = "dragSource" onMouseDown = {this.handleDragMouseDown}>
   					<i></i>
-  					Drag
+  					Drag Probe
   				</div>
   			</div>		
 		);

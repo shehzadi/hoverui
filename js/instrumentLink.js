@@ -6,7 +6,6 @@ var InstrumentLink = React.createClass({
 	},
 
 	handleMouseEnter: function() {	
-		console.log("Entered source");
     	this.setState({
 			isSourceHover: true
     	});
@@ -26,9 +25,20 @@ var InstrumentLink = React.createClass({
 		// if snapping
 		var sourceRadius = 3;
 		var style = {};
+		var wireStyle = {};
 
 		if (this.props.type == "inProgress"){
 			style = {pointerEvents: "none"}
+		}
+		else{
+			if (this.props.isPendingUpdate.component == this.props.linkTo.component){
+				if (!this.props.isPendingUpdate.ifc || !this.props.linkTo.ifc){ // host
+					wireStyle = {display: "none"}
+				}
+				else if (this.props.isPendingUpdate.ifc == this.props.linkTo.ifc){
+					wireStyle = {display: "none"}
+				}
+			}
 		}
 
 
@@ -101,7 +111,7 @@ var InstrumentLink = React.createClass({
 
 
 		return (
-			<g className = "instrumentLink">
+			<g className = "instrumentLink" style = {wireStyle}>
 				<path 
 					d = {pathString}/>
 				<circle 

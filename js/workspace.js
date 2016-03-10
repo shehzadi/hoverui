@@ -55,13 +55,37 @@ var Workspace = React.createClass({
 	},
 
 	linkMouseDown: function(instrument, link){
-		console.log("Mouse down: ", instrument, link)
+		event.stopPropagation();
+		this.addDocumentEvents();
+		console.log("link: ", link);
+		mouseDownObject = {
+			"type": "linkSource",
+			"instrument": instrument,
+			"component": link.component,
+			"ifc": link.ifc || false
+		}
+
+		var workspaceBox = React.findDOMNode(this).getBoundingClientRect();
+		this.workspaceOriginX = workspaceBox.left;
+		this.workspaceOriginY = workspaceBox.top;
+		this.startX = event.pageX - this.workspaceOriginX;
+		this.startY = event.pageY - this.workspaceOriginY;
+
+
+		this.setState({
+    		mouseDown: mouseDownObject
+    	});
 	},
 
 	dragMouseDown: function(instrumentID, instrumentObject) {			
 		if (event.button == 0){	
 			event.stopPropagation();
 			this.addDocumentEvents();
+
+			mouseDownObject = {
+				"type": "newLink",
+				"instrument": instrumentObject
+			}
 
 			var workspaceBox = React.findDOMNode(this).getBoundingClientRect();
 			this.workspaceOriginX = workspaceBox.left;
@@ -70,7 +94,7 @@ var Workspace = React.createClass({
     		this.startY = event.pageY - this.workspaceOriginY;
 			
     		this.setState({
-    			mouseDown: instrumentObject
+    			mouseDown: mouseDownObject
     		});
 		}
 	},
@@ -139,17 +163,20 @@ var Workspace = React.createClass({
 		var distance = Math.abs(deltaX) + Math.abs(deltaY);
 
 		if (this.state.dragging == false && distance > 4){ //dragging
-			console.log(this.state.mouseDown);
 			if (typeof this.state.mouseDown != "string"){ //dragging from interface
-				if (this.state.mouseDown.wire){ //dragging drom exiting wired interface
+				if (this.state.mouseDown.wire){ //dragging drom existing wired interface
 					var wireType = "existing";
 					var isPendingUpdate = this.state.mouseDown.wire;
 					var sourceObject = getTokenForOtherEnd(this.state.mouseDown, this.componentData, this.hostComponentData);
 				}
-				else if (this.state.mouseDown.type == "instrument"){ //dragging from instrument drag
-					console.log("Instrument drag");
+				else if (this.state.mouseDown.type == "newLink"){ //dragging from instrument drag
 					var wireType = "instrument";
 					var isPendingUpdate = false;
+					var sourceObject = this.state.mouseDown;
+				}
+				else if (this.state.mouseDown.type == "linkSource"){ //dragging from instrument drag
+					var wireType = "instrumentUpdate";
+					var isPendingUpdate = this.state.mouseDown;
 					var sourceObject = this.state.mouseDown;
 				}
 				else {
@@ -195,7 +222,9 @@ var Workspace = React.createClass({
 		else if (this.state.wireType == "instrument"){
 			this.props.handleLinkDrop(this.state.dragging, this.state.isSnapping);
 		}
-		
+		else if (this.state.wireType == "instrumentUpdate"){
+			this.props.handleLinkDrop(this.state.dragging, this.state.isSnapping);
+		}
 	},
 
 	getPolicyPosition: function(id, deltaX, deltaY, mode) {
@@ -270,6 +299,13 @@ var Workspace = React.createClass({
 				}	
 			}
 
+			if (this.state.wireType == "instrumentUpdate"){ //dropping an existing wire
+				if (!_.isEqual(this.state.mouseDown, this.state.isSnapping)){
+					this.props.deleteLink(this.state.mouseDown);
+				}	
+			}
+
+			
 			this.setState({
 				dragging: false,
 				resizing: false,
@@ -945,7 +981,8 @@ var Workspace = React.createClass({
 				instrumentLinks.push(
 					<InstrumentLink
 						key = {id + i} 
-						linkTo = {link}
+						linkTo = {link} 
+						isPendingUpdate = {this.state.isPendingUpdate} 
 						linkMouseDown = {this.linkMouseDown}
 						instrument = {instrument}/>
 				);
@@ -967,18 +1004,22 @@ var Workspace = React.createClass({
 		}
 
 		//render link in progress if required
-		if (this.state.wireType == "instrument") {
-			var instrument = this.state.mouseDown;
+		if (this.state.wireType == "instrument" || this.state.wireType == "instrumentUpdate") {
 			var link = {
 				top: this.state.cursorY,
 				left: this.state.cursorX
 			}
-			var viewer = {
+
+			
+			var instrument = this.state.mouseDown.instrument;
+			/*var viewer = {
 				top: instrument.top,
 				left: instrument.left,
 				width: instrument.width,
 				height: instrument.height
 			}
+			*/
+
 			var linkInProgress = <InstrumentLink
 									type = "inProgress" 
 									linkTo = {link}

@@ -184,6 +184,35 @@ var IOConsole = React.createClass({
         
     },
 
+    deleteLink: function(linkObject){
+        console.log("Deleting Link: ", linkObject);
+        var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
+        var updatedProjectObject = _.cloneDeep(selectedProject);
+
+        var instrumentID = linkObject.instrument.uuid;
+        var componentID = linkObject.component;
+        var interfaceID = linkObject.ifc || false;
+
+        var interfaceArray = updatedProjectObject.instruments[instrumentID].interfaces || [];
+        
+        var pull = null;
+        _.forEach(interfaceArray, function(ifc, i){
+            if (!ifc.ifc){
+                if (ifc.component == componentID){
+                    pull = i
+                }
+            }
+            else {
+                if (ifc.component == componentID && ifc.ifc == interfaceID){
+                    pull = i
+                }
+            }
+        })
+        interfaceArray = _.pullAt(interfaceArray, pull);
+        interfaceArray = _.uniqWith(interfaceArray, _.isEqual);
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).set(updatedProjectObject);
+    },
+
    	deleteWire: function(interfaceToken) {
    		var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
    		var updatedProjectObject = _.cloneDeep(selectedProject);
@@ -269,27 +298,36 @@ var IOConsole = React.createClass({
 
     },
 
-    handleNewLinkDrop: function(instrument, source) {
-        console.log("Source: ", source);
+    handleNewLinkDrop: function(data, source) {
+        console.log("Dropping Link: ", data, source);
+
         if (!source.wireTo){return false};
 
         var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
-        newInstrumentObject = _.cloneDeep(selectedProject.instruments[instrument.uuid]);
+        newInstrumentObject = _.cloneDeep(selectedProject.instruments[data.instrument.uuid]);
         //console.log(newProjectInstrumentObject);
 
         if (!newInstrumentObject.interfaces){
            newInstrumentObject.interfaces = [] 
         }
 
-        var newInterface = {
-            "component": source.componentID || source.hostComponentID,
-            "ifc": source.interfaceID || null
-        };
+        if (source.interfaceID){
+            var newInterface = {
+                "component": source.componentID,
+                "ifc": source.interfaceID
+            };
+        }
+        else {
+            var newInterface = {
+                "component": source.hostComponentID,
+            };
+        }
 
         newInstrumentObject.interfaces.push(newInterface)
         newInstrumentObject.interfaces = _.uniqWith(newInstrumentObject.interfaces, _.isEqual);
+        console.log("interfaces: ", newInstrumentObject.interfaces);
 
-        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("instruments").child(instrument.uuid).set(newInstrumentObject);
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("instruments").child(data.instrument.uuid).set(newInstrumentObject);
 
     },
 
@@ -939,7 +977,8 @@ var IOConsole = React.createClass({
                             updatePoliciesData = {this.updatePoliciesData}
 							handleWireDrop = {this.handleNewWireDrop} 
                             handleLinkDrop = {this.handleNewLinkDrop} 
-							deleteWire= {this.deleteWire}
+							deleteWire = {this.deleteWire}
+                            deleteLink = {this.deleteLink}
 							protocols = {this.state.protocolsObject} 
 							selectedProject = {selectedProject}/>
 					</div>
