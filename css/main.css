@@ -120,6 +120,16 @@ body::-webkit-scrollbar {
 }
 
 /* Element styling */
+.ifcContainer .ifcList div {
+  padding-left: 20px;
+}
+
+.ifcContainer .ifcList div.selected {
+  background-image: url("../img/check.png");
+  background-position: 3% 50%;
+  background-size: 12px;
+}
+
 #popoverBackground {
   position: absolute;
   top: 0;
@@ -412,10 +422,6 @@ body::-webkit-scrollbar {
   right: 0;
 }
 
-.selected {
-  background-color: rgba(255, 255, 255, 0.5);
-}
-
 .version {
   font-size: 85%;
   opacity: 0.6;
@@ -478,6 +484,10 @@ body::-webkit-scrollbar {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.primaryNav .selected {
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
 .primaryNav h1 {

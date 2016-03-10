@@ -227,6 +227,7 @@ var Workspace = React.createClass({
 		var componentsObject = selectedProject.topology.components || {};
 		var wiresObject = selectedProject.topology.wires || {};
 		var hostComponentsObject = selectedProject.topology.host_interfaces || {};
+		var hostIfcMapping = this.props.selectedProjectIfcMapping;
 
 		//set up component data object
 		this.componentData = {};
@@ -275,6 +276,9 @@ var Workspace = React.createClass({
 				mode: thisHostComponent.mode,
 				protocol: thisHostComponent.protocol
 			};
+			if (hostIfcMapping[hostComponentID]){
+				this.hostComponentData[hostComponentID].name = hostIfcMapping[hostComponentID];
+			}
 		};
 
 		//add io capability data
@@ -542,8 +546,8 @@ var Workspace = React.createClass({
 			if (hostComponentID == this.state.dragging){ //component is being dragged
 				thisHostComponent.left = this.dragStartX + this.state.cursorX - this.startX;
 				thisHostComponent.top = this.dragStartY + this.state.cursorY - this.startY;
-				if (thisHostComponent.top <= headerHeight + 2){thisHostComponent.top = headerHeight + 2}
-				if (thisHostComponent.left <= 2){thisHostComponent.left = 2}	
+				//if (thisHostComponent.top <= headerHeight + 2){thisHostComponent.top = headerHeight + 2}
+				//if (thisHostComponent.left <= 2){thisHostComponent.left = 2}	
 				this.positionInterfaces();		
 			}
 

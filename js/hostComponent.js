@@ -11,12 +11,22 @@ var HostComponent = React.createClass({
 			left: this.props.hostComponent.left,
 		};
 
+		var hostIfcName = this.props.hostComponent.name;
+		console.log("SHEHZAD hostIfcName = ", hostIfcName);
+		if (hostIfcName){
+			if (_.isEmpty(hostIfcName)){
+				hostIfcName = "hostIfcName";
+			}
+		}else{
+			hostIfcName = "hostIfcName";
+		}
+
 		return (
 			<div 
 				className="hostComponent" 
 				style={containerStyle}
 				onMouseDown={this.onMouseDown}>
-				hostIfcName
+				{hostIfcName}
   			</div>
 		);
 	}
