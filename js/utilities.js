@@ -108,7 +108,7 @@ function sortTokenArrays(tokenArrays){
 function positionTokens(component, ifcProps){
 	var pitch = ifcProps.pitch;
 	var tokenArrays = component.tokenArrays;
-	console.log("token arrays: ", tokenArrays);
+	//console.log("token arrays: ", tokenArrays);
 	for (var tokenArray in tokenArrays) {
 		thisTokenArray = tokenArrays[tokenArray];
 		var faceCenter = {};
