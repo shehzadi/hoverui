@@ -36,7 +36,7 @@ body {
 
 /* Scrollbars */
 ::-webkit-scrollbar {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.07);
   width: 8px;
   height: 8px;
 }
@@ -46,7 +46,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.12);
 }
 
 body::-webkit-scrollbar {
@@ -56,7 +56,7 @@ body::-webkit-scrollbar {
 
 /* Patterns */
 .pattern {
-  background-image: linear-gradient(#c7c7c7 1px, transparent 1px), linear-gradient(90deg, #c7c7c7 1px, transparent 1px);
+  background-image: linear-gradient(#cccccc 1px, transparent 1px), linear-gradient(90deg, #cccccc 1px, transparent 1px);
   background-size: 8px 8px, 8px 8px;
   background-position: 0 0, 0 0;
   background-repeat: repeat;
@@ -84,7 +84,7 @@ body::-webkit-scrollbar {
 #navigation {
   display: flex;
   flex-direction: column;
-  background-color: #999999;
+  background-color: #a1a1a1;
   min-width: 200px;
   max-width: 300px;
   flex: 1;
@@ -111,7 +111,7 @@ body::-webkit-scrollbar {
 #main {
   flex: 3.5;
   position: relative;
-  background-color: #bfbfbf;
+  background-color: #c4c4c4;
   box-shadow: 0 0 40px 0 rgba(0, 0, 0, 0.2), 0 0 4px 0 rgba(0, 0, 0, 0.2);
 }
 
@@ -269,7 +269,7 @@ body::-webkit-scrollbar {
   font-size: 13px;
   margin-right: 6px;
   margin-top: 2px;
-  color: #d0113d;
+  color: #af183b;
 }
 
 .modalContainer textarea {
@@ -345,6 +345,241 @@ body::-webkit-scrollbar {
   cursor: -webkit-grab;
 }
 
+.policyInProgress {
+  position: absolute;
+  color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  padding: 6px 8px;
+  border-width: 1px;
+  border-style: dashed;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  cursor: -webkit-grab;
+  justify-content: left;
+  align-items: top;
+}
+
+.policyInProgress .policyVersion {
+  font-size: 85%;
+  opacity: 0.6;
+  margin-left: 0.5em;
+  display: inline-block;
+}
+
+.policyInProgress * {
+  cursor: -webkit-grab;
+}
+
+.instrumentInProgress {
+  position: absolute;
+  color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  padding: 6px 8px;
+  border-width: 1px;
+  border-style: dashed;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-color: rgba(0, 0, 0, 0.8);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  cursor: -webkit-grab;
+  justify-content: left;
+  align-items: top;
+}
+
+.instrumentInProgress .instrumentVersion {
+  font-size: 85%;
+  opacity: 0.6;
+  margin-left: 0.5em;
+  display: inline-block;
+}
+
+.instrumentInProgress * {
+  cursor: -webkit-grab;
+}
+
+.workspace {
+  z-index: 0;
+}
+
+.workspace .instrument {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  background-color: rgba(38, 38, 38, 0.9);
+  padding: 6px 8px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  align-items: top;
+}
+
+.workspace .instrument .instrumentVersion {
+  font-size: 85%;
+  opacity: 0.6;
+  margin-left: 0.5em;
+  display: inline-block;
+}
+
+.workspace .instrument .content {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.workspace .instrument .grab {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  bottom: 0;
+  right: 0;
+}
+
+.workspace .instrument .grab:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.workspace .instrument .bottomRight {
+  cursor: nwse-resize;
+  bottom: 0;
+  right: 0;
+}
+
+.workspace .instrument .dragSource {
+  padding: 0 6px 2px 2px;
+  font-size: 9px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  position: absolute;
+  bottom: 7px;
+  left: 9px;
+  display: inline-block;
+  visibility: hidden;
+  vertical-align: baseline;
+}
+
+.workspace .instrument .dragSource:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: -webkit-grab;
+}
+
+.workspace .instrument .dragSource * {
+  pointer-events: none;
+}
+
+.workspace .instrument .dragSource i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background-color: #b3b3b3;
+  border-radius: 20px;
+  margin-right: 3px;
+  position: relative;
+  top: 2px;
+  border: 1px solid #333333;
+}
+
+.workspace .instrument:hover .dragSource {
+  visibility: visible;
+}
+
+.workspace .instrument.pendingDeletion {
+  border: 1px dashed black;
+  opacity: 0.4;
+}
+
+.workspace .instrumentLink path {
+  stroke: rgba(64, 64, 64, 0.5);
+  pointer-events: none;
+}
+
+.workspace .instrumentLink circle {
+  stroke: #404040;
+  fill: #bfbfbf;
+  pointer-events: fill;
+}
+
+.workspace .instrumentLink circle.viewer {
+  fill: #404040;
+}
+
+.workspace .policy {
+  position: absolute;
+  color: rgba(0, 0, 0, 0.6);
+  padding: 6px 8px;
+  border-width: 1px;
+  border-style: solid;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  justify-content: left;
+  align-items: top;
+}
+
+.workspace .policy .policyVersion {
+  font-size: 85%;
+  opacity: 0.6;
+  margin-left: 0.5em;
+  display: inline-block;
+}
+
+.workspace .policy .grab {
+  position: absolute;
+}
+
+.workspace .policy .top, .workspace .policy .bottom {
+  height: 15px;
+  left: 20px;
+  right: 20px;
+  cursor: ns-resize;
+}
+
+.workspace .policy .left, .workspace .policy .right {
+  bottom: 20px;
+  top: 20px;
+  width: 15px;
+  cursor: ew-resize;
+}
+
+.workspace .policy .topRight, .workspace .policy .bottomLeft {
+  cursor: nesw-resize;
+}
+
+.workspace .policy .topLeft, .workspace .policy .bottomRight {
+  cursor: nwse-resize;
+}
+
+.workspace .policy .topRight, .workspace .policy .topLeft, .workspace .policy .bottomRight, .workspace .policy .bottomLeft {
+  height: 20px;
+  width: 20px;
+}
+
+.workspace .policy .top, .workspace .policy .topRight, .workspace .policy .topLeft {
+  top: 0;
+}
+
+.workspace .policy .bottom, .workspace .policy .bottomRight, .workspace .policy .bottomLeft {
+  bottom: 0;
+}
+
+.workspace .policy .right, .workspace .policy .topRight, .workspace .policy .bottomRight {
+  right: 0;
+}
+
+.workspace .policy .left, .workspace .policy .topLeft, .workspace .policy .bottomLeft {
+  left: 0;
+}
+
+.workspace .policy.pendingDeletion {
+  opacity: 0.7;
+  border-style: dashed;
+}
+
 .workspace .component {
   padding: 10px 14px;
   position: absolute;
@@ -387,6 +622,10 @@ body::-webkit-scrollbar {
 
 .workspace polygon {
   pointer-events: fill;
+}
+
+.workspace path {
+  pointer-events: stroke;
 }
 
 .workspace .hostComponent {
@@ -434,7 +673,7 @@ body::-webkit-scrollbar {
 }
 
 .invalid {
-  outline: 1px solid #d0113d;
+  outline: 1px solid #af183b;
 }
 
 #navigation .app-actions {
@@ -459,8 +698,8 @@ body::-webkit-scrollbar {
 }
 
 .home {
-  border-bottom: 1px solid #b30f35;
-  background-color: #d0113d;
+  border-bottom: 1px solid #941432;
+  background: linear-gradient(#ca1c44, #af183b);
   padding: 0 8px 0 15px;
   display: flex;
   flex: 0 0 40px;
@@ -506,7 +745,7 @@ body::-webkit-scrollbar {
 
 .projects {
   outline: 1px solid gray;
-  border-bottom: 2px solid #999999;
+  border-bottom: 2px solid #a1a1a1;
   flex: 0 0 auto;
   overflow-y: auto;
   max-height: 30vh;
@@ -638,8 +877,8 @@ body::-webkit-scrollbar {
   height: 40px;
   font-size: 13px;
   padding: 7px 15px;
-  background-color: rgba(166, 166, 166, 0.65);
-  border-bottom: 1px solid rgba(153, 153, 153, 0.7);
+  background-color: rgba(166, 166, 166, 0.5);
+  border-bottom: 1px solid rgba(153, 153, 153, 0.6);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
