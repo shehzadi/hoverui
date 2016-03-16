@@ -597,11 +597,11 @@ var IOConsole = React.createClass({
         newProjectObject.view[objectID].x += deltaX;
         newProjectObject.view[objectID].y += deltaY;
 
-        if (newProjectObject.view[dropComponent].x <= 0 || newProjectObject.view[dropComponent].y <= headerHeight){
-            if (dropComponent.indexOf('host') == 0){
-                this.deleteHostIfc(dropComponent);
+        if (newProjectObject.view[objectID].x <= 0 || newProjectObject.view[objectID].y <= headerHeight){
+            if (objectID.indexOf('host') == 0){
+                this.deleteHostIfc(objectID);
             }else{
-                this.deleteObject(dropComponent);
+                this.deleteObject(objectID);
             }
         }else {
             this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject);
