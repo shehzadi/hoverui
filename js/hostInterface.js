@@ -9,9 +9,9 @@ var HostInterface = React.createClass({
 	getDefaultProps: function() {
 		return {
 			hostInterface: {
-				width: 26,
+				width: 22,
 				height: 1,
-				apex: 9
+				apex: 8
     		}
     	};
 	},
@@ -31,17 +31,31 @@ var HostInterface = React.createClass({
 			}
 
 			if (_.isEqual(this.props.tokenObject, this.props.dragging)){
-				isValid = true
+				isValid = false
 			}
 
-			if (_.isEqual(this.props.tokenObject, this.props.mouseDown)){
-				isValid = true
+
+			if (this.props.wireType == "existing"){
+				if (_.isEqual(this.props.tokenObject, this.props.mouseDown)){
+					isValid = true
+				}
 			}
 						
 			this.setState({
 				isValid: isValid
     		});
 		}
+
+		else if (this.props.dragging.type == "newLink" || this.props.dragging.type == "linkSource"){
+			var isValid = false;
+			if (this.props.tokenObject.wire){//existing wire
+				isValid = true
+			}
+			this.setState({
+				isValid: isValid
+    		});
+		}
+
 		else {
 			this.setState({
 				isValid: true
@@ -61,10 +75,10 @@ var HostInterface = React.createClass({
 	onMouseLeave: function() {	
 		if (this.state.isValid){
 			this.props.onMouseLeave(this.props.tokenObject);
-			this.setState({
-				isHover: false
-    		});
     	}
+    	this.setState({
+			isHover: false
+		});
 	},
 
 	onMouseDown: function() {	
@@ -72,10 +86,12 @@ var HostInterface = React.createClass({
 	},
 
 	onMouseUp: function() {	
-		this.props.onMouseUp(this.props.tokenObject);
-		this.setState({
-			isHover: false
-    	});
+		if (this.state.isValid){
+			this.props.onMouseUp(this.props.tokenObject);
+			this.setState({
+				isHover: false
+	    	});
+		}
 	},
 
 	render: function() {
@@ -87,20 +103,18 @@ var HostInterface = React.createClass({
 		if (this.state.isHover  || _.isEqual(this.props.tokenObject, this.props.dragging)){
 			growthW = 4;
 			growthH = 8;
-		}
-
-		var thisOpacity = 1;
-		if (this.props.isInvalid && !this.props.isStartOfNewWire){
-			thisOpacity = 0.2
-		}
+		}		
 
 		var fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue);
 		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "darker");
-		
 
 		// validity for drop
+		var thisOpacity = 1;
 		if (this.state.isValid == false){
 			thisOpacity = 0.2
+		}
+		if (_.isEqual(this.props.tokenObject, this.props.dragging)){ //is source
+			thisOpacity = 1
 		}
 	
 		var interfaceStyle = {
@@ -145,16 +159,49 @@ var HostInterface = React.createClass({
 		points += outputPointer;
 		points += " " + polygon.left + ", " + (polygon.top + polygon.height); //bottom-left
 
+
+		var indicatorX = polygon.left + (polygon.width / 2);
+		var indicatorY = polygon.top - 13;
+
+		var indicators = [];
+		var indicatorOpacity = 1;
+		if (this.props.wireType){
+			indicatorOpacity = 0.3
+		}
+
+		var moduleArray = [];
+		_.forEach(this.props.tokenObject.policies, function(policyID, i){
+			var moduleID = this.props.policiesData[policyID].moduleID;
+			var hue = this.props.policiesData[policyID].view.hue;
+			moduleArray.push(moduleID)
+		}.bind(this))
+
+		moduleArray = _.uniq(moduleArray);
+
+		_.forEach(moduleArray, function(moduleID, i){
+			var hue = this.props.dependencies[moduleID].view.hue;
+			var cy = indicatorY - (7 * i);
+			var indicatorStyle = {
+				fill: getHSL(hue, "lighter"),
+				stroke: getHSL(hue),
+				opacity: indicatorOpacity
+			}
+			indicators.push(<circle key={i} cx={indicatorX} cy={cy} style={indicatorStyle} r="2.5" />)
+		}.bind(this))
+
 		return (
-			<polygon 
-				className = "hostInterface" 
-				style = {interfaceStyle} 
-				points = {points} 
-				transform = {transformString} 
-				onMouseEnter={this.onMouseEnter} 
-				onMouseLeave={this.onMouseLeave} 
-				onMouseUp={this.onMouseUp} 
-				onMouseDown={this.onMouseDown}/>
+			<g transform = {transformString}>
+				<polygon 
+					className = "hostInterface" 
+					style = {interfaceStyle} 
+					points = {points} 
+					//transform = {transformString} 
+					onMouseEnter={this.onMouseEnter} 
+					onMouseLeave={this.onMouseLeave} 
+					onMouseUp={this.onMouseUp} 
+					onMouseDown={this.onMouseDown}/>
+				{indicators}
+			</g>		
   		)
 	},
 });
