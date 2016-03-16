@@ -535,11 +535,6 @@ var IOConsole = React.createClass({
 
         var topologyComponents = newProjectObject.topology.components;
 
-        _.forEach(topologyComponents, function(component){
-            var module = component.module;
-            moduleArray.push(module);
-        });
-        moduleArray = _.uniq(moduleArray);*/
 
         //find wires and delete them
         if (newProjectObject.topology.wires){
