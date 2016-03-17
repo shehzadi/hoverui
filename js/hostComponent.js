@@ -3,10 +3,6 @@ var HostComponent = React.createClass({
 		this.props.onMouseDown(this.props.hostComponentID, "hostComponent")
 	},
 
-	openMenu: function(event){
-		this.props.openMenu(event)
-	},
-
 	render: function() {
 		var containerStyle = {
 			width: this.props.hostCompDims.width,
@@ -15,29 +11,22 @@ var HostComponent = React.createClass({
 			left: this.props.hostComponent.left,
 		};
 
-		var classNameString = "hostComponent";
-		var label = "Select Host Interface";
-
-		if (this.props.isMapped == true){
-			label = "eth0";
+		var hostIfcName = this.props.hostComponent.name;
+		console.log("SHEHZAD hostIfcName = ", hostIfcName);
+		if (hostIfcName){
+			if (_.isEmpty(hostIfcName)){
+				hostIfcName = "hostIfcName";
+			}
+		}else{
+			hostIfcName = "hostIfcName";
 		}
-		else {
-			classNameString += " isNotMapped"
-		}
-
-		var buttonClassString = "hostComponentLabel";
-		if (this.props.menuTarget.value == this.props.hostComponentID){
-			buttonClassString += " isOpenMenu"
-		}
-
-		
 
 		return (
 			<div 
-				className={classNameString} 
+				className="hostComponent" 
 				style={containerStyle}
 				onMouseDown={this.onMouseDown}>
-				<button className={buttonClassString} onClick={this.openMenu} name="mapHostInterface" value={this.props.hostComponentID}>{label}<span className="caret"></span></button>
+				{hostIfcName}
   			</div>
 		);
 	}

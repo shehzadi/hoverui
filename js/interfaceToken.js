@@ -191,31 +191,17 @@ var InterfaceToken = React.createClass({
 
 		//rotation
 		var rotation = 0;
-		switch (this.props.tokenObject.face){
-			case "right":
-				rotation = -90; break;
-			case "left":
-				rotation = 90; break;
-			case "top":
-				rotation = 180; break;
-			case "bottom":
-				rotation = 0; break;
-			default:
-				switch (this.props.tokenObject.defaultFace){
-					case "right":
-						rotation = -90; break;
-					case "left":
-						rotation = 90; break;
-					case "top":
-						rotation = 180; break;
-					case "bottom":
-						rotation = 0; break;
-					default:
-						if (this.props.tokenObject.capacity && this.props.tokenObject.mode == "in"){
-							rotation = 180;
-						}
-				}
 
+		if (this.props.tokenObject.face == "right"){
+			rotation = -90
+		}
+
+		if (this.props.tokenObject.face == "left"){
+			rotation = 90
+		}
+
+		if (this.props.tokenObject.face == "top" || (this.props.tokenObject.capacity && this.props.tokenObject.mode == "in")){
+			rotation = 180;
 		}
 
 		var transformString = "rotate(" + rotation + " " + leftCenterPoint + " " + topCenterPoint + ")";

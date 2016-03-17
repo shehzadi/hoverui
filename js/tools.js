@@ -47,10 +47,6 @@ var Tools = React.createClass({
    		};
 	},
 
-	openMenu: function(event){
-		this.props.openMenu(event)
-	},
-
 	openPopover: function(event){
 		this.props.openPopover(event)
 	},
@@ -100,8 +96,6 @@ var Tools = React.createClass({
 			)
 		}
 
-		
-
 		var downloadData = "data: text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.props.selectedProject));
 
 		return (
@@ -109,9 +103,8 @@ var Tools = React.createClass({
 				{projectName}
 				<span className="version">{version}</span>
 				<button className="disabled">Save Version&hellip;</button>
-				<button name="projectActions" onClick={this.openMenu}>More Actions<span className="caret"></span></button>
+				<button className="" name="projectActions" onClick={this.openPopover}>More Actions</button>
 				<div className="buttons">
-					<button name="hostInterfaces" onClick={this.openPopover}>Host Interfaces<span className="caret"></span></button>
 					<button className="disabled">Deploy to IO Visor&hellip;</button>
 				</div>
 			</div>

@@ -41,6 +41,7 @@ var InstrumentLink = React.createClass({
 			}
 		}
 
+
 		if (this.state.isSourceHover && this.props.type != "inProgress"){
 			sourceRadius = 7;
 		}
@@ -106,6 +107,8 @@ var InstrumentLink = React.createClass({
 			}
 		
 		pathString += " L" + intersection.left + " " + intersection.top;
+
+
 
 		return (
 			<g className = "instrumentLink" style = {wireStyle}>

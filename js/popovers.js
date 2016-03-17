@@ -1,16 +1,74 @@
+var HomeActions = React.createClass({
+	handleActions: function(event){
+		this.props.handleActions(event)
+	},
+
+	render: function() {
+		return (
+			<ul className="popoverContent">
+				<li className = "menuSection">Settings</li>
+				<li><a name="repositories" onMouseUp={this.handleActions}>Data Repositories</a></li>
+			</ul>
+		)
+	}
+});
+
+var AddObject = React.createClass({
+	handleActions: function(event){
+		this.props.handleActions(event)
+	},
+
+	render: function() {
+		return (
+			<ul className="popoverContent">
+				<li className = "menuSection">Create Object</li>
+				<li><a name="newProject" onMouseUp={this.handleActions}>New Project</a></li>
+				<li><a name="newModule" className="disabled" onMouseUp={this.handleActions}>New Module&hellip;</a></li>
+				<li><a name="newProtocol" className="disabled" onMouseUp={this.handleActions}>New Protocol&hellip;</a></li>
+				<li className = "menuSection">Import Object</li>
+				<li><a name="importProject" className="disabled" onMouseUp={this.handleActions}>Import Project&hellip;</a></li>
+				<li><a name="importModule" className="disabled" onMouseUp={this.handleActions}>Import Module&hellip;</a></li>
+			</ul>
+		)
+	}
+});
+
+var ProjectActions = React.createClass({
+	handleActions: function(event){
+		this.props.handleActions(event)
+	},
+
+	render: function() {
+		var deleteButtonClass = "";
+		if (_.size(this.props.projects) == 1){
+			deleteButtonClass = "disabled"
+		}
+		var wiresObject = this.props.selectedProject.topology.wires || {};
+
+		var saveAsModuleButtonClass = "";
+		var nWiresToHostInterfaces = 0;
+
+		var isConnectionsToHostInterfaces = _.find(wiresObject, function(wire) {
+			return !wire[0].ifc || !wire[1].ifc;
+		});
+
+		if (!isConnectionsToHostInterfaces){
+			saveAsModuleButtonClass = "disabled"
+		}
+
+		return (
+			<ul className="popoverContent">
+				<li><a className="disabled" name="duplicate" onMouseUp={this.handleActions}>Duplicate Project</a></li>
+				<li><a name="saveIOModule" className={saveAsModuleButtonClass} onMouseUp={this.handleActions}>Save as IO Module&hellip;</a></li>
+				<li><a name="downloadJSON" onMouseUp={this.handleActions}>Download JSON</a></li>
+				<li className = "menuSection"></li>
+				<li><a name="deleteProject" className={deleteButtonClass} onMouseUp={this.handleActions}>Delete Project&hellip;</a></li>
+			</ul>
+		)
+	}
+});
+
 var Popover = React.createClass({
-	getInitialState: function(){
-		return {
-			popoverRectangle: false
-		}
-	},
-
-	getDefaultProps: function(){
-		return {
-			noseWidth: 8
-		}
-	},
-
 	handleActions: function(event) {
 		this.props.handleActions(event)
 	},
@@ -19,69 +77,51 @@ var Popover = React.createClass({
 		this.props.closePopover()
 	},
 
-	componentDidMount: function() {
-		var domNode = this.refs.container.getDOMNode().getBoundingClientRect();
-		this.setState({
-			popoverRectangle: domNode
-		})
-	},
-
-	popoverClick: function(event) {
-		event.stopPropagation();
-	},
-
 	render: function() {
 		var popover = false;
 
 		var targetRect = this.props.popoverTarget.getBoundingClientRect();
 
 		var popoverPosition = {
-			left: 0,
-			top: 0
+			left: targetRect.left,
+			top: targetRect.bottom
 		}
-
-		var noseStyle = {
-			borderWidth: this.props.noseWidth,
-			left: 0,
-			top: 0
-		}
-
-		console.log(this.state.popoverRectangle);
-		if (this.state.popoverRectangle){
-			var leftPopoverPosition = (targetRect.left + (targetRect.width / 2)) - (this.state.popoverRectangle.width / 2);
-			var topPopoverPosition = targetRect.top + targetRect.height + (this.props.noseWidth);
-			popoverPosition = {
-				left: leftPopoverPosition,
-				top: topPopoverPosition
-			}
-
-			var leftNosePosition = (targetRect.left + (targetRect.width / 2)) - (this.props.noseWidth);
-			var topNosePosition = targetRect.top + targetRect.height - this.props.noseWidth;
-			noseStyle = {
-				borderWidth: this.props.noseWidth,
-				left: leftNosePosition,
-				top: topNosePosition
-			}
-		}
-
 		
-		
-		if (this.props.popoverTarget.name == "hostInterfaces"){
+		if (this.props.popoverTarget.name == "homeActions"){
 			popover = (
-				<div id={this.props.popoverTarget.name} className="popoverContent" style={popoverPosition}>
-					<span className="inlineInstruction">Click the Host Interfaces to show/hide for this project.</span>
-				</div>
+				<div id="popoverBackground" onClick={this.closePopover}>
+	  				<div style={popoverPosition} className="popoverContainer">
+	  					<HomeActions 
+	  						handleActions = {this.handleActions}/>
+	  				</div>
+	  			</div>	
 			)
 		}
 
-		return (
-			<div id="popoverBackground" onClick={this.closePopover}>
-  				<div style={popoverPosition} ref="container" onClick={this.popoverClick} className="popoverContainer">
-  					<div className="popoverClose" onClick={this.closePopover}>&times;</div>
-  					{popover}
-  				</div>
-  				<div className="nose" style={noseStyle}></div>
-  			</div>	
-		)
+		if (this.props.popoverTarget.name == "addObject"){
+			popover = (
+				<div id="popoverBackground" onClick={this.closePopover}>
+	  				<div style={popoverPosition} className="popoverContainer">
+	  					<AddObject 
+	  						handleActions = {this.handleActions}/>
+	  				</div>
+	  			</div>	
+			)
+		}
+
+		if (this.props.popoverTarget.name == "projectActions"){
+			popover = (
+				<div id="popoverBackground" onClick={this.closePopover}>
+	  				<div style={popoverPosition} className="popoverContainer">
+	  					<ProjectActions 
+	  						selectedProject = {this.props.selectedProject}
+	  						projects = {this.props.projects}
+	  						handleActions = {this.handleActions}/>
+	  				</div>
+	  			</div>	
+			)
+		}
+
+		return popover
 	},
 });

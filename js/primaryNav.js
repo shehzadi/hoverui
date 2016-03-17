@@ -11,14 +11,12 @@ var PrimaryNav = React.createClass({
 					selectedProjectID = {this.props.selectedProjectID}/>
 
 				<ModuleSection 
-					//callbacks
-					onCategoryClick = {this.props.onCategoryClick} 
-					onModuleMouseDown = {this.props.onModuleMouseDown} 
-					//data
 					modules = {this.props.modules} 
 					sortedModuleArray = {this.props.sortedModuleArray} 
 					categories = {this.props.categories} 
-					categoryVisibility = {this.props.categoryVisibility}/>
+					onCategoryClick = {this.props.onCategoryClick} 
+					categoryVisibility = {this.props.categoryVisibility}
+					onModuleMouseDown = {this.props.onModuleMouseDown} />
 			</div>
 		);
 	},
