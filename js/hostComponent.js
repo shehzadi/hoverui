@@ -16,7 +16,7 @@ var HostComponent = React.createClass({
 		};
 
 		var hostIfcName = this.props.hostComponent.name;
-		console.log("SHEHZAD hostIfcName = ", hostIfcName);
+		//console.log("SHEHZAD hostIfcName = ", hostIfcName);
 		if (hostIfcName){
 			if (_.isEmpty(hostIfcName)){
 				hostIfcName = "hostIfcName";

@@ -873,7 +873,6 @@ var IOConsole = React.createClass({
     },
 
     openPopover: function(event) {
-        console.log(event.target);
         this.setState({
             popoverTarget: event.target,
         });
@@ -1011,6 +1010,8 @@ var IOConsole = React.createClass({
 
     onHostIfcClick : function(payload, ifcType){
         //console.log("SHEHZAD", this.state.projectsIfcMapping);
+        console.log("Interface name: ", payload, ifcType)
+
         var projectsObj = this.state.projectsObject;
 
         var updatedObj = this.state.projectsIfcMapping;
@@ -1118,8 +1119,10 @@ var IOConsole = React.createClass({
                 <Popover
                     projects = {this.state.projectsObject} 
                     selectedProject = {selectedProject} 
+                    onHostIfcClick = {this.onHostIfcClick} 
                     handleActions = {this.handleActions} 
                     closePopover = {this.closePopover} 
+                    selectedProjectIfcMapping = {this.state.projectsIfcMapping[this.state.selectedProjectID] || {}} 
                     popoverTarget = {this.state.popoverTarget}/>
             );
         }
@@ -1177,10 +1180,6 @@ var IOConsole = React.createClass({
                 {instrumentInProgress}
 				{modalDialogues}
                 {popover}
-                <HostIfcList
-                    selectedProjectIfcMapping = {this.state.projectsIfcMapping[this.state.selectedProjectID] || {}}
-                    selectedProjectHostIfcs = {this.state.projectsObject[this.state.selectedProjectID].topology.host_interfaces || {}}
-                    onIfcClick = {this.onHostIfcClick}/>
                 {menu}
                 <a 
                     href = {downloadData}

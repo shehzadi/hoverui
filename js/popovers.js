@@ -30,6 +30,10 @@ var Popover = React.createClass({
 		event.stopPropagation();
 	},
 
+	onIfcMappingClick: function(hostIfcName, type) {
+		this.props.onHostIfcClick(hostIfcName, type)
+	},
+
 	render: function() {
 		var popover = false;
 
@@ -46,7 +50,7 @@ var Popover = React.createClass({
 			top: 0
 		}
 
-		console.log(this.state.popoverRectangle);
+		//console.log(this.state.popoverRectangle);
 		if (this.state.popoverRectangle){
 			var leftPopoverPosition = (targetRect.left + (targetRect.width / 2)) - (this.state.popoverRectangle.width / 2);
 			var topPopoverPosition = targetRect.top + targetRect.height + (this.props.noseWidth);
@@ -70,6 +74,10 @@ var Popover = React.createClass({
 			popover = (
 				<div id={this.props.popoverTarget.name} className="popoverContent" style={popoverPosition}>
 					<span className="inlineInstruction">Click the Host Interfaces to show/hide for this project.</span>
+					<HostIfcList
+	                    selectedProjectIfcMapping = {this.props.selectedProjectIfcMapping}
+	                    selectedProjectHostIfcs = {this.props.selectedProject.topology.host_interfaces || {}}
+	                    onIfcMappingClick = {this.onIfcMappingClick}/>
 				</div>
 			)
 		}
