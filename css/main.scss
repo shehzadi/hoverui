@@ -27,7 +27,6 @@ $default-padding: 15px;
 $pattern-pitch: 8px;
 $pattern-line-color: lighten($workspace-color, 3%);
 
-
 /* Reset */
 * {	
 	margin: 0;
@@ -186,6 +185,20 @@ body::-webkit-scrollbar {
 }
 
 /* Element styling */
+
+.ifcContainer {
+	.ifcList {
+		div {
+			padding-left: 20px;
+			&.selected {
+				background-image: url("../img/check.png");
+				background-position: 0 50%;
+				background-size: 12px
+			}
+		}
+	}
+}
+
 #menuBackground, #popoverBackground {
 	position: absolute;
 	top:0;
@@ -743,10 +756,6 @@ body::-webkit-scrollbar {
 	}
 }
 
-.selected {
-	background-color: hsla(0, 0%, 100%, 0.5);
-}
-
 .version {
 	@include subtext;
 	margin: 0 8px 0 5px;
@@ -815,6 +824,10 @@ body::-webkit-scrollbar {
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
+
+	.selected {
+		background-color: hsla(0, 0%, 100%, 0.5);
+	}
 
 	h1 {
 		color: $nav-section-text-color;

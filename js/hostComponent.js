@@ -15,6 +15,16 @@ var HostComponent = React.createClass({
 			left: this.props.hostComponent.left,
 		};
 
+		var hostIfcName = this.props.hostComponent.name;
+		console.log("SHEHZAD hostIfcName = ", hostIfcName);
+		if (hostIfcName){
+			if (_.isEmpty(hostIfcName)){
+				hostIfcName = "hostIfcName";
+			}
+		}else{
+			hostIfcName = "hostIfcName";
+		}
+
 		var classNameString = "hostComponent";
 		var label = "Select Host Interface";
 
@@ -37,6 +47,7 @@ var HostComponent = React.createClass({
 				className={classNameString} 
 				style={containerStyle}
 				onMouseDown={this.onMouseDown}>
+				{hostIfcName}
 				<button className={buttonClassString} onClick={this.openMenu} name="mapHostInterface" value={this.props.hostComponentID}>{label}<span className="caret"></span></button>
   			</div>
 		);
