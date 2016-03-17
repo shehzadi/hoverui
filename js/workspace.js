@@ -340,7 +340,6 @@ var Workspace = React.createClass({
 		var componentsObject = selectedProject.topology.components || {};
 		var wiresObject = selectedProject.topology.wires || {};
 		var hostComponentsObject = selectedProject.topology.host_interfaces || {};
-		var hostIfcMapping = this.props.selectedProjectIfcMapping;
 		var policiesObject = selectedProject.policies || {};
 		var instrumentsObject = selectedProject.instruments || {};
 
@@ -394,9 +393,6 @@ var Workspace = React.createClass({
 				protocol: thisHostComponent.protocol,
 				policies: []
 			};
-			if (hostIfcMapping[hostComponentID]){
-				this.hostComponentData[hostComponentID].name = hostIfcMapping[hostComponentID];
-			}
 		};
 
 		//add io capability data
@@ -405,14 +401,22 @@ var Workspace = React.createClass({
 			var componentInterfaces = thisComponent.interfaces;
 			var moduleInterfaces = thisComponent.module.topology.interfaces;
 
+
 			var ioCapability = [];
 
 			_.forEach(moduleInterfaces, function(interface){
+				if (interface.view){
+					var defaultFace = interface.view.defaultFace || false
+				}
+				else {
+					var defaultFace = false
+				}
 				var thisCapability = {
 					componentID: componentID,
 					mode: interface.mode,
 					protocol: interface.protocol,
 					capacity: interface.capacity,
+					defaultFace: defaultFace,
 					used: 0
 				};
 
@@ -717,12 +721,27 @@ var Workspace = React.createClass({
   			_.forEach(thisComponent.ioCapability, function(thisToken) {
   				var remaining = thisToken.capacity - thisToken.used;
   				if (remaining > 0){	//only add if not empty
-  					if (thisToken.mode == "in"){
-  						tokenArrays.top.push(thisToken)
-  					}
-  					else {
-  						tokenArrays.bottom.push(thisToken)
-  					}				
+  					switch (thisToken.defaultFace) {
+					    case "top":
+					        tokenArrays.top.push(thisToken)
+					        break;
+					    case "bottom":
+					        tokenArrays.bottom.push(thisToken)
+					        break;
+					    case "right":
+					        tokenArrays.right.push(thisToken)
+					        break;
+					    case "left":
+					        tokenArrays.left.push(thisToken)
+					        break;
+					    default:
+					        if (thisToken.mode == "in"){
+		  						tokenArrays.top.push(thisToken)
+		  					}
+		  					else {
+		  						tokenArrays.bottom.push(thisToken)
+		  					}
+					}				
   				}
   			})
 
@@ -845,7 +864,6 @@ var Workspace = React.createClass({
 			var thisTokenArrays = thisComponent.tokenArrays;
 			var policiesData = this.policiesData;
 
-			var that = this;
 			_.forEach(thisTokenArrays, function(thisTokenArray, i) {
 				_.forEach(thisTokenArray, function(thisToken, j) {
 					var key = "" + componentID + i + j;
@@ -853,24 +871,24 @@ var Workspace = React.createClass({
 					<InterfaceToken 
 						tokenObject = {thisToken} 
 						key = {key} 
-						isPendingDeletion = {that.isPendingDeletion} 
-						onMouseEnter = {that.ifcMouseEnter} 
-						onMouseLeave = {that.ifcMouseLeave} 
-						onMouseDown = {that.ifcMouseDown} 
-						onMouseUp = {that.ifcMouseUp} 
-						protocols = {that.props.protocols} 
+						isPendingDeletion = {this.isPendingDeletion} 
+						onMouseEnter = {this.ifcMouseEnter} 
+						onMouseLeave = {this.ifcMouseLeave} 
+						onMouseDown = {this.ifcMouseDown} 
+						onMouseUp = {this.ifcMouseUp} 
+						protocols = {this.props.protocols} 
 						policiesData = {policiesData} 
-						dependencies = {that.props.selectedProject.dependencies} 
+						dependencies = {this.props.selectedProject.dependencies} 
 						componentID = {componentID} 
-						componentData = {that.componentData} 
-						dragging = {that.state.dragging} 
-						wireType = {that.state.wireType} 
-						mouseDown = {that.state.mouseDown}
-						isPendingUpdate = {that.state.isPendingUpdate}
-						ifcDims = {that.props.ifc}/>			
+						componentData = {this.componentData} 
+						dragging = {this.state.dragging} 
+						wireType = {this.state.wireType} 
+						mouseDown = {this.state.mouseDown}
+						isPendingUpdate = {this.state.isPendingUpdate}
+						ifcDims = {this.props.ifc}/>			
 					);
-				});
-			});
+				}.bind(this));
+			}.bind(this));
 		};
 
 		//render host components and interfaces
@@ -882,17 +900,23 @@ var Workspace = React.createClass({
 
 			if (hostComponentID == this.state.dragging){ //component is being dragged
 				thisHostComponent.left = this.dragStartX + this.state.cursorX - this.startX;
-				thisHostComponent.top = this.dragStartY + this.state.cursorY - this.startY;	
+				thisHostComponent.top = this.dragStartY + this.state.cursorY - this.startY;
+				if (thisHostComponent.top <= headerHeight + 2){thisHostComponent.top = headerHeight + 2}
+				if (thisHostComponent.left <= 2){thisHostComponent.left = 2}	
 				this.positionInterfaces();
 				this.addPositionsToInstruments();
-				this.applyPoliciesToInterfaces();
+				this.applyPoliciesToInterfaces();	
 			}
+
+			var isMapped = false;
 
 			hostComponents.push(
 				<HostComponent
 					key = {hostComponentID} 
+					menuTarget = {this.props.menuTarget} 
 					onMouseDown = {this.objectMouseDown} 
-					onMouseUp = {this.ifcMouseUp} 
+					openMenu = {this.props.openMenu}
+					isMapped = {isMapped} 
 					hostCompDims = {this.props.hostComponent} 
 					hostComponent = {thisHostComponent} 
 					hostComponentID = {hostComponentID}/>
