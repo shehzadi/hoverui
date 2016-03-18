@@ -336,10 +336,11 @@ var Workspace = React.createClass({
 
 	prepData: function(props) {
 		var selectedProject = props.selectedProject;
-		var dependenciesObject = selectedProject.dependencies || {} ;
-		var componentsObject = selectedProject.topology.components || {};
-		var wiresObject = selectedProject.topology.wires || {};
-		var hostComponentsObject = selectedProject.topology.host_interfaces || {};
+		var dependenciesObject = selectedProject.dependencies || {};
+		var topology = selectedProject.topology || {};
+		var componentsObject = topology.components || {};
+		var wiresObject = topology.wires || {};
+		var hostComponentsObject = topology.host_interfaces || {};
 		var hostIfcMapping = this.props.selectedProjectIfcMapping;
 		var policiesObject = selectedProject.policies || {};
 		var instrumentsObject = selectedProject.instruments || {};

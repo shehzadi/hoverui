@@ -112,12 +112,7 @@ var IOConsole = React.createClass({
             }
             this.setLocalSetting("projectsIfcMapping", projectsIfcMapping);
         }
-        return projectsIfcMapping;
-        /*
-        this.setState({
-
-        });
-        */
+        return projectsIfcMapping;        
     },
 
     handleFirebaseProjects: function(dataSnapshot) {
@@ -192,7 +187,6 @@ var IOConsole = React.createClass({
     },
 
     handleActions: function(event){
-        console.log(event);
         var eventName = event.target.name;
 
         switch(eventName) {
@@ -218,7 +212,10 @@ var IOConsole = React.createClass({
     },
 
     updateMappingCookie: function(hostID, newIfcName){                   
-        var updatedObj = this.state.projectsIfcMapping;        
+        var updatedObj = this.state.projectsIfcMapping;  
+        if (newIfcName == "false"){
+            newIfcName = {}
+        }
         updatedObj[this.state.selectedProjectID][hostID] = newIfcName;
         this.setLocalSetting("projectsIfcMapping", updatedObj);
         this.setState({

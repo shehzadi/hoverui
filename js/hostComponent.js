@@ -24,7 +24,7 @@ var HostComponent = React.createClass({
 		}
 		else {
 			classNameString += " isNotMapped";
-			label = "Select Host Interface"
+			label = "No Mapping"
 		}
 
 
