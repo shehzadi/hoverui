@@ -909,16 +909,13 @@ var Workspace = React.createClass({
 				this.addPositionsToInstruments();
 				this.applyPoliciesToInterfaces();
 			}
-
-			var isMapped = false;
-
+			
 			hostComponents.push(
 				<HostComponent
 					key = {hostComponentID} 
 					menuTarget = {this.props.menuTarget} 
 					onMouseDown = {this.objectMouseDown} 
-					openMenu = {this.props.openMenu}
-					isMapped = {isMapped} 
+					openMenu = {this.props.openMenu} 
 					hostCompDims = {this.props.hostComponent} 
 					hostComponent = {thisHostComponent} 
 					hostComponentID = {hostComponentID}/>
