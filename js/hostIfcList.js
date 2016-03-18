@@ -24,13 +24,13 @@ var HostIfcList = React.createClass({
 
   onNetIfcClick : function(event){
     //console.log(event.target.className, event.target.getAttribute("name"));
-    this.props.onIfcClick(event.target.getAttribute("name"), "network");
+    this.props.onIfcMappingClick(event.target.getAttribute("name"), "network");
     
   },
 
   onStorIfcClick : function(event){
     //console.log(event.target.className, event.target.getAttribute("name"));
-    this.props.onIfcClick(event.target.getAttribute("name"), "storage");
+    this.props.onIfcMappingClick(event.target.getAttribute("name"), "storage");
     
   },
 	render: function() {	
@@ -41,14 +41,7 @@ var HostIfcList = React.createClass({
     var networkJsxArr = [];
     var storageJsxArr = [];
 
-    var styleString = {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: 200,
-      height: 300,
-      backgroundColor: "red"
-    }
+
 
     
 
@@ -56,13 +49,13 @@ var HostIfcList = React.createClass({
 
     var selectedLocalIfcs = [];
     for (var projectIfc in localHostIfcMap) {
-      console.log("Project IFCs", projectHostIfcs);
+     // console.log("Project IFCs", projectHostIfcs);
       if (projectHostIfcs[projectIfc]){
         //console.log("Adding to selectedLocalIfcs", localHostIfcMap[projectIfc]);
         selectedLocalIfcs.push(localHostIfcMap[projectIfc]);
       }
     }
-    console.log(selectedLocalIfcs);
+   // console.log(selectedLocalIfcs);
 
     for (var i in networkInterfaces) {
       //console.log(_.includes(selectedLocalIfcs,networkInterfaces[i].name));
@@ -71,7 +64,7 @@ var HostIfcList = React.createClass({
         classString = "selected"
       }
       networkJsxArr.push(
-        <div name={networkInterfaces[i].name} className={classString} onClick={this.onNetIfcClick}>
+        <div key={i} name={networkInterfaces[i].name} className={classString} onClick={this.onNetIfcClick}>
         {networkInterfaces[i].name}
         </div>
       )
@@ -83,7 +76,7 @@ var HostIfcList = React.createClass({
         classString = "selected"
       }
       storageJsxArr.push(
-          <div name={storageInterfaces[i].name} className={classString} onClick={this.onStorIfcClick}>
+          <div key={i} name={storageInterfaces[i].name} className={classString} onClick={this.onStorIfcClick}>
           {storageInterfaces[i].name}
           </div>
         )
@@ -93,7 +86,7 @@ var HostIfcList = React.createClass({
     //storageInterfaces
 
   	return (
-      <div className="ifcContainer" style={styleString}>
+      <div className="ifcContainer">
         <div className="ifcList">
           <h2 onClick={this.onNetworkClick}>Network</h2>
           {networkJsxArr}

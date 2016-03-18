@@ -62,6 +62,10 @@ body {
 	background-color: hsl(0, 0%, 60%)
 }
 
+button>span {
+	pointer-events: none
+}
+
 /* Scrollbars */
 
 ::-webkit-scrollbar {
@@ -162,9 +166,9 @@ body::-webkit-scrollbar {
 
 #header {
 	position: absolute;
-	top:0;
-	left:0;
-	right:0;
+	top: 0;
+	left: 0;
+	right: 0;
 	z-index: 10;
 	height: $tools-height;
 }
@@ -182,46 +186,120 @@ body::-webkit-scrollbar {
 
 /* Element styling */
 
-.ifcContainer {
-	.ifcList {
-		div {
-			padding-left: 20px;
-			&.selected {
-				background-image: url("../img/check.png");
-				background-position: 0 50%;
-				background-size: 12px
-			}
-		}
-	}
-}
 
-#popoverBackground {
+
+#menuBackground, #popoverBackground {
 	position: absolute;
-	top:0;
-	bottom:0;
-	left:0;
-	right:0;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
 	z-index: 100;
 }
 
-.isOpenPopover {
-	background-color: hsla(0, 0%, 0%, 0.2) !important;
+.popoverContainer {
+	background-color: hsla(0, 0%, 92%, 0.95);
+	padding: 6px 8px 5px 5px;
+	box-shadow: 0px 2px 10px  hsla(0, 0%, 0%, 0.4);
+	position: absolute;
+	border-radius: 4px;
+	font-size: 13px;
+	.popoverClose {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		width: 20px;
+		height: 20px;
+		font-size: 16px;
+		color: hsla(0, 0%, 0%, 0.5);
+		background-color: transparent;
+		text-align: center;
+		&:hover{
+			color: hsla(0, 0%, 0%, 0.75);
+			background-color: hsla(0, 0%, 0%, 0.1);
+		}
+	}
+
+	.ifcContainer {
+		border-top: 1px solid hsla(0, 0%, 0%, 0.2);
+		margin-top: 5px;
+		overflow-y: auto;
+		max-height: 400px;
+		.ifcList {
+			margin-top: 5px;
+			padding: 0 12px;
+
+
+			div {
+				letter-spacing: 0.04em;
+				padding: 3px 10px 3px 25px;
+				margin-top: 1px;
+				&:hover{
+					background-color: hsla(0, 0%, 0%, 0.03);
+				}
+				&.selected {
+					background-image: url("../img/check.png");
+					background-position: 6px 50%;
+					background-size: 12px;
+					font-weight: bold;
+					background-color: hsla(0, 0%, 0%, 0.1);
+					&:hover{
+					background-color: hsla(0, 0%, 0%, 0.13);
+				}
+				}
+			}
+			&:last-of-type h2 {
+				border-top: 1px solid hsla(0, 0%, 0%, 0.2);
+				padding-top: 5px;
+			}
+		}
+
+		h2 {
+			padding-top: 3px;
+			color: hsla(0, 0%, 0%, 0.45);
+			font-size: 11px;
+			
+		}
+
+	}
 }
 
-.popoverContainer {
-	background-color: hsl(0, 0%, 80%);
+.nose {
+	position: absolute;
+    width: 0;
+    height: 0;
+    vertical-align: middle;
+    border-style: solid;
+    border-top-color: transparent;
+    border-bottom-color: hsla(0, 0%, 92%, 0.95);
+    border-right-color: transparent;
+    border-left-color: transparent;
+}
+
+.inlineInstruction {
+	font-style: italic;
+	opacity: 0.65;
+}
+
+#hostInterfaces {
+	width: 250px;
+	padding: 10px;
+}
+
+.menuContainer {
+	background-color: hsl(0, 0%, 87%);
 	padding-bottom: 5px;
 	box-shadow: 0px 2px 10px  hsla(0, 0%, 0%, 0.4);
 	position: absolute;
 }
 
-.popoverContent {
+.menuContent {
 	.menuSection {
 		padding: 3px 10px;
 		margin-top: 5px;
 		font-size: 11px;
 		color: hsl(0, 0%, 40%);
-		border-top: 1px solid hsl(0, 0%, 65%);
+		border-top: 1px solid hsl(0, 0%, 75%);
 	}
 
 	li {
@@ -239,7 +317,7 @@ body::-webkit-scrollbar {
 		font-size: 14px
 	}
 	li a:hover {
-		background-color: hsl(0, 0%, 90%)
+		background-color: hsl(0, 0%, 95%)
 	}
 }
 
@@ -449,6 +527,43 @@ body::-webkit-scrollbar {
 .workspace {
 	z-index: 0;
 
+	.hostComponent {
+		position: absolute;
+		background-color: hsla(0, 0%, 55%, 0.8);
+		box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.35);
+		font-size: 11px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: hsla(0, 0%, 0%, 0.8);
+		.hostComponentLabel {
+			text-overflow: ellipsis;
+			background-color: transparent;
+			padding: 2px 8px;
+			white-space: nowrap;
+			outline: 1px solid hsla(0, 0%, 0%, 0.1);
+			&:hover {
+				background-color: hsla(0, 0%, 0%, 0.05);
+				outline: 1px solid hsla(0, 0%, 0%, 0.15);
+			}
+			&.isOpenMenu {
+				background-color: hsla(0, 0%, 0%, 0.2);
+				outline: 1px solid hsla(0, 0%, 0%, 0.25);
+			}
+		}
+		&.isNotMapped .hostComponentLabel {
+			background-color: hsl(0, 0%, 100%);
+			outline: 1px solid hsla(345, 76%, 45%, 1.0);
+			color: hsla(345, 76%, 45%, 1.0);
+			&:hover {
+				background-color: hsla(344, 55%, 95%, 1.0);
+			}
+			&.isOpenMenu {
+				background-color: hsla(344, 55%, 83%, 1.0);
+			}
+		}
+	}
+
 	.instrument {
 		position: absolute;
 		color: hsla(0, 0%, 100%, 0.6);
@@ -529,7 +644,7 @@ body::-webkit-scrollbar {
 
 	.instrumentLink {
 		path {
-			stroke: hsla(0, 0%, 25%, 0.5);
+			stroke: hsla(0, 0%, 25%, 0.2);
 			pointer-events: none;
 		}
 		circle {
@@ -649,17 +764,6 @@ body::-webkit-scrollbar {
 		pointer-events: stroke
 	}
 
-	.hostComponent {
-		position: absolute;
-		background-color: hsla(0, 0%, 55%, 0.8);
-		outline: 1px solid hsla(0, 0%, 0%, 0.35);
-		font-size: 11px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: hsla(0, 0%, 0%, 0.8);
-	}
-
 	.interface {
 		position: absolute;
 		border: 1px solid red;
@@ -706,16 +810,21 @@ body::-webkit-scrollbar {
 	}
 	.add, .app-actions {
 		display: block;
-		vertical-align: center;
+		text-align: left;
+    	padding-left: 7px;
 		height: 24px;
 		width: 26px;
 		font-size: 16px;
 		color: hsla(0, 0%, 100%, 0.75);
 		background-color: transparent;
-	}
-	.add:hover:not(.disabled), .app-actions:hover:not(.disabled) {
-		color: hsla(0, 0%, 100%, 0.9);
-		background-color: hsla(0, 0%, 100%, 0.2);
+		&:hover:not(.disabled) {
+			color: hsla(0, 0%, 100%, 0.9);
+			background-color: hsla(0, 0%, 100%, 0.2);
+		}
+
+		&.isOpenMenu {
+			background-color: hsla(0, 0%, 0%, 0.2) !important;
+		}
 	}
 }
 
@@ -844,20 +953,10 @@ body::-webkit-scrollbar {
 				* {
 					cursor: -webkit-grab;
 				}
-				.affordance {
-					border-style: dotted;
-					border-color: hsl(0, 0%, 53%);
-				}
 			}
 			.content {
 				flex: 1 1 auto;
 				margin-right: 3px;
-			}
-			.affordance {
-				flex: 0 0 4.5px;
-				border-color: transparent;
-				border-width: 0 1.5px;
-								
 			}
 		}
 
@@ -941,12 +1040,12 @@ body::-webkit-scrollbar {
 		display: flex;
 		justify-content: flex-start;
 		font-size: 11.5px;
+		padding-left: 25px;
 
 		button {
 			padding: 3px 12px;
 			min-width: 50px;
 			margin: 3px;
-			margin-left: 25px;
 			background-color: $button-color;
 			border: 1px solid darken($button-color, 5%);
 			border-radius: 3px;
@@ -958,6 +1057,19 @@ body::-webkit-scrollbar {
 			}
 		}
 	}
+}
+
+.caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 4px;
+    margin-right: -2px;
+    vertical-align: middle;
+    border-top: 4px dashed;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+    opacity: 0.6;
 }
 
 .modalBackground {
