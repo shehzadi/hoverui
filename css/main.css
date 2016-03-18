@@ -245,6 +245,24 @@ body::-webkit-scrollbar {
   list-style: none;
 }
 
+.menuContent li.selected {
+  background-image: url("../img/check.png");
+  background-position: 10px 50%;
+  background-size: 10px;
+}
+
+.menuContent li:hover {
+  background-color: #f2f2f2;
+}
+
+.menuContent li.menuSection {
+  background-color: transparent;
+}
+
+.menuContent li.disabled {
+  background-color: transparent;
+}
+
 .menuContent li:first-of-type {
   margin-top: 3px;
   border: none;
@@ -254,10 +272,6 @@ body::-webkit-scrollbar {
   display: block;
   padding: 2px 50px 2px 25px;
   font-size: 14px;
-}
-
-.menuContent li a:hover {
-  background-color: #f2f2f2;
 }
 
 .modalContainer {

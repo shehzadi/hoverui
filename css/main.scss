@@ -244,8 +244,8 @@ body::-webkit-scrollbar {
 					font-weight: bold;
 					background-color: hsla(0, 0%, 0%, 0.1);
 					&:hover{
-					background-color: hsla(0, 0%, 0%, 0.13);
-				}
+						background-color: hsla(0, 0%, 0%, 0.13);
+					}
 				}
 			}
 			&:last-of-type h2 {
@@ -304,6 +304,20 @@ body::-webkit-scrollbar {
 
 	li {
 		list-style: none;
+		&.selected {
+			background-image: url("../img/check.png");
+			background-position: 10px 50%;
+			background-size: 10px;
+		}
+		&:hover {
+			background-color: hsl(0, 0%, 95%)
+		}
+		&.menuSection {
+			background-color: transparent;
+		}
+		&.disabled {
+			background-color: transparent;
+		}
 	}
 
 	li:first-of-type {
@@ -316,9 +330,7 @@ body::-webkit-scrollbar {
 		padding: 2px 50px 2px 25px;
 		font-size: 14px
 	}
-	li a:hover {
-		background-color: hsl(0, 0%, 95%)
-	}
+	
 }
 
 .modalContainer {
