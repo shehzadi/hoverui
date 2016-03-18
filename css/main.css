@@ -163,7 +163,7 @@ body::-webkit-scrollbar {
   border-top: 1px solid rgba(0, 0, 0, 0.2);
   margin-top: 5px;
   overflow-y: auto;
-  max-height: 500px;
+  max-height: 400px;
 }
 
 .popoverContainer .ifcContainer .ifcList {
