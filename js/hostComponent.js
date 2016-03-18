@@ -20,13 +20,11 @@ var HostComponent = React.createClass({
 
 		var hostIfcName = this.props.hostComponent.name;
 		if (_.isString(hostIfcName)){
-			console.log("mapped");
 			label = hostIfcName;	
 		}
 		else {
-			console.log("not mapped");
 			classNameString += " isNotMapped";
-			label = "Select Host Interface"
+			label = "No Mapping"
 		}
 
 

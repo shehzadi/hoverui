@@ -112,12 +112,7 @@ var IOConsole = React.createClass({
             }
             this.setLocalSetting("projectsIfcMapping", projectsIfcMapping);
         }
-        return projectsIfcMapping;
-        /*
-        this.setState({
-
-        });
-        */
+        return projectsIfcMapping;        
     },
 
     handleFirebaseProjects: function(dataSnapshot) {
@@ -205,10 +200,27 @@ var IOConsole = React.createClass({
                 this.deleteProject(); break;
             case "saveIOModule":
                 this.openModal("saveAsModule"); break;
+            case "ifcReMap":
+                var hostID =  event.target.getAttribute("data-host");
+                var newMap = event.target.getAttribute("data-newmap");
+                this.updateMappingCookie(hostID, newMap);
+                break
             default:
                 console.log("No Event Handler", event)
         }
 
+    },
+
+    updateMappingCookie: function(hostID, newIfcName){                   
+        var updatedObj = this.state.projectsIfcMapping;  
+        if (newIfcName == "false"){
+            newIfcName = {}
+        }
+        updatedObj[this.state.selectedProjectID][hostID] = newIfcName;
+        this.setLocalSetting("projectsIfcMapping", updatedObj);
+        this.setState({
+            projectsIfcMapping: this.state.projectsIfcMapping
+        })
     },
 
     deleteLink: function(linkObject){
@@ -1107,6 +1119,7 @@ var IOConsole = React.createClass({
                 <Menu
                     projects = {this.state.projectsObject} 
                     selectedProject = {selectedProject} 
+                    ifcMap = {this.state.projectsIfcMapping[this.state.selectedProjectID]}
                     handleActions = {this.handleActions} 
                     closeMenu = {this.closeMenu} 
                     menuTarget = {this.state.menuTarget}/>
