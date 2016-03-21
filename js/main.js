@@ -102,7 +102,8 @@ var IOConsole = React.createClass({
     },
 
     handleProjectsIfcMapping: function(projectsObj, selectedProject) {
-        var projectsIfcMapping = this.state.projectsIfcMapping;
+        console.log("Target: ", selectedProject);
+        var projectsIfcMapping = _.cloneDeep(this.state.projectsIfcMapping);
 
         if (!projectsIfcMapping[selectedProject]){
             projectsIfcMapping[selectedProject] = {}
@@ -770,11 +771,15 @@ var IOConsole = React.createClass({
     handleProjectClick: function(payload) {
         if (payload.projectID != this.state.selectedProjectID){
             var projectsIfcMapping = this.handleProjectsIfcMapping(this.state.projectsObject, payload.projectID);
+            this.setLocalSetting("selectedProjectID", payload.projectID);
+            console.log("Click: ", payload.projectID, projectsIfcMapping[payload.projectID]);
             this.setState({
                 selectedProjectID: payload.projectID,
                 projectsIfcMapping: projectsIfcMapping
             });
-            this.setLocalSetting("selectedProjectID", payload.projectID);
+
+            console.log("Click: ", this.state.selectedProjectID, this.state.projectsIfcMapping[this.state.selectedProjectID]);
+            
         }
     },
 
@@ -1039,19 +1044,13 @@ var IOConsole = React.createClass({
         if (found == 0){
             var newKey="host-" + guid();
             this.handleNewHostIfc(newKey, ifcType, payload)
-
         }
-
-
-
     },
 
 	render: function() {
         if (_.isEmpty(this.state.modulesObject) || _.isEmpty(this.state.projectsObject)){
             return false
         }
-
-        //var nProjects = Object.keys(this.state.projectsObject).length;
 
         var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
 
@@ -1141,7 +1140,7 @@ var IOConsole = React.createClass({
         }
 
         var downloadData = "data: text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(selectedProject));
-
+console.log("Main: ", this.state.selectedProjectID, this.state.projectsIfcMapping[this.state.selectedProjectID]);
 		return (
 			<div id="IOConsole">
 				<div id="navigation">
@@ -1183,7 +1182,8 @@ var IOConsole = React.createClass({
                             handleLinkDrop = {this.handleNewLinkDrop} 
 							deleteWire = {this.deleteWire}
                             deleteLink = {this.deleteLink}
-							protocols = {this.state.protocolsObject}
+							protocols = {this.state.protocolsObject} 
+                            selectedProjectID = {this.state.selectedProjectID}
                             selectedProjectIfcMapping = {this.state.projectsIfcMapping[this.state.selectedProjectID] || {}} 
 							selectedProject = {selectedProject}/>
 					</div>

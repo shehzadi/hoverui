@@ -99,7 +99,6 @@ var Workspace = React.createClass({
 		}
 	},
 
-
 	ifcMouseLeave: function(tokenObject) {
 		if (this.state.wireType){
 			this.setState({
@@ -335,13 +334,14 @@ var Workspace = React.createClass({
 	},
 
 	prepData: function(props) {
+		console.log("Workspace: ", this.props.selectedProjectID, this.props.selectedProjectIfcMapping)
 		var selectedProject = props.selectedProject;
 		var dependenciesObject = selectedProject.dependencies || {};
 		var topology = selectedProject.topology || {};
 		var componentsObject = topology.components || {};
 		var wiresObject = topology.wires || {};
 		var hostComponentsObject = topology.host_interfaces || {};
-		var hostIfcMapping = this.props.selectedProjectIfcMapping;
+		var hostIfcMapping = props.selectedProjectIfcMapping;
 		var policiesObject = selectedProject.policies || {};
 		var instrumentsObject = selectedProject.instruments || {};
 
@@ -381,6 +381,7 @@ var Workspace = React.createClass({
 
 		//set up host component data object
 		this.hostComponentData = {};
+		console.log("Host Component - Project Mapping: ", this.props.selectedProjectID, hostIfcMapping); 
 		for (var hostComponentID in hostComponentsObject) {
 			var thisHostComponent = hostComponentsObject[hostComponentID];
 			var hostComponentViewData = selectedProject.view[hostComponentID];
@@ -497,8 +498,6 @@ var Workspace = React.createClass({
 				else {
 					var otherComponent = this.componentData[otherComponentID]
 				}
-
-				//console.log(thisComponent, otherComponent);
 
 				writeLocation["wireTo"] = {
 					component: otherComponentID,
@@ -899,6 +898,7 @@ var Workspace = React.createClass({
 		//render host components and interfaces
 		var hostComponents = [];
 		var hostIfcArray = [];
+		console.log("Workspace Ifc mapping data: ", this.props.selectedProjectID, this.props.selectedProjectIfcMapping);
 		for (var hostComponentID in this.hostComponentData) {
 			var thisHostComponent = this.hostComponentData[hostComponentID];
 			var policiesData = this.policiesData;
@@ -982,8 +982,6 @@ var Workspace = React.createClass({
 				if (instrument.left <= 0 || instrument.top <= headerHeight) { //component is outside of canvas, e.g. during drag operation
 					this.isPendingDeletion = id
 				}
-
-
 			}
 
 			instruments.push(
@@ -1034,18 +1032,8 @@ var Workspace = React.createClass({
 			var link = {
 				top: this.state.cursorY,
 				left: this.state.cursorX
-			}
-
-			
+			}	
 			var instrument = this.state.mouseDown.instrument;
-			/*var viewer = {
-				top: instrument.top,
-				left: instrument.left,
-				width: instrument.width,
-				height: instrument.height
-			}
-			*/
-
 			var linkInProgress = <InstrumentLink
 									type = "inProgress" 
 									linkTo = {link}
