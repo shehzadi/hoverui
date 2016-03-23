@@ -29,14 +29,26 @@ var networkInterfaces = [
 var storageInterfaces = [
 		{
 			"id": "1",
-			"name": "lvm0"
+			"name": "sda0"
 		},
 		{
 			"id": "2",
-			"name": "lvm1"
+			"name": "sda1"
 		},
 		{
 			"id": "3",
-			"name": "lvm2"
+			"name": "sdb"
+		},
+		{
+			"id": "4",
+			"name": "sdc"
+		},
+		{
+			"id": "5",
+			"name": "usb0"
+		},
+		{
+			"id": "6",
+			"name": "usb1"
 		}
 	];

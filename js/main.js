@@ -18,8 +18,9 @@ var IOConsole = React.createClass({
     		protocolsObject: {},
     		mouseDown: false,
     		dragging: false,
-    		modalArray: [],
-            popoverTarget: false,
+    		modalArray: [], 
+            menuTarget: false, 
+            popoverTarget: false, 
     		startX: 0,
     		startY: 0,
     		cursorX: 0,
@@ -101,7 +102,8 @@ var IOConsole = React.createClass({
     },
 
     handleProjectsIfcMapping: function(projectsObj, selectedProject) {
-        var projectsIfcMapping = this.state.projectsIfcMapping;
+        console.log("Target: ", selectedProject);
+        var projectsIfcMapping = _.cloneDeep(this.state.projectsIfcMapping);
 
         if (!projectsIfcMapping[selectedProject]){
             projectsIfcMapping[selectedProject] = {}
@@ -111,12 +113,7 @@ var IOConsole = React.createClass({
             }
             this.setLocalSetting("projectsIfcMapping", projectsIfcMapping);
         }
-        return projectsIfcMapping;
-        /*
-        this.setState({
-
-        });
-        */
+        return projectsIfcMapping;        
     },
 
     handleFirebaseProjects: function(dataSnapshot) {
@@ -204,10 +201,27 @@ var IOConsole = React.createClass({
                 this.deleteProject(); break;
             case "saveIOModule":
                 this.openModal("saveAsModule"); break;
+            case "ifcReMap":
+                var hostID =  event.target.getAttribute("data-host");
+                var newMap = event.target.getAttribute("data-newmap");
+                this.updateMappingCookie(hostID, newMap);
+                break
             default:
-                alert("No Event Handler", event)
+                console.log("No Event Handler", event)
         }
 
+    },
+
+    updateMappingCookie: function(hostID, newIfcName){                   
+        var updatedObj = this.state.projectsIfcMapping;  
+        if (newIfcName == "false"){
+            newIfcName = {}
+        }
+        updatedObj[this.state.selectedProjectID][hostID] = newIfcName;
+        this.setLocalSetting("projectsIfcMapping", updatedObj);
+        this.setState({
+            projectsIfcMapping: this.state.projectsIfcMapping
+        })
     },
 
     deleteLink: function(linkObject){
@@ -263,15 +277,11 @@ var IOConsole = React.createClass({
         //find instrument wires and delete them
         updatedProjectObject = this.updateInstrumentLinks(updatedProjectObject);
 
-
-
 		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(updatedProjectObject);
-
     },
 
     updateInstrumentLinks: function(projectObject){
         _.forEach(projectObject.instruments, function(instrument, instrumentID){
-            //console.log(instrumentID);
             _.forEach(instrument.interfaces, function(ifc, i){
                 var thisComponent = ifc.component;
                 var thisInterface = ifc.ifc;
@@ -281,7 +291,6 @@ var IOConsole = React.createClass({
                 if (!(projectObject.topology.components[thisComponent] && projectObject.topology.components[thisComponent].interfaces[thisInterface])){
                     delete projectObject.instruments[instrumentID].interfaces[i]
                 }
-
             })  
         })
 
@@ -762,11 +771,15 @@ var IOConsole = React.createClass({
     handleProjectClick: function(payload) {
         if (payload.projectID != this.state.selectedProjectID){
             var projectsIfcMapping = this.handleProjectsIfcMapping(this.state.projectsObject, payload.projectID);
+            this.setLocalSetting("selectedProjectID", payload.projectID);
+            console.log("Click: ", payload.projectID, projectsIfcMapping[payload.projectID]);
             this.setState({
                 selectedProjectID: payload.projectID,
                 projectsIfcMapping: projectsIfcMapping
             });
-            this.setLocalSetting("selectedProjectID", payload.projectID);
+
+            console.log("Click: ", this.state.selectedProjectID, this.state.projectsIfcMapping[this.state.selectedProjectID]);
+            
         }
     },
 
@@ -808,6 +821,8 @@ var IOConsole = React.createClass({
 		var dropID = this.state.dragging;
         var dropObject = this.state.modulesObject[dropID];
 
+        console.log(dropObject);
+
         var dropType = dropObject.type || "component";
 
 		var workspaceElement = this.refs.workspace.getDOMNode().getBoundingClientRect();
@@ -848,6 +863,25 @@ var IOConsole = React.createClass({
     	document.removeEventListener('mousemove', this.onMouseMove);
     	document.removeEventListener('mouseup', this.onMouseUp);
 	},
+
+    closeMenu: function() {
+        this.setState({
+            menuTarget: false,
+        }); 
+    },
+
+    openMenu: function(event) {
+        this.setState({
+            menuTarget: event.target,
+        }); 
+    },
+
+    openPopover: function(event) {
+        console.log(event.target);
+        this.setState({
+            popoverTarget: event.target,
+        }); 
+    },
 
     closePopover: function() {
         this.setState({
@@ -993,6 +1027,8 @@ var IOConsole = React.createClass({
 
     onHostIfcClick : function(payload, ifcType){
         //console.log("SHEHZAD", this.state.projectsIfcMapping);
+        console.log("Interface name: ", payload, ifcType)
+
         var projectsObj = this.state.projectsObject;
 
         var updatedObj = this.state.projectsIfcMapping;
@@ -1008,19 +1044,13 @@ var IOConsole = React.createClass({
         if (found == 0){
             var newKey="host-" + guid();
             this.handleNewHostIfc(newKey, ifcType, payload)
-
         }
-
-
-
     },
 
 	render: function() {
         if (_.isEmpty(this.state.modulesObject) || _.isEmpty(this.state.projectsObject)){
             return false
         }
-
-        //var nProjects = Object.keys(this.state.projectsObject).length;
 
         var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
 
@@ -1082,36 +1112,51 @@ var IOConsole = React.createClass({
     		});
 		}
 
+        var menu = null;
+        if (this.state.menuTarget != false){
+            menu = (
+                <Menu
+                    projects = {this.state.projectsObject} 
+                    selectedProject = {selectedProject} 
+                    ifcMap = {this.state.projectsIfcMapping[this.state.selectedProjectID]}
+                    handleActions = {this.handleActions} 
+                    closeMenu = {this.closeMenu} 
+                    menuTarget = {this.state.menuTarget}/>
+            );
+        }
+
         var popover = null;
         if (this.state.popoverTarget != false){
             popover = (
                 <Popover
                     projects = {this.state.projectsObject} 
                     selectedProject = {selectedProject} 
+                    onHostIfcClick = {this.onHostIfcClick} 
                     handleActions = {this.handleActions} 
                     closePopover = {this.closePopover} 
+                    selectedProjectIfcMapping = {this.state.projectsIfcMapping[this.state.selectedProjectID] || {}} 
                     popoverTarget = {this.state.popoverTarget}/>
             );
         }
 
         var downloadData = "data: text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(selectedProject));
-
+console.log("Main: ", this.state.selectedProjectID, this.state.projectsIfcMapping[this.state.selectedProjectID]);
 		return (
 			<div id="IOConsole">
 				<div id="navigation">
-					<Home
-                        popoverTarget = {this.state.popoverTarget}
-                        openPopover = {this.openPopover}/>
-					<PrimaryNav
-						onProjectClick = {this.handleProjectClick}
-						onCategoryClick = {this.handleCategoryClick}
-						onModuleMouseDown = {this.onModuleMouseDown}
-						projects = {this.state.projectsObject}
-						sortedProjectArray = {this.state.sortedProjectArray}
-						modules = {this.state.modulesObject}
-						sortedModuleArray = {this.state.sortedModuleArray}
-						categories = {this.state.categoriesObject}
-						categoryVisibility = {this.state.categoryVisibility}
+					<Home 
+                        menuTarget = {this.state.menuTarget} 
+                        openMenu = {this.openMenu}/>
+					<PrimaryNav 
+						onProjectClick = {this.handleProjectClick} 
+						onCategoryClick = {this.handleCategoryClick} 
+						onModuleMouseDown = {this.onModuleMouseDown} 
+						projects = {this.state.projectsObject} 
+						sortedProjectArray = {this.state.sortedProjectArray} 
+						modules = {this.state.modulesObject} 
+						sortedModuleArray = {this.state.sortedModuleArray} 
+						categories = {this.state.categoriesObject} 
+						categoryVisibility = {this.state.categoryVisibility} 
 						selectedProjectID = {this.state.selectedProjectID}/>
 				</div>
 				<div id="main">
@@ -1119,6 +1164,7 @@ var IOConsole = React.createClass({
 						<Tools 
 							selectedProject = {selectedProject}
 							openModal = {this.openModal} 
+                            openMenu = {this.openMenu}
                             openPopover = {this.openPopover}
 							renameProject = {this.renameProject}/>
 					</div>
@@ -1126,7 +1172,9 @@ var IOConsole = React.createClass({
 						<Workspace 
 							ref = "workspace" 
 							className = "ui-module workspace" 
+                            menuTarget = {this.state.menuTarget} 
 							handleObjectDrop = {this.handleObjectDrop} 
+                            openMenu = {this.openMenu} 
                             handleInstrumentUpdate = {this.handleInstrumentUpdate} 
                             handlePolicyUpdate = {this.handlePolicyUpdate} 
                             updatePoliciesData = {this.updatePoliciesData}
@@ -1134,7 +1182,8 @@ var IOConsole = React.createClass({
                             handleLinkDrop = {this.handleNewLinkDrop} 
 							deleteWire = {this.deleteWire}
                             deleteLink = {this.deleteLink}
-							protocols = {this.state.protocolsObject}
+							protocols = {this.state.protocolsObject} 
+                            selectedProjectID = {this.state.selectedProjectID}
                             selectedProjectIfcMapping = {this.state.projectsIfcMapping[this.state.selectedProjectID] || {}} 
 							selectedProject = {selectedProject}/>
 					</div>
@@ -1144,11 +1193,7 @@ var IOConsole = React.createClass({
                 {instrumentInProgress}
 				{modalDialogues}
                 {popover}
-                <HostIfcList
-                    selectedProjectIfcMapping = {this.state.projectsIfcMapping[this.state.selectedProjectID] || {}}
-                    selectedProjectHostIfcs = {this.state.projectsObject[this.state.selectedProjectID].topology.host_interfaces || {}}
-                    onIfcClick = {this.onHostIfcClick}
-                    />
+                {menu}
                 <a 
                     href = {downloadData}
                     download = {selectedProject.name + " (" + selectedProject.version + ").json"}
@@ -1185,27 +1230,27 @@ var ComponentInProgress = React.createClass({
 });
 
 var Home = React.createClass({
-	openPopover: function(event){
-		this.props.openPopover(event)
+	openMenu: function(event){
+		this.props.openMenu(event)
 	},
 
 	render: function() {
         var addObjectClass = "add";
         var homeActionsClass = "app-actions";
-        var openPopoverClass = " isOpenPopover"
+        var openMenuClass = " isOpenMenu"
 
-        if (this.props.popoverTarget.name == "homeActions"){
-            homeActionsClass += openPopoverClass
+        if (this.props.menuTarget.name == "homeActions"){
+            homeActionsClass += openMenuClass
         }
-        if (this.props.popoverTarget.name == "addObject"){
-            addObjectClass += openPopoverClass
+        if (this.props.menuTarget.name == "addObject"){
+            addObjectClass += openMenuClass
         }
 		return (
 			<div className="home">
 				<img className="logo" src="img/logo.png"/>
 				<h1>Hover Console</h1>
-				<button className={addObjectClass} name="addObject" onClick={this.openPopover}>+</button>
-				<button className={homeActionsClass} name="homeActions" onClick={this.openPopover}></button>
+				<button className={addObjectClass} name="addObject" onClick={this.openMenu}>+</button>
+				<button className={homeActionsClass} name="homeActions" onClick={this.openMenu}></button>
 			</div>
 		);
 	},
@@ -1325,8 +1370,6 @@ var ModuleItem = React.createClass({
 	  					<span className="version">{this.props.moduleItem.version}</span>
 	  				</h3>
 	  				<div className="moduleDescription">{this.props.moduleItem.description}</div>
-  				</div>
-  				<div className="affordance">
   				</div>
       		</div>
 		);

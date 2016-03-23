@@ -99,7 +99,6 @@ var Workspace = React.createClass({
 		}
 	},
 
-
 	ifcMouseLeave: function(tokenObject) {
 		if (this.state.wireType){
 			this.setState({
@@ -335,12 +334,14 @@ var Workspace = React.createClass({
 	},
 
 	prepData: function(props) {
+		console.log("Workspace: ", this.props.selectedProjectID, this.props.selectedProjectIfcMapping)
 		var selectedProject = props.selectedProject;
-		var dependenciesObject = selectedProject.dependencies || {} ;
-		var componentsObject = selectedProject.topology.components || {};
-		var wiresObject = selectedProject.topology.wires || {};
-		var hostComponentsObject = selectedProject.topology.host_interfaces || {};
-		var hostIfcMapping = this.props.selectedProjectIfcMapping;
+		var dependenciesObject = selectedProject.dependencies || {};
+		var topology = selectedProject.topology || {};
+		var componentsObject = topology.components || {};
+		var wiresObject = topology.wires || {};
+		var hostComponentsObject = topology.host_interfaces || {};
+		var hostIfcMapping = props.selectedProjectIfcMapping;
 		var policiesObject = selectedProject.policies || {};
 		var instrumentsObject = selectedProject.instruments || {};
 
@@ -380,6 +381,7 @@ var Workspace = React.createClass({
 
 		//set up host component data object
 		this.hostComponentData = {};
+		console.log("Host Component - Project Mapping: ", this.props.selectedProjectID, hostIfcMapping); 
 		for (var hostComponentID in hostComponentsObject) {
 			var thisHostComponent = hostComponentsObject[hostComponentID];
 			var hostComponentViewData = selectedProject.view[hostComponentID];
@@ -405,14 +407,22 @@ var Workspace = React.createClass({
 			var componentInterfaces = thisComponent.interfaces;
 			var moduleInterfaces = thisComponent.module.topology.interfaces;
 
+
 			var ioCapability = [];
 
 			_.forEach(moduleInterfaces, function(interface){
+				if (interface.view){
+					var defaultFace = interface.view.defaultFace || false
+				}
+				else {
+					var defaultFace = false
+				}
 				var thisCapability = {
 					componentID: componentID,
 					mode: interface.mode,
 					protocol: interface.protocol,
 					capacity: interface.capacity,
+					defaultFace: defaultFace,
 					used: 0
 				};
 
@@ -488,8 +498,6 @@ var Workspace = React.createClass({
 				else {
 					var otherComponent = this.componentData[otherComponentID]
 				}
-
-				//console.log(thisComponent, otherComponent);
 
 				writeLocation["wireTo"] = {
 					component: otherComponentID,
@@ -717,12 +725,27 @@ var Workspace = React.createClass({
   			_.forEach(thisComponent.ioCapability, function(thisToken) {
   				var remaining = thisToken.capacity - thisToken.used;
   				if (remaining > 0){	//only add if not empty
-  					if (thisToken.mode == "in"){
-  						tokenArrays.top.push(thisToken)
-  					}
-  					else {
-  						tokenArrays.bottom.push(thisToken)
-  					}				
+  					switch (thisToken.defaultFace) {
+					    case "top":
+					        tokenArrays.top.push(thisToken)
+					        break;
+					    case "bottom":
+					        tokenArrays.bottom.push(thisToken)
+					        break;
+					    case "right":
+					        tokenArrays.right.push(thisToken)
+					        break;
+					    case "left":
+					        tokenArrays.left.push(thisToken)
+					        break;
+					    default:
+					        if (thisToken.mode == "in"){
+		  						tokenArrays.top.push(thisToken)
+		  					}
+		  					else {
+		  						tokenArrays.bottom.push(thisToken)
+		  					}
+					}				
   				}
   			})
 
@@ -845,7 +868,6 @@ var Workspace = React.createClass({
 			var thisTokenArrays = thisComponent.tokenArrays;
 			var policiesData = this.policiesData;
 
-			var that = this;
 			_.forEach(thisTokenArrays, function(thisTokenArray, i) {
 				_.forEach(thisTokenArray, function(thisToken, j) {
 					var key = "" + componentID + i + j;
@@ -853,29 +875,30 @@ var Workspace = React.createClass({
 					<InterfaceToken 
 						tokenObject = {thisToken} 
 						key = {key} 
-						isPendingDeletion = {that.isPendingDeletion} 
-						onMouseEnter = {that.ifcMouseEnter} 
-						onMouseLeave = {that.ifcMouseLeave} 
-						onMouseDown = {that.ifcMouseDown} 
-						onMouseUp = {that.ifcMouseUp} 
-						protocols = {that.props.protocols} 
+						isPendingDeletion = {this.isPendingDeletion} 
+						onMouseEnter = {this.ifcMouseEnter} 
+						onMouseLeave = {this.ifcMouseLeave} 
+						onMouseDown = {this.ifcMouseDown} 
+						onMouseUp = {this.ifcMouseUp} 
+						protocols = {this.props.protocols} 
 						policiesData = {policiesData} 
-						dependencies = {that.props.selectedProject.dependencies} 
+						dependencies = {this.props.selectedProject.dependencies} 
 						componentID = {componentID} 
-						componentData = {that.componentData} 
-						dragging = {that.state.dragging} 
-						wireType = {that.state.wireType} 
-						mouseDown = {that.state.mouseDown}
-						isPendingUpdate = {that.state.isPendingUpdate}
-						ifcDims = {that.props.ifc}/>			
+						componentData = {this.componentData} 
+						dragging = {this.state.dragging} 
+						wireType = {this.state.wireType} 
+						mouseDown = {this.state.mouseDown}
+						isPendingUpdate = {this.state.isPendingUpdate}
+						ifcDims = {this.props.ifc}/>			
 					);
-				});
-			});
+				}.bind(this));
+			}.bind(this));
 		};
 
 		//render host components and interfaces
 		var hostComponents = [];
 		var hostIfcArray = [];
+		console.log("Workspace Ifc mapping data: ", this.props.selectedProjectID, this.props.selectedProjectIfcMapping);
 		for (var hostComponentID in this.hostComponentData) {
 			var thisHostComponent = this.hostComponentData[hostComponentID];
 			var policiesData = this.policiesData;
@@ -887,12 +910,13 @@ var Workspace = React.createClass({
 				this.addPositionsToInstruments();
 				this.applyPoliciesToInterfaces();
 			}
-
+			
 			hostComponents.push(
 				<HostComponent
 					key = {hostComponentID} 
+					menuTarget = {this.props.menuTarget} 
 					onMouseDown = {this.objectMouseDown} 
-					onMouseUp = {this.ifcMouseUp} 
+					openMenu = {this.props.openMenu} 
 					hostCompDims = {this.props.hostComponent} 
 					hostComponent = {thisHostComponent} 
 					hostComponentID = {hostComponentID}/>
@@ -958,8 +982,6 @@ var Workspace = React.createClass({
 				if (instrument.left <= 0 || instrument.top <= headerHeight) { //component is outside of canvas, e.g. during drag operation
 					this.isPendingDeletion = id
 				}
-
-
 			}
 
 			instruments.push(
@@ -1010,18 +1032,8 @@ var Workspace = React.createClass({
 			var link = {
 				top: this.state.cursorY,
 				left: this.state.cursorX
-			}
-
-			
+			}	
 			var instrument = this.state.mouseDown.instrument;
-			/*var viewer = {
-				top: instrument.top,
-				left: instrument.left,
-				width: instrument.width,
-				height: instrument.height
-			}
-			*/
-
 			var linkInProgress = <InstrumentLink
 									type = "inProgress" 
 									linkTo = {link}
