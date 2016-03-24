@@ -105,7 +105,6 @@ var InterfaceToken = React.createClass({
 	},
 
 	render: function() {
-		//debugger
 		var leftCenterPoint = this.props.tokenObject.left;
 		var topCenterPoint = this.props.tokenObject.top;
 		
@@ -124,7 +123,7 @@ var InterfaceToken = React.createClass({
 			fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "lighter");
 			dashArray = "3,3";
 		}
-
+		
 		if (this.props.tokenObject.wireTo && this.props.tokenObject.wireTo.component == this.props.isPendingDeletion){
 			fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "lighter");
 			dashArray = "3,3";
@@ -215,7 +214,6 @@ var InterfaceToken = React.createClass({
 							rotation = 180;
 						}
 				}
-
 		}
 
 		var transformString = "rotate(" + rotation + " " + leftCenterPoint + " " + topCenterPoint + ")";
@@ -223,7 +221,6 @@ var InterfaceToken = React.createClass({
 
 		// policy indicator
 
-		
 		var indicatorX = textX;
 		var indicatorY = textY + 2;
 
@@ -251,16 +248,7 @@ var InterfaceToken = React.createClass({
 			}
 			indicators.push(<circle key={i} cx={indicatorX} cy={cy} style={indicatorStyle} r="2.5" />)
 		}.bind(this))
-		
 
-		/*
-		var circle;
-		if (!_.isEmpty(this.props.tokenObject.policies)){
-			circle = (
-				<circle cx={textX} cy={textY} r="3" transform = {textTransformString}/>
-			)
-		}
-		*/
  
 		return (
 			<g transform = {transformString}>

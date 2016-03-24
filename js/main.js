@@ -102,12 +102,11 @@ var IOConsole = React.createClass({
     },
 
     handleProjectsIfcMapping: function(projectsObj, selectedProject) {
-        var projectsIfcMapping = this.state.projectsIfcMapping;
+        var projectsIfcMapping = _.cloneDeep(this.state.projectsIfcMapping);
 
         if (!projectsIfcMapping[selectedProject]){
             projectsIfcMapping[selectedProject] = {}
             for (var ifc in projectsObj[selectedProject].topology.host_interfaces){
-                //console.log("SHEHZAD", ifc);
                 projectsIfcMapping[selectedProject][ifc] = {};
             }
             this.setLocalSetting("projectsIfcMapping", projectsIfcMapping);
@@ -284,9 +283,8 @@ var IOConsole = React.createClass({
             _.forEach(instrument.interfaces, function(ifc, i){
                 var thisComponent = ifc.component;
                 var thisInterface = ifc.ifc;
-                // check if this interface exists, delete wire if not
-                console.log("Instrument: ", thisComponent, thisInterface);
 
+                // check if this interface exists, delete wire if not
                 if (!(projectObject.topology.components[thisComponent] && projectObject.topology.components[thisComponent].interfaces[thisInterface])){
                     delete projectObject.instruments[instrumentID].interfaces[i]
                 }
@@ -339,7 +337,6 @@ var IOConsole = React.createClass({
 
         var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
         newInstrumentObject = _.cloneDeep(selectedProject.instruments[data.instrument.uuid]);
-        //console.log(newProjectInstrumentObject);
 
         if (!newInstrumentObject.interfaces){
            newInstrumentObject.interfaces = [] 
@@ -453,8 +450,23 @@ var IOConsole = React.createClass({
             "type": ifcType
         }
 
+        var xArray = [];
+        for (id in newProjectViewObject){
+            if (_.startsWith(id, 'host') && newProjectViewObject[id].y == 50){ //host interfaces at y=50
+                var dimX = newProjectViewObject[id].x
+                xArray.push(dimX)
+            }
+        }
+
+        var pitch = 105;
+        var availablePositionX =  10;
+
+        while (_.includes(xArray, availablePositionX)){
+            availablePositionX += pitch
+        }
+
         newProjectViewObject[newHostID] = {
-            "x": 25,
+            "x": availablePositionX,
             "y": 50
         }
 
@@ -531,9 +543,7 @@ var IOConsole = React.createClass({
 
     deleteHostIfc: function(hostID) {
         var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
-
         var newProjectObject = _.cloneDeep(selectedProject);
-        //var moduleDependencyID = newProjectObject.topology.components[componentID].module;
 
         //delete view data
         newProjectObject.view[hostID] = null;
@@ -542,7 +552,6 @@ var IOConsole = React.createClass({
         delete newProjectObject.topology.host_interfaces[hostID];
 
         var topologyComponents = newProjectObject.topology.components;
-
 
         //find wires and delete them
         if (newProjectObject.topology.wires){
@@ -565,32 +574,12 @@ var IOConsole = React.createClass({
             }
         }
 
-        /*_.forEach(moduleArray, function(id){
-            var directDependency = selectedProject.dependencies[id];
-            if (directDependency.dependencies){
-                _.forEach(directDependency.dependencies, function(value, key){
-                    moduleArray.push(key)
-                });
-            }
-        });
-        moduleArray = _.uniq(moduleArray);
-
-        var newProjectDependencies = {};
-        _.forEach(moduleArray, function(id){
-            var newDependency = selectedProject.dependencies[id];
-            newProjectDependencies[id] = newDependency
-        });
-
-        newProjectObject.dependencies = newProjectDependencies;*/
-
         var updatedObj = this.state.projectsIfcMapping;
-        console.log("SHEHZAD old cookie was ", updatedObj)
-
 
         if (updatedObj[this.state.selectedProjectID][hostID]){
             delete updatedObj[this.state.selectedProjectID][hostID];
         }
-        console.log("SHEHZAD setting cookie to ", updatedObj)
+
         this.setLocalSetting("projectsIfcMapping", updatedObj);
         this.setState({
             projectsIfcMapping: updatedObj
@@ -600,7 +589,6 @@ var IOConsole = React.createClass({
 
     handleObjectDrop: function(objectID, deltaX, deltaY) {
         var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
-
 
         newProjectObject.view[objectID].x += deltaX;
         newProjectObject.view[objectID].y += deltaY;
@@ -694,8 +682,6 @@ var IOConsole = React.createClass({
             });
             moduleArray = _.uniq(moduleArray);
 
-
-
             _.forEach(moduleArray, function(id){
                 var directDependency = selectedProject.dependencies[id];
                 if (directDependency.dependencies){
@@ -716,7 +702,9 @@ var IOConsole = React.createClass({
        		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
         }
         else {
-            //TODO: Reset location of dragged opbject to database view
+            //TODO: Reset location of dragged object to database view
+            console.log("Cancelled Deletion")
+            this.forceUpdate()
         }
     },
 
@@ -770,11 +758,12 @@ var IOConsole = React.createClass({
     handleProjectClick: function(payload) {
         if (payload.projectID != this.state.selectedProjectID){
             var projectsIfcMapping = this.handleProjectsIfcMapping(this.state.projectsObject, payload.projectID);
+            this.setLocalSetting("selectedProjectID", payload.projectID);
+            console.log("Click: ", payload.projectID, projectsIfcMapping[payload.projectID]);
             this.setState({
                 selectedProjectID: payload.projectID,
                 projectsIfcMapping: projectsIfcMapping
-            });
-            this.setLocalSetting("selectedProjectID", payload.projectID);
+            });            
         }
     },
 
@@ -815,8 +804,6 @@ var IOConsole = React.createClass({
 	onMouseUp: function(event) { //captured on document
 		var dropID = this.state.dragging;
         var dropObject = this.state.modulesObject[dropID];
-
-        console.log(dropObject);
 
         var dropType = dropObject.type || "component";
 
@@ -912,7 +899,6 @@ var IOConsole = React.createClass({
     		this.saveAsModule(payload)
     	}
         if (modalName == "librariesSettings"){
-
             this.updateDataSources(payload)
         }
     	this.cancelModal(modalName)
@@ -993,7 +979,6 @@ var IOConsole = React.createClass({
             "wires": projectWires
         };
 
-
     	var moduleObject = {
     		name: payload.name,
     		description: payload.description,
@@ -1021,9 +1006,6 @@ var IOConsole = React.createClass({
     },
 
     onHostIfcClick : function(payload, ifcType){
-        //console.log("SHEHZAD", this.state.projectsIfcMapping);
-        console.log("Interface name: ", payload, ifcType)
-
         var projectsObj = this.state.projectsObject;
 
         var updatedObj = this.state.projectsIfcMapping;
@@ -1032,26 +1014,19 @@ var IOConsole = React.createClass({
         for (var ifc in hostIfcMap){
             if (hostIfcMap[ifc] == payload){
                 this.deleteHostIfc(ifc);
-                //delete hostIfcMap[ifc];
                 found = 1;
             }
         }
         if (found == 0){
             var newKey="host-" + guid();
             this.handleNewHostIfc(newKey, ifcType, payload)
-
         }
-
-
-
     },
 
 	render: function() {
         if (_.isEmpty(this.state.modulesObject) || _.isEmpty(this.state.projectsObject)){
             return false
         }
-
-        //var nProjects = Object.keys(this.state.projectsObject).length;
 
         var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
 
@@ -1183,7 +1158,8 @@ var IOConsole = React.createClass({
                             handleLinkDrop = {this.handleNewLinkDrop} 
 							deleteWire = {this.deleteWire}
                             deleteLink = {this.deleteLink}
-							protocols = {this.state.protocolsObject}
+							protocols = {this.state.protocolsObject} 
+                            selectedProjectID = {this.state.selectedProjectID}
                             selectedProjectIfcMapping = {this.state.projectsIfcMapping[this.state.selectedProjectID] || {}} 
 							selectedProject = {selectedProject}/>
 					</div>
@@ -1203,177 +1179,6 @@ var IOConsole = React.createClass({
 
 		);
 	},
-});
-
-var ComponentInProgress = React.createClass({
-	render: function() {
-		var style = {
-			width: this.props.thisWidth,
-			height: this.props.thisHeight,
-			top: this.props.thisY - (this.props.thisHeight / 2),
-			left: this.props.thisX - (this.props.thisWidth / 2)
-		}
-		return (
-			<div
-				className="componentInProgress"
-				style={style}>
-  				<div className="componentName">
-  					{this.props.moduleName}
-  				</div>
-  				<div className="componentVersion">
-  					{this.props.moduleVersion}
-  				</div>
-  			</div>
-
-		);
-	},
-});
-
-var Home = React.createClass({
-	openMenu: function(event){
-		this.props.openMenu(event)
-	},
-
-	render: function() {
-        var addObjectClass = "add";
-        var homeActionsClass = "app-actions";
-        var openMenuClass = " isOpenMenu"
-
-        if (this.props.menuTarget.name == "homeActions"){
-            homeActionsClass += openMenuClass
-        }
-        if (this.props.menuTarget.name == "addObject"){
-            addObjectClass += openMenuClass
-        }
-		return (
-			<div className="home">
-				<img className="logo" src="img/logo.png"/>
-				<h1>Hover Console</h1>
-				<button className={addObjectClass} name="addObject" onClick={this.openMenu}>+</button>
-				<button className={homeActionsClass} name="homeActions" onClick={this.openMenu}></button>
-			</div>
-		);
-	},
-});
-
-var ModuleSection = React.createClass({
-
-	getInitialState: function() {
-    	return {
-    		isScrollAtTop: true
-    	};
-  	},
-
-	handleSectionScroll: function() {
-		var sectionElement = this.refs.ioModules.getDOMNode();
-		this.setState({
-			isScrollAtTop: sectionElement.scrollTop == 0
-		});
-
-	},
-
-	render: function() {
-		var categoryItems = [];
-
-		for (var category in this.props.categories) {
-			var moduleList = this.props.categories[category].modules;
-            var isOpen = false;
-            if (this.props.categoryVisibility[category]){
-                isOpen = this.props.categoryVisibility[category];
-
-            }
-      		categoryItems.push(
-      			<Category
-      				key = {category}
-      				category = {category}
-      				onCategoryClick = {this.props.onCategoryClick}
-      				isOpen = {isOpen}
-      				moduleList = {moduleList}
-      				sortedModuleArray = {this.props.sortedModuleArray}
-      				onModuleMouseDown = {this.props.onModuleMouseDown}
-      				modules = {this.props.modules}/>
-      		);
-    	};
-    	var classString = "ioModules";
-    	if (this.state.isScrollAtTop == false){
-    		classString += " scrolled"
-    	}
-
-    	return (
-			<section
-				ref = "ioModules"
-				className = {classString}
-				onScroll = {this.handleSectionScroll}>
-				<h1>IO Modules</h1>
-				{categoryItems}
-			</section>
-		);
-	},
-});
-
-var Category = React.createClass({
-	onCategoryClick: function() {
-		this.props.onCategoryClick(this.props.category, this.props.isOpen)
-	},
-
-	render: function() {
-
-		var moduleItems = [];
-		var classString = "disclosure";
-		var nModulesInCategory = Object.keys(this.props.moduleList).length;
-		var contentString = this.props.category + " (" + nModulesInCategory + ")";
-		var sortedModuleArray = this.props.sortedModuleArray;
-		if (this.props.isOpen){
-			for (var i = 0; i < sortedModuleArray.length; i++){
-				var thisModuleID = sortedModuleArray[i];
-				if(this.props.moduleList[thisModuleID]){
-					var thisModuleItem = this.props.modules[thisModuleID];
-					moduleItems.push(
-	      			<ModuleItem
-	      				key = {thisModuleID}
-	      				onMouseDown = {this.props.onModuleMouseDown}
-	      				moduleID = {thisModuleID}
-	      				moduleItem = {thisModuleItem}/>
-	      			);
-				}
-			}
-
-	    	classString += " open"
-    	}
-    	else {
-    		classString += " closed"
-    	}
-
-		return (
-			<div
-				className="categorySection">
-  				<h2
-  					onClick={this.onCategoryClick}>
-  					<span className={classString}></span>
-  					<span className="category">{contentString}</span>
-  				</h2>
-  				{moduleItems}
-      		</div>
-		);
-	}
-});
-
-var ModuleItem = React.createClass({
-	render: function() {
-		return (
-			<div
-				className="moduleItem"
-				onMouseDown = {this.props.onMouseDown.bind(null, this.props.moduleID)}>
-				<div className="content">
-	  				<h3>
-	  					<span className="name">{this.props.moduleItem.name}</span>
-	  					<span className="version">{this.props.moduleItem.version}</span>
-	  				</h3>
-	  				<div className="moduleDescription">{this.props.moduleItem.description}</div>
-  				</div>
-      		</div>
-		);
-	}
 });
 
 React.render(<IOConsole></IOConsole>, document.body);

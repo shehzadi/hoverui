@@ -574,6 +574,10 @@ body::-webkit-scrollbar {
 				background-color: hsla(344, 55%, 83%, 1.0);
 			}
 		}
+		&.pendingDeletion {
+			outline: 1px dashed hsla(0, 0%, 0%, 1);
+			opacity: 0.4;
+		}
 	}
 
 	.instrument {
