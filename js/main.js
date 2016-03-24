@@ -749,10 +749,7 @@ var IOConsole = React.createClass({
             this.setState({
                 selectedProjectID: payload.projectID,
                 projectsIfcMapping: projectsIfcMapping
-            });
-
-            console.log("Click: ", this.state.selectedProjectID, this.state.projectsIfcMapping[this.state.selectedProjectID]);
-            
+            });            
         }
     },
 
@@ -793,8 +790,6 @@ var IOConsole = React.createClass({
 	onMouseUp: function(event) { //captured on document
 		var dropID = this.state.dragging;
         var dropObject = this.state.modulesObject[dropID];
-
-        console.log(dropObject);
 
         var dropType = dropObject.type || "component";
 
@@ -890,7 +885,6 @@ var IOConsole = React.createClass({
     		this.saveAsModule(payload)
     	}
         if (modalName == "librariesSettings"){
-
             this.updateDataSources(payload)
         }
     	this.cancelModal(modalName)
@@ -971,7 +965,6 @@ var IOConsole = React.createClass({
             "wires": projectWires
         };
 
-
     	var moduleObject = {
     		name: payload.name,
     		description: payload.description,
@@ -999,9 +992,6 @@ var IOConsole = React.createClass({
     },
 
     onHostIfcClick : function(payload, ifcType){
-        //console.log("SHEHZAD", this.state.projectsIfcMapping);
-        console.log("Interface name: ", payload, ifcType)
-
         var projectsObj = this.state.projectsObject;
 
         var updatedObj = this.state.projectsIfcMapping;
@@ -1010,7 +1000,6 @@ var IOConsole = React.createClass({
         for (var ifc in hostIfcMap){
             if (hostIfcMap[ifc] == payload){
                 this.deleteHostIfc(ifc);
-                //delete hostIfcMap[ifc];
                 found = 1;
             }
         }
@@ -1176,177 +1165,6 @@ var IOConsole = React.createClass({
 
 		);
 	},
-});
-
-var ComponentInProgress = React.createClass({
-	render: function() {
-		var style = {
-			width: this.props.thisWidth,
-			height: this.props.thisHeight,
-			top: this.props.thisY - (this.props.thisHeight / 2),
-			left: this.props.thisX - (this.props.thisWidth / 2)
-		}
-		return (
-			<div
-				className="componentInProgress"
-				style={style}>
-  				<div className="componentName">
-  					{this.props.moduleName}
-  				</div>
-  				<div className="componentVersion">
-  					{this.props.moduleVersion}
-  				</div>
-  			</div>
-
-		);
-	},
-});
-
-var Home = React.createClass({
-	openMenu: function(event){
-		this.props.openMenu(event)
-	},
-
-	render: function() {
-        var addObjectClass = "add";
-        var homeActionsClass = "app-actions";
-        var openMenuClass = " isOpenMenu"
-
-        if (this.props.menuTarget.name == "homeActions"){
-            homeActionsClass += openMenuClass
-        }
-        if (this.props.menuTarget.name == "addObject"){
-            addObjectClass += openMenuClass
-        }
-		return (
-			<div className="home">
-				<img className="logo" src="img/logo.png"/>
-				<h1>Hover Console</h1>
-				<button className={addObjectClass} name="addObject" onClick={this.openMenu}>+</button>
-				<button className={homeActionsClass} name="homeActions" onClick={this.openMenu}></button>
-			</div>
-		);
-	},
-});
-
-var ModuleSection = React.createClass({
-
-	getInitialState: function() {
-    	return {
-    		isScrollAtTop: true
-    	};
-  	},
-
-	handleSectionScroll: function() {
-		var sectionElement = this.refs.ioModules.getDOMNode();
-		this.setState({
-			isScrollAtTop: sectionElement.scrollTop == 0
-		});
-
-	},
-
-	render: function() {
-		var categoryItems = [];
-
-		for (var category in this.props.categories) {
-			var moduleList = this.props.categories[category].modules;
-            var isOpen = false;
-            if (this.props.categoryVisibility[category]){
-                isOpen = this.props.categoryVisibility[category];
-
-            }
-      		categoryItems.push(
-      			<Category
-      				key = {category}
-      				category = {category}
-      				onCategoryClick = {this.props.onCategoryClick}
-      				isOpen = {isOpen}
-      				moduleList = {moduleList}
-      				sortedModuleArray = {this.props.sortedModuleArray}
-      				onModuleMouseDown = {this.props.onModuleMouseDown}
-      				modules = {this.props.modules}/>
-      		);
-    	};
-    	var classString = "ioModules";
-    	if (this.state.isScrollAtTop == false){
-    		classString += " scrolled"
-    	}
-
-    	return (
-			<section
-				ref = "ioModules"
-				className = {classString}
-				onScroll = {this.handleSectionScroll}>
-				<h1>IO Modules</h1>
-				{categoryItems}
-			</section>
-		);
-	},
-});
-
-var Category = React.createClass({
-	onCategoryClick: function() {
-		this.props.onCategoryClick(this.props.category, this.props.isOpen)
-	},
-
-	render: function() {
-
-		var moduleItems = [];
-		var classString = "disclosure";
-		var nModulesInCategory = Object.keys(this.props.moduleList).length;
-		var contentString = this.props.category + " (" + nModulesInCategory + ")";
-		var sortedModuleArray = this.props.sortedModuleArray;
-		if (this.props.isOpen){
-			for (var i = 0; i < sortedModuleArray.length; i++){
-				var thisModuleID = sortedModuleArray[i];
-				if(this.props.moduleList[thisModuleID]){
-					var thisModuleItem = this.props.modules[thisModuleID];
-					moduleItems.push(
-	      			<ModuleItem
-	      				key = {thisModuleID}
-	      				onMouseDown = {this.props.onModuleMouseDown}
-	      				moduleID = {thisModuleID}
-	      				moduleItem = {thisModuleItem}/>
-	      			);
-				}
-			}
-
-	    	classString += " open"
-    	}
-    	else {
-    		classString += " closed"
-    	}
-
-		return (
-			<div
-				className="categorySection">
-  				<h2
-  					onClick={this.onCategoryClick}>
-  					<span className={classString}></span>
-  					<span className="category">{contentString}</span>
-  				</h2>
-  				{moduleItems}
-      		</div>
-		);
-	}
-});
-
-var ModuleItem = React.createClass({
-	render: function() {
-		return (
-			<div
-				className="moduleItem"
-				onMouseDown = {this.props.onMouseDown.bind(null, this.props.moduleID)}>
-				<div className="content">
-	  				<h3>
-	  					<span className="name">{this.props.moduleItem.name}</span>
-	  					<span className="version">{this.props.moduleItem.version}</span>
-	  				</h3>
-	  				<div className="moduleDescription">{this.props.moduleItem.description}</div>
-  				</div>
-      		</div>
-		);
-	}
 });
 
 React.render(<IOConsole></IOConsole>, document.body);
