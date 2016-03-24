@@ -544,6 +544,11 @@ body::-webkit-scrollbar {
   background-color: #ebbcc9;
 }
 
+.workspace .hostComponent.pendingDeletion {
+  outline: 1px dashed black;
+  opacity: 0.4;
+}
+
 .workspace .instrument {
   position: absolute;
   color: rgba(255, 255, 255, 0.6);

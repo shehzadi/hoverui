@@ -102,13 +102,11 @@ var IOConsole = React.createClass({
     },
 
     handleProjectsIfcMapping: function(projectsObj, selectedProject) {
-        console.log("Target: ", selectedProject);
         var projectsIfcMapping = _.cloneDeep(this.state.projectsIfcMapping);
 
         if (!projectsIfcMapping[selectedProject]){
             projectsIfcMapping[selectedProject] = {}
             for (var ifc in projectsObj[selectedProject].topology.host_interfaces){
-                //console.log("SHEHZAD", ifc);
                 projectsIfcMapping[selectedProject][ifc] = {};
             }
             this.setLocalSetting("projectsIfcMapping", projectsIfcMapping);
@@ -340,7 +338,6 @@ var IOConsole = React.createClass({
 
         var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
         newInstrumentObject = _.cloneDeep(selectedProject.instruments[data.instrument.uuid]);
-        //console.log(newProjectInstrumentObject);
 
         if (!newInstrumentObject.interfaces){
            newInstrumentObject.interfaces = [] 
@@ -532,9 +529,7 @@ var IOConsole = React.createClass({
 
     deleteHostIfc: function(hostID) {
         var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
-
         var newProjectObject = _.cloneDeep(selectedProject);
-        //var moduleDependencyID = newProjectObject.topology.components[componentID].module;
 
         //delete view data
         newProjectObject.view[hostID] = null;
@@ -543,7 +538,6 @@ var IOConsole = React.createClass({
         delete newProjectObject.topology.host_interfaces[hostID];
 
         var topologyComponents = newProjectObject.topology.components;
-
 
         //find wires and delete them
         if (newProjectObject.topology.wires){
@@ -566,32 +560,12 @@ var IOConsole = React.createClass({
             }
         }
 
-        /*_.forEach(moduleArray, function(id){
-            var directDependency = selectedProject.dependencies[id];
-            if (directDependency.dependencies){
-                _.forEach(directDependency.dependencies, function(value, key){
-                    moduleArray.push(key)
-                });
-            }
-        });
-        moduleArray = _.uniq(moduleArray);
-
-        var newProjectDependencies = {};
-        _.forEach(moduleArray, function(id){
-            var newDependency = selectedProject.dependencies[id];
-            newProjectDependencies[id] = newDependency
-        });
-
-        newProjectObject.dependencies = newProjectDependencies;*/
-
         var updatedObj = this.state.projectsIfcMapping;
-        console.log("SHEHZAD old cookie was ", updatedObj)
-
 
         if (updatedObj[this.state.selectedProjectID][hostID]){
             delete updatedObj[this.state.selectedProjectID][hostID];
         }
-        console.log("SHEHZAD setting cookie to ", updatedObj)
+
         this.setLocalSetting("projectsIfcMapping", updatedObj);
         this.setState({
             projectsIfcMapping: updatedObj
@@ -601,7 +575,6 @@ var IOConsole = React.createClass({
 
     handleObjectDrop: function(objectID, deltaX, deltaY) {
         var newProjectObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID]);
-
 
         newProjectObject.view[objectID].x += deltaX;
         newProjectObject.view[objectID].y += deltaY;
@@ -695,8 +668,6 @@ var IOConsole = React.createClass({
             });
             moduleArray = _.uniq(moduleArray);
 
-
-
             _.forEach(moduleArray, function(id){
                 var directDependency = selectedProject.dependencies[id];
                 if (directDependency.dependencies){
@@ -717,7 +688,9 @@ var IOConsole = React.createClass({
        		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
         }
         else {
-            //TODO: Reset location of dragged opbject to database view
+            //TODO: Reset location of dragged object to database view
+            console.log("Cancelled Deletion")
+            this.forceUpdate()
         }
     },
 
@@ -1140,7 +1113,7 @@ var IOConsole = React.createClass({
         }
 
         var downloadData = "data: text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(selectedProject));
-console.log("Main: ", this.state.selectedProjectID, this.state.projectsIfcMapping[this.state.selectedProjectID]);
+
 		return (
 			<div id="IOConsole">
 				<div id="navigation">

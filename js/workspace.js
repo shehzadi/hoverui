@@ -57,7 +57,6 @@ var Workspace = React.createClass({
 	linkMouseDown: function(instrument, link){
 		event.stopPropagation();
 		this.addDocumentEvents();
-		console.log("link: ", link);
 		mouseDownObject = {
 			"type": "linkSource",
 			"instrument": instrument,
@@ -303,8 +302,7 @@ var Workspace = React.createClass({
 					this.props.deleteLink(this.state.mouseDown);
 				}	
 			}
-
-			
+		
 			this.setState({
 				dragging: false,
 				resizing: false,
@@ -334,7 +332,6 @@ var Workspace = React.createClass({
 	},
 
 	prepData: function(props) {
-		console.log("Workspace: ", this.props.selectedProjectID, this.props.selectedProjectIfcMapping)
 		var selectedProject = props.selectedProject;
 		var dependenciesObject = selectedProject.dependencies || {};
 		var topology = selectedProject.topology || {};
@@ -381,7 +378,6 @@ var Workspace = React.createClass({
 
 		//set up host component data object
 		this.hostComponentData = {};
-		console.log("Host Component - Project Mapping: ", this.props.selectedProjectID, hostIfcMapping); 
 		for (var hostComponentID in hostComponentsObject) {
 			var thisHostComponent = hostComponentsObject[hostComponentID];
 			var hostComponentViewData = selectedProject.view[hostComponentID];
@@ -861,6 +857,57 @@ var Workspace = React.createClass({
   			);
 		};
 
+		//render host components and interfaces
+		var hostComponents = [];
+		var hostIfcArray = [];
+		for (var hostComponentID in this.hostComponentData) {
+			var thisHostComponent = this.hostComponentData[hostComponentID];
+			var policiesData = this.policiesData;
+
+			if (hostComponentID == this.state.dragging){ //component is being dragged
+				thisHostComponent.left = this.dragStartX + this.state.cursorX - this.startX;
+				thisHostComponent.top = this.dragStartY + this.state.cursorY - this.startY;	
+				this.positionInterfaces();
+				this.addPositionsToInstruments();
+				this.applyPoliciesToInterfaces();
+			}
+
+			if (thisHostComponent.left <= 0 || thisHostComponent.top <= headerHeight) { //host component is outside of canvas, e.g. during drag operation
+				this.isPendingDeletion = hostComponentID
+			}
+			
+			hostComponents.push(
+				<HostComponent
+					key = {hostComponentID} 
+					menuTarget = {this.props.menuTarget} 
+					onMouseDown = {this.objectMouseDown} 
+					openMenu = {this.props.openMenu} 
+					isPendingDeletion = {this.isPendingDeletion} 
+					hostCompDims = {this.props.hostComponent} 
+					hostComponent = {thisHostComponent} 
+					hostComponentID = {hostComponentID}/>
+			);
+	
+			hostIfcArray.push(
+				<HostInterface 
+					key = {hostComponentID} 
+					tokenObject = {thisHostComponent} 
+					wireType = {this.state.wireType} 
+					mouseDown = {this.state.mouseDown}
+					dragging = {this.state.dragging} 
+					isPendingUpdate = {this.state.isPendingUpdate}
+					onMouseEnter = {this.ifcMouseEnter} 
+					onMouseLeave = {this.ifcMouseLeave} 
+					onMouseDown = {this.ifcMouseDown} 
+					onMouseUp = {this.ifcMouseUp} 
+					protocols = {this.props.protocols} 
+					policiesData = {policiesData} 
+					isPendingDeletion = {this.isPendingDeletion} 
+					dependencies = {this.props.selectedProject.dependencies} 
+					hostCompDims = {this.props.hostComponent}/>				
+			);
+		};
+
 		//render interfaces
 		var ifcs = [];
 		for (var componentID in this.componentData) {
@@ -895,51 +942,6 @@ var Workspace = React.createClass({
 			}.bind(this));
 		};
 
-		//render host components and interfaces
-		var hostComponents = [];
-		var hostIfcArray = [];
-		console.log("Workspace Ifc mapping data: ", this.props.selectedProjectID, this.props.selectedProjectIfcMapping);
-		for (var hostComponentID in this.hostComponentData) {
-			var thisHostComponent = this.hostComponentData[hostComponentID];
-			var policiesData = this.policiesData;
-
-			if (hostComponentID == this.state.dragging){ //component is being dragged
-				thisHostComponent.left = this.dragStartX + this.state.cursorX - this.startX;
-				thisHostComponent.top = this.dragStartY + this.state.cursorY - this.startY;	
-				this.positionInterfaces();
-				this.addPositionsToInstruments();
-				this.applyPoliciesToInterfaces();
-			}
-			
-			hostComponents.push(
-				<HostComponent
-					key = {hostComponentID} 
-					menuTarget = {this.props.menuTarget} 
-					onMouseDown = {this.objectMouseDown} 
-					openMenu = {this.props.openMenu} 
-					hostCompDims = {this.props.hostComponent} 
-					hostComponent = {thisHostComponent} 
-					hostComponentID = {hostComponentID}/>
-			);
-	
-			hostIfcArray.push(
-				<HostInterface 
-					key = {hostComponentID} 
-					tokenObject = {thisHostComponent} 
-					wireType = {this.state.wireType} 
-					mouseDown = {this.state.mouseDown}
-					dragging = {this.state.dragging} 
-					isPendingUpdate = {this.state.isPendingUpdate}
-					onMouseEnter = {this.ifcMouseEnter} 
-					onMouseLeave = {this.ifcMouseLeave} 
-					onMouseDown = {this.ifcMouseDown} 
-					onMouseUp = {this.ifcMouseUp} 
-					protocols = {this.props.protocols} 
-					policiesData = {policiesData} 
-					dependencies = {this.props.selectedProject.dependencies} 
-					hostCompDims = {this.props.hostComponent}/>				
-			);
-		};
 
 		//render wires
 		var wires = [];
