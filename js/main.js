@@ -283,9 +283,8 @@ var IOConsole = React.createClass({
             _.forEach(instrument.interfaces, function(ifc, i){
                 var thisComponent = ifc.component;
                 var thisInterface = ifc.ifc;
-                // check if this interface exists, delete wire if not
-                console.log("Instrument: ", thisComponent, thisInterface);
 
+                // check if this interface exists, delete wire if not
                 if (!(projectObject.topology.components[thisComponent] && projectObject.topology.components[thisComponent].interfaces[thisInterface])){
                     delete projectObject.instruments[instrumentID].interfaces[i]
                 }
@@ -451,8 +450,23 @@ var IOConsole = React.createClass({
             "type": ifcType
         }
 
+        var xArray = [];
+        for (id in newProjectViewObject){
+            if (_.startsWith(id, 'host') && newProjectViewObject[id].y == 50){ //host interfaces at y=50
+                var dimX = newProjectViewObject[id].x
+                xArray.push(dimX)
+            }
+        }
+
+        var pitch = 105;
+        var availablePositionX =  10;
+
+        while (_.includes(xArray, availablePositionX)){
+            availablePositionX += pitch
+        }
+
         newProjectViewObject[newHostID] = {
-            "x": 25,
+            "x": availablePositionX,
             "y": 50
         }
 
