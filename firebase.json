@@ -1,9 +1,1 @@
-{
-  "firebase": "boiling-torch-3324",
-  "public": ".",
-  "ignore": [
-    "firebase.json",
-    "**/.*",
-    "**/node_modules/**"
-  ]
-}
+{"firebase":"boiling-torch-3324","public":".","ignore":["firebase.json","**/.*","**/node_modules/**"]}

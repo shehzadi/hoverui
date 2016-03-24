@@ -542,49 +542,57 @@ var IOConsole = React.createClass({
     },
 
     deleteHostIfc: function(hostID) {
-        var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
-        var newProjectObject = _.cloneDeep(selectedProject);
+        var confirmObjectDeletion = confirm("Delete this item?");
+        if (confirmObjectDeletion == true) {
 
-        //delete view data
-        newProjectObject.view[hostID] = null;
+            var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
+            var newProjectObject = _.cloneDeep(selectedProject);
 
-        //delete component from topology
-        delete newProjectObject.topology.host_interfaces[hostID];
+            //delete view data
+            newProjectObject.view[hostID] = null;
 
-        var topologyComponents = newProjectObject.topology.components;
+            //delete component from topology
+            delete newProjectObject.topology.host_interfaces[hostID];
 
-        //find wires and delete them
-        if (newProjectObject.topology.wires){
-            for (var wire in newProjectObject.topology.wires){
-                var wireObject = newProjectObject.topology.wires[wire];
-                if (wireObject[0].component == hostID){
-                    newProjectObject.topology.wires[wire] = null;
-                    //find interface on other component and delete
-                    if (newProjectObject.topology.components[wireObject[1].component]){
-                        newProjectObject.topology.components[wireObject[1].component].interfaces[wireObject[1].ifc] = null
+            var topologyComponents = newProjectObject.topology.components;
+
+            //find wires and delete them
+            if (newProjectObject.topology.wires){
+                for (var wire in newProjectObject.topology.wires){
+                    var wireObject = newProjectObject.topology.wires[wire];
+                    if (wireObject[0].component == hostID){
+                        newProjectObject.topology.wires[wire] = null;
+                        //find interface on other component and delete
+                        if (newProjectObject.topology.components[wireObject[1].component]){
+                            newProjectObject.topology.components[wireObject[1].component].interfaces[wireObject[1].ifc] = null
+                        }
                     }
-                }
-                if (wireObject[1].component == hostID){
-                    newProjectObject.topology.wires[wire] = null;
-                    //find interface on other component and delete
-                    if (newProjectObject.topology.components[wireObject[0].component]){
-                        newProjectObject.topology.components[wireObject[0].component].interfaces[wireObject[0].ifc] = null
+                    if (wireObject[1].component == hostID){
+                        newProjectObject.topology.wires[wire] = null;
+                        //find interface on other component and delete
+                        if (newProjectObject.topology.components[wireObject[0].component]){
+                            newProjectObject.topology.components[wireObject[0].component].interfaces[wireObject[0].ifc] = null
+                        }
                     }
                 }
             }
+
+            var updatedObj = this.state.projectsIfcMapping;
+
+            if (updatedObj[this.state.selectedProjectID][hostID]){
+                delete updatedObj[this.state.selectedProjectID][hostID];
+            }
+
+            this.setLocalSetting("projectsIfcMapping", updatedObj);
+            this.setState({
+                projectsIfcMapping: updatedObj
+            })
+            this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject);
         }
-
-        var updatedObj = this.state.projectsIfcMapping;
-
-        if (updatedObj[this.state.selectedProjectID][hostID]){
-            delete updatedObj[this.state.selectedProjectID][hostID];
+        else {
+            console.log("Cancelled Deletion")
+            this.forceUpdate()     
         }
-
-        this.setLocalSetting("projectsIfcMapping", updatedObj);
-        this.setState({
-            projectsIfcMapping: updatedObj
-        })
-        this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject);
     },
 
     handleObjectDrop: function(objectID, deltaX, deltaY) {
@@ -702,7 +710,6 @@ var IOConsole = React.createClass({
        		this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject)
         }
         else {
-            //TODO: Reset location of dragged object to database view
             console.log("Cancelled Deletion")
             this.forceUpdate()
         }

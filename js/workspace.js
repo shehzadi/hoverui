@@ -279,14 +279,17 @@ var Workspace = React.createClass({
 				if (_.startsWith(dragee, 'policy')){
 					var thisPolicy = this.policiesData[dragee];
 					this.getPolicyPosition(dragee, deltaX, deltaY, this.state.resizing);
+					this.setState({dragging: false}); //set here to reposition component on cancel
 					this.handlePolicyUpdate(dragee, thisPolicy.left, thisPolicy.top, thisPolicy.height, thisPolicy.width)
 				}
 				else if (_.startsWith(dragee, 'instrument')){
 					var thisInstrument = this.instrumentData[dragee];
 					this.getInstrumentPosition(dragee, deltaX, deltaY, this.state.resizing);
+					this.setState({dragging: false}); //set here to reposition component on cancel
 					this.props.handleInstrumentUpdate(dragee, thisInstrument)
 				}
-				else {
+				else { //component and host component
+					this.setState({dragging: false}); //set here to reposition component on cancel	
 					this.props.handleObjectDrop(dragee, deltaX, deltaY);
 				}
 			}
@@ -308,13 +311,13 @@ var Workspace = React.createClass({
 				resizing: false,
 				wireType: false,
 				isPendingUpdate: false
-			});				
+			});			
 		};
 
 		this.setState({
     		mouseDown: false,
     		isSnapping: false
-    	});		
+    	});	
 	},
 
 	addDocumentEvents: function() {
@@ -980,10 +983,10 @@ var Workspace = React.createClass({
 				var deltaX = this.state.cursorX - this.startX;
 				var deltaY = this.state.cursorY - this.startY;
 				this.getInstrumentPosition(id, deltaX, deltaY, this.state.resizing);
-
-				if (instrument.left <= 0 || instrument.top <= headerHeight) { //component is outside of canvas, e.g. during drag operation
-					this.isPendingDeletion = id
-				}
+			}
+			
+			if (instrument.left <= 0 || instrument.top <= headerHeight) { //component is outside of canvas, e.g. during drag operation
+				this.isPendingDeletion = id
 			}
 
 			instruments.push(
