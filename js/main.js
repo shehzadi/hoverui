@@ -105,8 +105,9 @@ var IOConsole = React.createClass({
         var projectsIfcMapping = _.cloneDeep(this.state.projectsIfcMapping);
 
         if (!projectsIfcMapping[selectedProject]){
-            projectsIfcMapping[selectedProject] = {}
-            for (var ifc in projectsObj[selectedProject].topology.host_interfaces){
+            projectsIfcMapping[selectedProject] = {};
+            var hostInterfaces = _.get(projectsObj[selectedProject], 'topology.host_interfaces', {});
+            for (var ifc in hostInterfaces){
                 projectsIfcMapping[selectedProject][ifc] = {};
             }
             this.setLocalSetting("projectsIfcMapping", projectsIfcMapping);
@@ -354,7 +355,7 @@ var IOConsole = React.createClass({
             };
         }
 
-        newInstrumentObject.interfaces.push(newInterface)
+        newInstrumentObject.interfaces.push(newInterface);
         newInstrumentObject.interfaces = _.uniqWith(newInstrumentObject.interfaces, _.isEqual);
         console.log("interfaces: ", newInstrumentObject.interfaces);
 
@@ -363,15 +364,25 @@ var IOConsole = React.createClass({
     },
 
 	handleNewObjectDrop: function(moduleID, posX, posY){
+        console.log(moduleID, posX, posY);
+        var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
+
+        var selectedProjectFirebaseRef = this.firebaseProjectsRef.child(this.state.selectedProjectID);
+
         var moduleObject = this.state.modulesObject[moduleID];
         var moduleType = moduleObject.type || "component";
-     	var newProjectViewObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].view) || {};
-    	var newProjectComponentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].topology.components) || {};
-        var newProjectPoliciesObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].policies) || {};
-        var newProjectInstrumentsObject = _.cloneDeep(this.state.projectsObject[this.state.selectedProjectID].instruments) || {};
-        var projectDependenciesObject = this.state.projectsObject[this.state.selectedProjectID].dependencies || {};
+
+     	var newProjectObject = _.cloneDeep(selectedProject);
+
+        var newProjectTopologyObject = newProjectObject.topology || {};
+        var newProjectViewObject = newProjectObject.view || {};
+    	
+        var newProjectComponentsObject = newProjectTopologyObject.components || {};
+        var newProjectPoliciesObject = newProjectObject.policies || {};
+        var projectDependenciesObject = newProjectObject.dependencies || {};
         
         if (moduleType == "component"){
+            console.log()
             var newID = "comp-" + ioid();
             var newViewData = {
                 "x": posX,
@@ -380,7 +391,7 @@ var IOConsole = React.createClass({
             var newComponentData = {
                 "module": moduleID
             };
-            newProjectComponentsObject[newID] = newComponentData;
+            _.set(newProjectObject, 'topology.components.' + newID, newComponentData)
         }
         else if (moduleType == "policy"){
             var newID = "policy-" + ioid();
@@ -393,7 +404,7 @@ var IOConsole = React.createClass({
             var newPolicyData = {
                 "module": moduleID
             };
-            newProjectPoliciesObject[newID] = newPolicyData;
+            _.set(newProjectObject, 'policies.' + newID, newPolicyData)
         }
         else if (moduleType == "instrument"){
             var newID = "instrument-" + ioid();
@@ -406,7 +417,7 @@ var IOConsole = React.createClass({
             var newInstrumentData = {
                 "module": moduleID
             };
-            newProjectInstrumentsObject[newID] = newInstrumentData;
+            _.set(newProjectObject, 'instruments.' + newID, newInstrumentData)
         }  
 
         //dependencies
@@ -428,32 +439,35 @@ var IOConsole = React.createClass({
                 moduleCloneDependencies[nestedModuleID] = true
             });
 
-            this.firebaseProjectsRef.child(this.state.selectedProjectID).child("dependencies").set(newProjectDependenciesObject);
+            _.set(newProjectObject, 'dependencies', newProjectDependenciesObject);
         }
 
-    	newProjectViewObject[newID] = newViewData;
-    	this.firebaseProjectsRef.child(this.state.selectedProjectID).child("view").set(newProjectViewObject);
-        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("components").set(newProjectComponentsObject);
-        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("policies").set(newProjectPoliciesObject);
-        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("instruments").set(newProjectInstrumentsObject)
+        _.set(newProjectObject, 'view.' + newID, newViewData)
+
+    	selectedProjectFirebaseRef.set(newProjectObject);
 	},
 
     handleNewHostIfc: function(newHostID, ifcType, payload){
-        var newProjectViewObject = this.state.projectsObject[this.state.selectedProjectID].view || {};
-        var newProjectHostIfcObject = this.state.projectsObject[this.state.selectedProjectID].topology.host_interfaces || {};
+        var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
+
+        var selectedProjectFirebaseRef = this.firebaseProjectsRef.child(this.state.selectedProjectID);
+        var newProjectObject = _.cloneDeep(selectedProject);
+
+        //var newProjectViewObject = this.state.projectsObject[this.state.selectedProjectID].view || {};
+        //var newProjectHostIfcObject = this.state.projectsObject[this.state.selectedProjectID].topology.host_interfaces || {};
         var updatedObj = this.state.projectsIfcMapping;
         var currentProjectIfcMap = updatedObj[this.state.selectedProjectID];
 
-        newProjectHostIfcObject[newHostID] = {
+        var newProjectHostIfcObject = {
             "mode": "bi",
             "protocol": "protocol-3we4",
             "type": ifcType
         }
 
         var xArray = [];
-        for (id in newProjectViewObject){
-            if (_.startsWith(id, 'host') && newProjectViewObject[id].y == 50){ //host interfaces at y=50
-                var dimX = newProjectViewObject[id].x
+        for (id in newProjectObject.view){
+            if (_.startsWith(id, 'host') && newProjectObject.view[id].y == 50){ //host interfaces at y=50
+                var dimX = newProjectObject.view[id].x
                 xArray.push(dimX)
             }
         }
@@ -465,13 +479,17 @@ var IOConsole = React.createClass({
             availablePositionX += pitch
         }
 
-        newProjectViewObject[newHostID] = {
+        var newViewData = {
             "x": availablePositionX,
             "y": 50
         }
+        _.set(newProjectObject, 'view.' + newHostID, newViewData);
+        _.set(newProjectObject, 'topology.host_interfaces.' + newHostID, newProjectHostIfcObject);
 
-        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("view").set(newProjectViewObject)
-        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("host_interfaces").set(newProjectHostIfcObject)
+        //this.firebaseProjectsRef.child(this.state.selectedProjectID).child("view").set(newProjectViewObject)
+        //this.firebaseProjectsRef.child(this.state.selectedProjectID).child("topology").child("host_interfaces").set(newProjectHostIfcObject)
+
+        selectedProjectFirebaseRef.set(newProjectObject);
 
         currentProjectIfcMap[newHostID] = payload;
         this.setLocalSetting("projectsIfcMapping", updatedObj);
@@ -671,7 +689,8 @@ var IOConsole = React.createClass({
             delete newProjectObject.view[objectID];
 
             //manage dependencies
-            var topologyComponents = newProjectObject.topology.components;
+
+            var topologyComponents = _.get(newProjectObject, 'topology.components', {});
             var policies = newProjectObject.policies;
             var instruments = newProjectObject.instruments;
        		
@@ -766,7 +785,6 @@ var IOConsole = React.createClass({
         if (payload.projectID != this.state.selectedProjectID){
             var projectsIfcMapping = this.handleProjectsIfcMapping(this.state.projectsObject, payload.projectID);
             this.setLocalSetting("selectedProjectID", payload.projectID);
-            console.log("Click: ", payload.projectID, projectsIfcMapping[payload.projectID]);
             this.setState({
                 selectedProjectID: payload.projectID,
                 projectsIfcMapping: projectsIfcMapping

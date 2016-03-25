@@ -43,7 +43,7 @@ var ProjectActions = React.createClass({
 		if (_.size(this.props.projects) == 1){
 			deleteButtonClass = "disabled"
 		}
-		var wiresObject = this.props.selectedProject.topology.wires || {};
+		var wiresObject = _.get(this.props.selectedProject, 'topology.wires', {})
 
 		var saveAsModuleButtonClass = "";
 		var nWiresToHostInterfaces = 0;
