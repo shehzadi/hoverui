@@ -192,6 +192,8 @@ var IOConsole = React.createClass({
         switch(eventName) {
             case "newProject":
                 this.createNewProject(projectTemplate); break;
+            case "importProjectJSON":
+                this.openModal("importJSON"); break;
             case "repositories":
                 this.openModal("librariesSettings"); break;
             case "downloadJSON":
@@ -878,6 +880,7 @@ var IOConsole = React.createClass({
     },
 
     openMenu: function(event) {
+        console.log(event.target.getBoundingClientRect());
         this.setState({
             menuTarget: event.target,
         }); 
@@ -920,11 +923,17 @@ var IOConsole = React.createClass({
     },
 
     submitModal: function(modalName, payload) {
+        console.log(modalName);
     	if (modalName == "saveAsModule"){
     		this.saveAsModule(payload)
     	}
         if (modalName == "librariesSettings"){
             this.updateDataSources(payload)
+        }
+        if (modalName == "importJSON"){
+            importProjectTemplate = JSON.parse(payload);
+            importProjectTemplate.name = "Imported Project";
+            this.createNewProject(importProjectTemplate)
         }
     	this.cancelModal(modalName)
     },
@@ -1095,22 +1104,21 @@ var IOConsole = React.createClass({
 		var modalDialogues = [];
 		if (this.state.modalArray.length > 0){
 			
-			var that = this;
 			_.forEach(this.state.modalArray, function(modalName) {
     			var modalDialogue = (<ModalDialogue
-                    projectsSrc = {that.state.projectsSrc}
-                    modulesSrc = {that.state.modulesSrc}
+                    projectsSrc = {this.state.projectsSrc}
+                    modulesSrc = {this.state.modulesSrc}
                     key = {modalName}
 					modalName = {modalName}
-					categories = {that.state.categoriesObject}
+					categories = {this.state.categoriesObject}
 					selectedProject = {selectedProject}
-					projectID = {that.state.selectedProjectID}
-					submitModal = {that.submitModal}
-					cancelModal = {that.cancelModal}/>
+					projectID = {this.state.selectedProjectID}
+					submitModal = {this.submitModal}
+					cancelModal = {this.cancelModal}/>
 				);
 
 				modalDialogues.push(modalDialogue)
-    		});
+    		}.bind(this));
 		}
 
         var menu = null;

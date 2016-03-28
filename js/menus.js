@@ -26,7 +26,7 @@ var AddObject = React.createClass({
 				<li className="disabled"><a name="newModule" onMouseUp={this.handleActions}>New Module&hellip;</a></li>
 				<li className="disabled"><a name="newProtocol" onMouseUp={this.handleActions}>New Protocol&hellip;</a></li>
 				<li className = "menuSection">Import Object</li>
-				<li className="disabled"><a name="importProject" onMouseUp={this.handleActions}>Import Project&hellip;</a></li>
+				<li><a name="importProjectJSON" onMouseUp={this.handleActions}>Import Project JSON&hellip;</a></li>
 				<li className="disabled"><a name="importModule" onMouseUp={this.handleActions}>Import Module&hellip;</a></li>
 			</ul>
 		)
@@ -60,7 +60,7 @@ var ProjectActions = React.createClass({
 			<ul className="menuContent">
 				<li className="disabled"><a name="duplicate" onMouseUp={this.handleActions}>Duplicate Project</a></li>
 				<li className={saveAsModuleButtonClass} ><a name="saveIOModule" onMouseUp={this.handleActions}>Save as IO Module&hellip;</a></li>
-				<li><a name="downloadJSON" onMouseUp={this.handleActions}>Download JSON</a></li>
+				<li><a name="downloadJSON" onMouseUp={this.handleActions}>Save Project JSON</a></li>
 				<li className = "menuSection"></li>
 				<li className={deleteButtonClass}><a name="deleteProject"  onMouseUp={this.handleActions}>Delete Project&hellip;</a></li>
 			</ul>

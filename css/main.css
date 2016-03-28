@@ -305,6 +305,10 @@ body::-webkit-scrollbar {
   cursor: text;
 }
 
+.modalContainer .error {
+  color: #ca1c47;
+}
+
 .modalContainer label {
   display: block;
   font-size: 15px;
@@ -350,6 +354,7 @@ body::-webkit-scrollbar {
 .modalContainer main {
   flex-grow: 1;
   margin: 15px 30px 40px 30px;
+  min-height: 150px;
 }
 
 .modalContainer footer {
@@ -378,6 +383,10 @@ body::-webkit-scrollbar {
 .modalContainer input[type=text] {
   width: 350px;
   padding: 2px 6px;
+}
+
+.modalContainer input[type=file] {
+  margin: 10px 0;
 }
 
 .modalContainer #librariesForm input[type=text] {
