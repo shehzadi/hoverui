@@ -315,7 +315,7 @@ var IOConsole = React.createClass({
         var interface2Component = interfaceToken.wireTo.component;
         var interface2Interface = interfaceToken.wireTo.ifc || null;
 
-        updatedProjectObject.topology.wires[thisWire] = null;
+        delete updatedProjectObject.topology.wires[thisWire];
 
         if (interface1Interface){
            delete updatedProjectObject.topology.components[interface1Component].interfaces[interface1Interface]
@@ -333,16 +333,35 @@ var IOConsole = React.createClass({
 
     updateInstrumentLinks: function(projectObject){
         _.forEach(projectObject.instruments, function(instrument, instrumentID){
+            var pullArray = [];
             _.forEach(instrument.interfaces, function(ifc, i){
-                var thisComponent = ifc.component;
-                var thisInterface = ifc.ifc;
+                //var thisComponent = ifc.component;
+                //var thisInterface = ifc.ifc;
+                //console.log(ifc);
+//debugger
+                // check if this interface has a wire, delete instrument interface wire if not
+                var interfaceExists = false;
+                //console.log(projectObject.topology.wires);
+                _.forEach(projectObject.topology.wires, function(wire, j){
+                   // if (wire){
+                        console.log(wire[0], wire[1]);
+                        if (_.isEqual(wire[0], ifc) || _.isEqual(wire[1], ifc)){
+                            interfaceExists = true
+                        }
+                    //}
+                })
 
-                // check if this interface exists, delete wire if not
-                if (!(projectObject.topology.components[thisComponent] && projectObject.topology.components[thisComponent].interfaces[thisInterface])){
-                    delete projectObject.instruments[instrumentID].interfaces[i]
+                if (interfaceExists == false){
+                    pullArray.push(i)
+                    
+                    //projectObject.instruments[instrumentID].interfaces[i] = null;
                 }
-            })  
+                
+            })
+            _.pullAt(projectObject.instruments[instrumentID].interfaces, pullArray) 
         })
+        
+        console.log(projectObject);
 
         return projectObject
     },
@@ -384,8 +403,6 @@ var IOConsole = React.createClass({
     },
 
     handleNewLinkDrop: function(data, source) {
-        console.log("Dropping Link: ", data, source);
-
         if (!source.wireTo){return false};
 
         var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
@@ -409,14 +426,12 @@ var IOConsole = React.createClass({
 
         newInstrumentObject.interfaces.push(newInterface);
         newInstrumentObject.interfaces = _.uniqWith(newInstrumentObject.interfaces, _.isEqual);
-        console.log("interfaces: ", newInstrumentObject.interfaces);
 
         this.firebaseProjectsRef.child(this.state.selectedProjectID).child("instruments").child(data.instrument.uuid).set(newInstrumentObject);
 
     },
 
 	handleNewObjectDrop: function(moduleID, posX, posY){
-        console.log(moduleID, posX, posY);
         var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
 
         var selectedProjectFirebaseRef = this.firebaseProjectsRef.child(this.state.selectedProjectID);
@@ -654,14 +669,14 @@ var IOConsole = React.createClass({
                 for (var wire in newProjectObject.topology.wires){
                     var wireObject = newProjectObject.topology.wires[wire];
                     if (wireObject[0].component == hostID){
-                        newProjectObject.topology.wires[wire] = null;
+                        delete newProjectObject.topology.wires[wire];
                         //find interface on other component and delete
                         if (newProjectObject.topology.components[wireObject[1].component]){
                             newProjectObject.topology.components[wireObject[1].component].interfaces[wireObject[1].ifc] = null
                         }
                     }
                     if (wireObject[1].component == hostID){
-                        newProjectObject.topology.wires[wire] = null;
+                        delete newProjectObject.topology.wires[wire];
                         //find interface on other component and delete
                         if (newProjectObject.topology.components[wireObject[0].component]){
                             newProjectObject.topology.components[wireObject[0].component].interfaces[wireObject[0].ifc] = null
@@ -669,6 +684,9 @@ var IOConsole = React.createClass({
                     }
                 }
             }
+
+            //update instrument links
+            newProjectObject = this.updateInstrumentLinks(newProjectObject);
 
             var updatedObj = this.state.projectsIfcMapping;
 
@@ -683,7 +701,6 @@ var IOConsole = React.createClass({
             this.firebaseProjectsRef.child(this.state.selectedProjectID).set(newProjectObject);
         }
         else {
-            console.log("Cancelled Deletion")
             this.forceUpdate()     
         }
     },
@@ -723,7 +740,7 @@ var IOConsole = React.createClass({
                     for (var wire in newProjectObject.topology.wires){
                         var wireObject = newProjectObject.topology.wires[wire];
                         if (wireObject[0].component == objectID){
-                            newProjectObject.topology.wires[wire] = null;
+                            delete newProjectObject.topology.wires[wire];
                             //find interface on other component and delete
                             var otherComponent = newProjectObject.topology.components[wireObject[1].component] || false;
                             if (otherComponent){
@@ -732,7 +749,7 @@ var IOConsole = React.createClass({
                         }
                         //repeat for other end
                         if (wireObject[1].component == objectID){
-                            newProjectObject.topology.wires[wire] = null;
+                            delete newProjectObject.topology.wires[wire];
                             //find interface on other component and delete
                             var otherComponent = newProjectObject.topology.components[wireObject[0].component] || false;
                             if (otherComponent){
