@@ -87,7 +87,7 @@ var Popover = React.createClass({
 			var targetPolicy = this.props.popoverTarget.value;			
 			popover = (
 				<div id={this.props.popoverTarget.name} className="popoverContent" style={popoverPosition}>
-					<span className="inlineInstruction">Set priorities for the policies used in this project.</span>
+					<span className="inlineInstruction">Set priority ranking for the policies used in this project.</span>
 					<PriorityList
 						handleActions = {this.handleActions}
 						project = {this.props.selectedProject}/>
