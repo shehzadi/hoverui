@@ -13,8 +13,8 @@ $button-color: hsl(0, 0%, 60%);
 $app-min-width : 800px;
 $app-min-height : 300px;
 
-$grab-width : 15px;
-$grab-corner : 20px;
+$grab-width : 10px;
+$grab-corner : 15px;
 
 $home-height: 40px;
 $tools-height: 40px;
@@ -257,10 +257,52 @@ body::-webkit-scrollbar {
 		h2 {
 			padding-top: 3px;
 			color: hsla(0, 0%, 0%, 0.45);
-			font-size: 11px;
-			
+			font-size: 11px;			
 		}
+	}
 
+	.priorityContainer {
+		border-top: 1px solid hsla(0, 0%, 0%, 0.2);
+		margin-top: 5px;
+		padding-top: 3px;
+		overflow-y: auto;
+		max-height: 400px;
+		.listItem {
+			display: flex;
+			align-items: baseline;
+			margin: 5px 10px;
+			&.selected {
+				background-color: hsla(0, 0%, 0%, 0.1);
+			}
+			.itemName {
+				margin-left: 0.3em;
+			}
+			.version {
+				flex: 1;
+				margin-left: 0.5em;
+			}
+			button {
+				margin-left: 0px;
+				margin-right: 2px;
+				padding: 0 7px 1px 1px;
+				background-color: hsla(0, 0%, 0%, 0.1);
+				&:hover {				
+					background-color: hsla(0, 0%, 0%, 0.2);
+				}
+			}
+			&:first-of-type {
+				.priorityUp {
+					opacity: 0.2;
+					pointer-events: none;
+				}
+			}
+			&:last-of-type {
+				.priorityDown {
+					opacity: 0.2;
+					pointer-events: none;
+				}
+			}
+		}
 	}
 }
 
@@ -279,9 +321,16 @@ body::-webkit-scrollbar {
 .inlineInstruction {
 	font-style: italic;
 	opacity: 0.65;
+	padding-right: 10px;
+	display: inline-block;
 }
 
 #hostInterfaces {
+	width: 250px;
+	padding: 10px;
+}
+
+#prioritySelector {
 	width: 250px;
 	padding: 10px;
 }
@@ -688,16 +737,42 @@ body::-webkit-scrollbar {
 		border-width: 1px;
 		border-style: solid;
 		font-size: 12px;
-		display: flex;
-		flex-direction: column;
 		border-radius: 8px;
 		justify-content: left;
 		align-items: top;
-		.policyVersion {
-			@include subtext;
-			margin-left: 0.5em;
-			display: inline-block;
+		.policyHeader {
+			display: flex;
+			flex-wrap: wrap;
+			.policyDetails {
+				flex: 1;
+				white-space: normal;
+				margin-right: 12px;
+				margin-bottom: 3px;
+				.policyName {
+					margin-right: 0.5em;
+					white-space: nowrap;		
+				}
+				.policyVersion {
+					@include subtext;
+				}
+			}
+			.priority {
+				color: inherit;
+				font-style: italic;
+				display: inline-block;
+				position: relative;
+				top: -1px;
+				font-size: 11px;
+				margin-left: -4px;
+				padding: 1px 5px;
+				background-color: transparent;
+				&:hover {
+					background-color: hsla(0, 0%, 0%, 0.1);
+				}			
+			}
 		}
+		
+
 		.grab {
 			position: absolute;
 		}
@@ -1041,7 +1116,7 @@ body::-webkit-scrollbar {
 	}
 
 	button, a {
-		padding: 1px 8px 1px 7px;
+		padding: 2px 8px 2px 7px;
 		text-decoration: none;
 		min-width: 20px;
 		margin: 2px;
@@ -1063,12 +1138,13 @@ body::-webkit-scrollbar {
 		flex-grow: 1;
 		display: flex;
 		justify-content: flex-start;
-		font-size: 11.5px;
+		
 		padding-left: 25px;
 
 		button {
 			padding: 3px 12px;
 			min-width: 50px;
+			font-size: 11.5px;
 			margin: 3px;
 			background-color: $button-color;
 			border: 1px solid darken($button-color, 5%);
@@ -1091,6 +1167,19 @@ body::-webkit-scrollbar {
     margin-right: -2px;
     vertical-align: middle;
     border-top: 4px dashed;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+    opacity: 0.6;
+}
+
+.caretUp {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 4px;
+    margin-right: -2px;
+    vertical-align: middle;
+    border-bottom: 4px dashed;
     border-right: 4px solid transparent;
     border-left: 4px solid transparent;
     opacity: 0.6;

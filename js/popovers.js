@@ -83,6 +83,18 @@ var Popover = React.createClass({
 			)
 		}
 
+		if (this.props.popoverTarget.name == "prioritySelector"){
+			var targetPolicy = this.props.popoverTarget.value;			
+			popover = (
+				<div id={this.props.popoverTarget.name} className="popoverContent" style={popoverPosition}>
+					<span className="inlineInstruction">Set priorities for the policies used in this project.</span>
+					<PriorityList
+						handleActions = {this.handleActions}
+						project = {this.props.selectedProject}/>
+				</div>
+			)
+		}
+
 		return (
 			<div id="popoverBackground" onClick={this.closePopover}>
   				<div style={popoverPosition} ref="container" onClick={this.popoverClick} className="popoverContainer">

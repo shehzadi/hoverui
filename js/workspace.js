@@ -514,13 +514,14 @@ var Workspace = React.createClass({
 			var policy = policiesObject[policyID];
 			var moduleID = policy.module;
 			var policyView = selectedProject.dependencies[moduleID].view;
-			//debugger
+
 			this.policiesData[policyID] = {
 				type: "policy",
 				moduleID: moduleID,
 				module: dependenciesObject[moduleID], 
 				interfaces: policy.interfaces || null, 
 				view: policyView,
+				priority: policy.priority,
 				computedInterfaces: [], 
 				left: policyViewData.left, 
 				top: policyViewData.top, 
@@ -822,12 +823,13 @@ var Workspace = React.createClass({
   			policies.push(
   				<Policy
 					key = {policyID} 
+					openPopover = {this.props.openPopover}
 					isPendingDeletion = {this.isPendingDeletion} 
 					onMouseDown = {this.objectMouseDown} 
 					handlePolicyUpdate = {this.handlePolicyUpdate} 
 					componentData = {this.componentData} 
 					hostComponentData = {this.hostComponentData} 
-					policyObject = {thisPolicy} 
+					policyData = {this.policiesData} 
 					policyID = {policyID}/>
   			);
 		};

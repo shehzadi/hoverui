@@ -1,64 +1,29 @@
 var HostIfcList = React.createClass({
-/*
-	getInitialState: function() {
-    	return {
-    		isScrollAtTop: true
-    	};
-  	},
-
-	handleSectionScroll: function() {
-		var sectionElement = this.refs.ioModules.getDOMNode();
-		this.setState({
-			isScrollAtTop: sectionElement.scrollTop == 0
-		});
-
-	},
-*/
-  onNetworkClick : function(event){
-    console.log(event);
-  },
-
-  onStorageClick : function(event){
-    console.log(event);
-  },
 
   onNetIfcClick : function(event){
-    //console.log(event.target.className, event.target.getAttribute("name"));
-    this.props.onIfcMappingClick(event.target.getAttribute("name"), "network");
-    
+    this.props.onIfcMappingClick(event.target.getAttribute("name"), "network");   
   },
 
   onStorIfcClick : function(event){
-    //console.log(event.target.className, event.target.getAttribute("name"));
-    this.props.onIfcMappingClick(event.target.getAttribute("name"), "storage");
-    
+    this.props.onIfcMappingClick(event.target.getAttribute("name"), "storage");    
   },
+
 	render: function() {	
-		//var categoryItems = [];
     var projectHostIfcs = this.props.selectedProjectHostIfcs;
     var localHostIfcMap = this.props.selectedProjectIfcMapping;
 
     var networkJsxArr = [];
     var storageJsxArr = [];
 
-
-
-    
-
-    //console.log(this.props.selectedProjectIfcMapping, this.props.selectedProjectHostIfcs);
-
     var selectedLocalIfcs = [];
+
     for (var projectIfc in localHostIfcMap) {
-     // console.log("Project IFCs", projectHostIfcs);
       if (projectHostIfcs[projectIfc]){
-        //console.log("Adding to selectedLocalIfcs", localHostIfcMap[projectIfc]);
         selectedLocalIfcs.push(localHostIfcMap[projectIfc]);
       }
     }
-   // console.log(selectedLocalIfcs);
 
     for (var i in networkInterfaces) {
-      //console.log(_.includes(selectedLocalIfcs,networkInterfaces[i].name));
       var classString = "";
       if (_.includes(selectedLocalIfcs,networkInterfaces[i].name)) {
         classString = "selected"
@@ -68,8 +33,8 @@ var HostIfcList = React.createClass({
         {networkInterfaces[i].name}
         </div>
       )
-      //console.log(networkInterfaces[i]);
     }
+
     for (var i in storageInterfaces)  {
       var classString = "";
       if (_.includes(selectedLocalIfcs,storageInterfaces[i].name)) {
@@ -80,10 +45,7 @@ var HostIfcList = React.createClass({
           {storageInterfaces[i].name}
           </div>
         )
-      //console.log(networkInterfaces[i]);
     }
-    //networkInterfaces
-    //storageInterfaces
 
   	return (
       <div className="ifcContainer">

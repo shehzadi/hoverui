@@ -186,10 +186,61 @@ var IOConsole = React.createClass({
         console.log("open settings")
     },
 
+    editPriority: function(payload){
+        var selectedProject = this.state.projectsObject[this.state.selectedProjectID];
+        var projectDependencies = selectedProject.dependencies;
+        var policyModuleArray = [];
+        _.forEach(projectDependencies, function(module, id){
+            if (module.type == "policy"){
+                policyModuleArray.push(module)
+            }
+        });
+        var numberOfPolicies = policyModuleArray.length;
+
+        var updatedProjectPoliciesObject = _.cloneDeep(selectedProject.policies);
+
+        var targetModule = payload.target.getAttribute("data-module");
+        var currentPriority = parseInt(payload.target.getAttribute("data-priority"));
+        var moveDirection =  payload.target.name;
+
+        if (moveDirection == "priorityDown"){
+            var targetPriority = currentPriority + 1
+        }
+        else {
+            var targetPriority = currentPriority - 1
+        }
+
+        if (targetPriority > numberOfPolicies || targetPriority < 1){
+            return false
+        }
+
+        _.forEach(updatedProjectPoliciesObject, function(policy, id){
+            if (policy.module == targetModule){
+                policy.priority = targetPriority
+            }
+            else {
+                if (moveDirection == "priorityDown" && policy.priority - 1 == currentPriority){
+                   policy.priority -= 1
+                }
+                if (moveDirection == "priorityUp" && policy.priority + 1 == currentPriority){
+                   policy.priority += 1
+                }
+            }
+        });
+
+        this.firebaseProjectsRef.child(this.state.selectedProjectID).child("policies").set(updatedProjectPoliciesObject);
+    },
+
     handleActions: function(event){
         var eventName = event.target.name;
 
         switch(eventName) {
+            case "priorityUp":
+            console.log("up")
+                this.editPriority(event); break;
+            case "priorityDown":
+            console.log("down")
+                this.editPriority(event); break;
             case "newProject":
                 this.createNewProject(projectTemplate); break;
             case "importProjectJSON":
@@ -210,7 +261,6 @@ var IOConsole = React.createClass({
             default:
                 console.log("No Event Handler", event)
         }
-
     },
 
     updateMappingCookie: function(hostID, newIfcName){                   
@@ -403,8 +453,31 @@ var IOConsole = React.createClass({
                 "width": this.props.policyInProgress.width,
                 "height": this.props.policyInProgress.height
             };
+            //set new policy with priority of existing policies with the same module
+            //or find the lowest priority (highest number) and +1
+            var newPolicyObject = newProjectObject.policies || {};
+            var newPriority = 1;
+            
+            if (!_.includes(JSON.stringify(newPolicyObject), moduleID)){
+                var highestPriorityNumber = 0;
+                _.forEach(newProjectObject.policies, function(policy, id){
+                    if (policy.priority > highestPriorityNumber){
+                        highestPriorityNumber = policy.priority
+                    }
+                })
+                newPriority = highestPriorityNumber + 1
+            }
+            else {
+                _.forEach(newProjectObject.policies, function(policy, id){
+                    if (policy.module == moduleID){
+                        newPriority = policy.priority
+                    }
+                })
+            }
+
             var newPolicyData = {
-                "module": moduleID
+                "module": moduleID,
+                "priority": newPriority
             };
             _.set(newProjectObject, 'policies.' + newID, newPolicyData)
         }
@@ -675,9 +748,19 @@ var IOConsole = React.createClass({
             }
             else if (objectID.indexOf('policy') == 0){
                 var moduleDependencyID = selectedProject.policies[objectID].module;
+                var deletedPriority = selectedProject.policies[objectID].priority;
 
                 //delete policy from policies
                 delete newProjectObject.policies[objectID];
+                //update priorities of remaining policies
+                // check to see if any more of the deleted policy
+                if (!_.includes(JSON.stringify(newProjectObject.policies), moduleDependencyID)){
+                    _.forEach(newProjectObject.policies, function(policy, id){
+                        if (policy.priority > deletedPriority){
+                            policy.priority -= 1
+                        }
+                    })
+                }
             }
 
             else if (objectID.indexOf('instrument') == 0){
@@ -883,13 +966,6 @@ var IOConsole = React.createClass({
         console.log(event.target.getBoundingClientRect());
         this.setState({
             menuTarget: event.target,
-        }); 
-    },
-
-    openPopover: function(event) {
-        console.log(event.target);
-        this.setState({
-            popoverTarget: event.target,
         }); 
     },
 
@@ -1184,6 +1260,7 @@ var IOConsole = React.createClass({
                             menuTarget = {this.state.menuTarget} 
 							handleObjectDrop = {this.handleObjectDrop} 
                             openMenu = {this.openMenu} 
+                            openPopover = {this.openPopover}
                             handleInstrumentUpdate = {this.handleInstrumentUpdate} 
                             handlePolicyUpdate = {this.handlePolicyUpdate} 
                             updatePoliciesData = {this.updatePoliciesData}
