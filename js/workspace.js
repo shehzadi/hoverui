@@ -70,7 +70,6 @@ var Workspace = React.createClass({
 		this.startX = event.pageX - this.workspaceOriginX;
 		this.startY = event.pageY - this.workspaceOriginY;
 
-
 		this.setState({
     		mouseDown: mouseDownObject
     	});
@@ -152,8 +151,7 @@ var Workspace = React.createClass({
 		}
 	},
 
-	onMouseMove: function(event) { //captured on document
-		
+	onMouseMove: function(event) { //captured on document		
 		var cursorX = event.pageX - this.workspaceOriginX;
 		var cursorY = event.pageY - this.workspaceOriginY;
 		var deltaX = cursorX - this.startX;
@@ -182,7 +180,6 @@ var Workspace = React.createClass({
 					var isPendingUpdate = false;
 					var sourceObject = this.state.mouseDown;
 				}
-
 			}
 			else {
 				var sourceObject = this.state.mouseDown;
@@ -208,8 +205,7 @@ var Workspace = React.createClass({
 	ifcMouseUp: function(tokenObject) {
 		event.stopPropagation();
 		
-		if (this.state.wireType == "existing") {
-			
+		if (this.state.wireType == "existing") {		
 			if (!_.isEqual(this.state.mouseDown, this.state.isSnapping)){
 				this.props.handleWireDrop(this.state.dragging, this.state.isSnapping);
 			}
@@ -406,9 +402,7 @@ var Workspace = React.createClass({
 			var componentInterfaces = thisComponent.interfaces;
 			var moduleInterfaces = thisComponent.module.topology.interfaces;
 
-
 			var ioCapability = [];
-
 			_.forEach(moduleInterfaces, function(interface){
 				if (interface.view){
 					var defaultFace = interface.view.defaultFace || false
@@ -441,9 +435,7 @@ var Workspace = React.createClass({
 		//set up wire data object
 		this.wireData = {};
 		for (var wireID in wiresObject) {
-
 			var thisWire = wiresObject[wireID];
-
 			this.wireData[wireID] = [];
 			var that = this;
 			_.forEach(thisWire, function(endpoint, i){
@@ -501,7 +493,6 @@ var Workspace = React.createClass({
 				writeLocation["wireTo"] = {
 					component: otherComponentID,
 					ifc: otherEnd.ifc || false
-					//vector: getVector(thisComponent, otherComponent)
 				}
 				writeLocation["wire"] = wire;
 			}.bind(this));
@@ -958,7 +949,6 @@ var Workspace = React.createClass({
 			};
 
     		var isWireExists = false;
-
 			if (!isWireExists) {
 				wires.push(
 					<Wire
@@ -1048,12 +1038,9 @@ var Workspace = React.createClass({
 									isSnapping = {this.state.isSnapping} />	
 		}
 
-
 		//figure out size of svg container
 		this.svgExtents = defineSvgSize(this.componentData, this.hostComponentData, this.instrumentData, this.state.cursorX, this.state.cursorY)
 
-
-		//return
 		return (
 			<div className="ui-module workspace pattern">		
 				{policies}

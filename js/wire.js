@@ -79,7 +79,6 @@ var Wire = React.createClass({
 		};
 
 		// make path string
-		//<path d="M10 10 H 90 V 90 H 10 L 10 10"/>
 		var lengthOfStraight = 15;
 		var pathString = "M" + wireCoordinates.end0.left + " " + wireCoordinates.end0.top;
 
