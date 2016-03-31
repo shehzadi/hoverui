@@ -1,5 +1,5 @@
 # Hover UI
-![alt tag](https://cloud.githubusercontent.com/assets/1617259/14193612/1db0b4de-f75b-11e5-9cbb-875fbd5a9154.gif)
+![alt tag](https://cloud.githubusercontent.com/assets/1617259/14193702/ecfeb024-f75b-11e5-9064-08c1fb8b4190.gif)
 
 ## Deploying using Docker
   1. Clone hoverui git repository
