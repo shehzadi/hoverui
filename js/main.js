@@ -74,9 +74,6 @@ var IOConsole = React.createClass({
             }.bind(this));
 
             this.setLocalSetting("projectsSrc", payload.projectsSrc);
-            this.setState({
-                projectsSrc: payload.projectsSrc
-            });
         }
 
         if (payload.modulesSrc != this.state.modulesSrc){
@@ -95,10 +92,12 @@ var IOConsole = React.createClass({
             }.bind(this));
 
             this.setLocalSetting("modulesSrc", payload.modulesSrc);
-            this.setState({
-                modulesSrc: payload.modulesSrc
-            });
         }
+
+        this.setState({
+            projectsSrc: payload.projectsSrc,
+            modulesSrc: payload.modulesSrc
+        });
     },
 
     handleProjectsIfcMapping: function(projectsObj, selectedProject) {
