@@ -15,18 +15,14 @@ var ImportJSONForm = React.createClass({
 		var submitPayload = "";
 
 		var file = this.state.fileData.files[0];
-		console.log(file);
 
 		var reader = new FileReader();
     	reader.readAsText(file);
 
-    	
     	reader.onload = function(event) {
     		submitPayload = reader.result;
     		this.props.submit(this.props.modalName, submitPayload)
-    	}.bind(this)
-
-		
+    	}.bind(this)		
 	},
 
 	onFormChange: function(event) {
