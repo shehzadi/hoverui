@@ -50,7 +50,6 @@ var Popover = React.createClass({
 			top: 0
 		}
 
-		//console.log(this.state.popoverRectangle);
 		if (this.state.popoverRectangle){
 			var leftPopoverPosition = (targetRect.left + (targetRect.width / 2)) - (this.state.popoverRectangle.width / 2);
 			var topPopoverPosition = targetRect.top + targetRect.height + (this.props.noseWidth);
@@ -68,8 +67,6 @@ var Popover = React.createClass({
 			}
 		}
 
-		
-		
 		if (this.props.popoverTarget.name == "hostInterfaces"){
 			var selectedProjectHostIfcs = _.get(this.props.selectedProject, 'topology.host_interfaces', {})
 			popover = (
