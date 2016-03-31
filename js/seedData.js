@@ -1,6 +1,6 @@
 var modulesSeed = {
   "data" : {
-    "module-seed-0001" : {
+    "module-0001" : {
       "categories" : {
         "topology" : true
       },
@@ -22,7 +22,7 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
-    "module-seed-0002" : {
+    "module-0002" : {
       "categories" : {
         "topology" : true
       },
@@ -44,7 +44,7 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
-    "module-seed-0003" : {
+    "module-0003" : {
       "categories" : {
         "topology" : true
       },
@@ -55,23 +55,32 @@ var modulesSeed = {
           {
             "capacity" : 1,
             "mode" : "out",
-            "protocol" : "protocol-3we4"
+            "protocol" : "protocol-3we4",
+            "view" : {
+              "defaultFace" : "bottom"
+            }
           },
           {
             "capacity" : 1,
             "mode" : "in",
-            "protocol" : "protocol-3we4"
+            "protocol" : "protocol-3we4",
+            "view" : {
+              "defaultFace" : "bottom"
+            }
           },
           {
             "capacity" : 1,
             "mode" : "bi",
-            "protocol" : "protocol-3we4"
+            "protocol" : "protocol-3we4",
+            "view" : {
+              "defaultFace" : "top"
+            }
           }
         ]
       },
       "version" : "0.0.1"
     },
-    "module-seed-0004" : {
+    "module-0004" : {
       "categories" : {
         "translation" : true
       },
@@ -103,7 +112,7 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
-    "module-seed-0005" : {
+    "module-0005" : {
       "categories" : {
         "translation" : true
       },
@@ -119,7 +128,10 @@ var modulesSeed = {
           {
             "capacity" : 1,
             "mode" : "out",
-            "protocol" : "protocol-3we4"
+            "protocol" : "protocol-3we4",
+            "view" : {
+              "defaultFace" : "right"
+            }
           },
           {
             "capacity" : 1,
@@ -130,51 +142,33 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
-    "module-seed-0006" : {
+    "module-0006" : {
       "categories" : {
         "instrumentation" : true
       },
-      "type" : "instrument",
       "description" : "Count packets and events.",
       "name" : "Count",
+      "type" : "instrument",
+      "version" : "0.0.1",
       "view" : {
         "height" : 95,
         "width" : 120
-      },
-      "topology" : {
-        "interfaces" : [
-          {
-            "capacity" : 1,
-            "mode" : "in",
-            "protocol" : "protocol-3we4"
-          }
-        ]
-      },
-      "version" : "0.0.1"
+      }
     },
-    "module-seed-0007" : {
+    "module-0007" : {
       "categories" : {
         "instrumentation" : true
       },
       "description" : "Plot packets and events.",
-      "type" : "instrument",
       "name" : "Plot",
+      "type" : "instrument",
+      "version" : "0.0.1",
       "view" : {
-        "height": 200,
+        "height" : 200,
         "width" : 300
-      },
-      "topology" : {
-        "interfaces" : [
-          {
-            "capacity" : 1,
-            "mode" : "in",
-            "protocol" : "protocol-3we4"
-          }
-        ]
-      },
-      "version" : "0.0.1"
+      }
     },
-    "module-seed-0008" : {
+    "module-0008" : {
       "categories" : {
         "policy" : true
       },
@@ -197,7 +191,7 @@ var modulesSeed = {
         "hue" : 0
       }
     },
-    "module-seed-0009" : {
+    "module-0009" : {
       "categories" : {
         "topology" : true
       },
@@ -219,27 +213,77 @@ var modulesSeed = {
       },
       "version" : "0.0.1"
     },
-    "module-seed-0010" : {
+    "module-0010" : {
       "categories" : {
         "instrumentation" : true
       },
       "description" : "Show statistical analyses of event flow data.",
-      "type" : "instrument",
       "name" : "Histogram",
+      "type" : "instrument",
+      "version" : "0.0.1",
       "view" : {
         "height" : 200,
         "width" : 300
+      }
+    },
+    "module-0011" : {
+      "categories" : {
+        "policy" : true
       },
-      "topology" : {
-        "interfaces" : [
-          {
-            "capacity" : 1,
-            "mode" : "in",
-            "protocol" : "protocol-3we4"
-          }
-        ]
+      "description" : "Policy describing scaling rules for components.",
+      "name" : "Scaling Policy",
+      "rules" : [
+        {
+          "priority" : "1"
+        },
+        {
+          "priority" : "1"
+        },
+        {
+          "priority" : "1"
+        }
+      ],
+      "type" : "policy",
+      "version" : "0.0.1",
+      "view" : {
+        "hue" : 240
+      }
+    },
+    "module-0012" : {
+      "categories" : {
+        "instrumentation" : true
       },
-      "version" : "0.0.1"
+      "description" : "Flame Graph usefulness...",
+      "name" : "Flame",
+      "type" : "instrument",
+      "version" : "0.0.1",
+      "view" : {
+        "height" : 200,
+        "width" : 300
+      }
+    },
+    "module-0013" : {
+      "categories" : {
+        "policy" : true
+      },
+      "description" : "Policy describing other rules.",
+      "name" : "Other Policy",
+      "rules" : [
+        {
+          "priority" : "1"
+        },
+        {
+          "priority" : "1"
+        },
+        {
+          "priority" : "1"
+        }
+      ],
+      "type" : "policy",
+      "version" : "0.0.1",
+      "view" : {
+        "hue" : 300
+      }
     }
   },
   "shared" : {
@@ -247,37 +291,40 @@ var modulesSeed = {
       "instrumentation" : {
         "description" : "Modules for visualizing event streams and flows.",
         "modules" : {
-          "module-seed-0006" : true,
-          "module-seed-0007" : true,
-          "module-seed-0010" : true
+          "module-0006" : true,
+          "module-0007" : true,
+          "module-0010" : true,
+          "module-0012" : true
         }
       },
       "policy" : {
         "description" : "Modules for adding security features to traffic flows.",
         "modules" : {
-          "module-seed-0008" : true
+          "module-0008" : true,
+          "module-0011" : true,
+          "module-0013" : true
         }
       },
       "topology" : {
         "description" : "Modules for routing traffic flows and for creating network topology.",
         "modules" : {
-          "module-seed-0001" : true,
-          "module-seed-0002" : true,
-          "module-seed-0003" : true,
-          "module-seed-0009" : true
+          "module-0001" : true,
+          "module-0002" : true,
+          "module-0003" : true,
+          "module-0009" : true
         }
       },
       "translation" : {
         "description" : "Modules for translating one event encapsulation format to another.",
         "modules" : {
-          "module-seed-0004" : true,
-          "module-seed-0005" : true
+          "module-0004" : true,
+          "module-0005" : true
         }
       }
     },
     "protocols" : {
       "protocol-14rf" : {
-        "hue" : 112,
+        "hue" : 290,
         "name" : "DCOM"
       },
       "protocol-26tg" : {
@@ -289,7 +336,7 @@ var modulesSeed = {
         "name" : "IMAP"
       },
       "protocol-49iu" : {
-        "hue" : 300,
+        "hue" : 100,
         "name" : "TCP-IP"
       }
     }
