@@ -53,8 +53,8 @@ var ImportJSONForm = React.createClass({
 					<input type="file" name="uploadField" accept="application/json" onChange={this.onFormChange}/>
 				</main>
 				<footer>
-					<input type="button" onClick={this.cancel} value="Cancel"/>
 					<input type="button" className={buttonClassString} onClick={this.submit} value="Import"/>
+					<input type="button" onClick={this.cancel} value="Cancel"/>
 				</footer>
 			</form>
 		)
@@ -140,8 +140,8 @@ var SaveAsModuleForm = React.createClass({
 				{categoryItems} 					
 			</main>
 			<footer>
-				<input type="button" onClick={this.cancel} value="Cancel"/>
 				<input type="button" className={buttonClassString} onClick={this.submit} value="Publish"/>
+				<input type="button" onClick={this.cancel} value="Cancel"/>
 			</footer>
 		</form>
 		)
@@ -211,8 +211,8 @@ var LibrariesForm = React.createClass({
 			</main>
 			<footer>
 				<span className="validationMessage">{validationMessageString}</span>
-				<input type="button" onClick={this.cancel} value="Cancel"/>
 				<input type="button" className={buttonClassString}  onClick={this.submit} value="Save"/>
+				<input type="button" onClick={this.cancel} value="Cancel"/>
 			</footer>
 		</form>
 		)

@@ -452,8 +452,8 @@ body::-webkit-scrollbar {
   padding: 4px 12px;
   min-width: 90px;
   margin: 4px;
-  background-color: #949494;
-  border: 1px solid #878787;
+  background-color: #9e9e9e;
+  border: 1px solid #8c8c8c;
   border-radius: 3px;
   white-space: nowrap;
   font-size: 14px;
@@ -464,17 +464,17 @@ body::-webkit-scrollbar {
 }
 
 .modalContainer input[type=button]:hover:not(.disabled) {
-  background-color: #9c9c9c;
-  border: 1px solid #8c8c8c;
+  background-color: #949494;
+  border: 1px solid gray;
 }
 
 .modalContainer input.affirmative {
-  background-color: #d9d9d9;
+  background-color: #cccccc;
   border: 1px solid #e6e6e6;
 }
 
 .modalContainer input.affirmative:hover:not(.disabled) {
-  background-color: #e6e6e6;
+  background-color: #e0e0e0;
   border: 1px solid white;
 }
 

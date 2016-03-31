@@ -496,24 +496,24 @@ body::-webkit-scrollbar {
 		padding: 4px 12px;
 		min-width: 90px;
 		margin: 4px;
-		background-color: hsl(0, 0%, 58%);
-		border: 1px solid hsl(0, 0%, 53%);
+		background-color: hsl(0, 0%, 62%);
+		border: 1px solid hsl(0, 0%, 55%);
 		border-radius: 3px;
 		white-space: nowrap;
 		font-size: 14px;
 		color: hsl(0, 0%, 20%);
 		@include text-ellipsis;
 		&:hover:not(.disabled) {
-			background-color: hsl(0, 0%, 61%);
-			border: 1px solid hsl(0, 0%, 55%);
+			background-color: hsl(0, 0%, 58%);
+			border: 1px solid hsl(0, 0%, 50%);
 		}
 	}
 
 	input.affirmative {
-		background-color: hsl(0, 0%, 85%);
+		background-color: hsl(0, 0%, 80%);
 		border: 1px solid hsl(0, 0%, 90%);
 		&:hover:not(.disabled) {
-			background-color: hsl(0, 0%, 90%);
+			background-color: hsl(0, 0%, 88%);
 			border: 1px solid hsl(0, 0%, 100%);
 		}
 	}
