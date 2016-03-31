@@ -298,45 +298,7 @@ var modulesSeed = {
 
 var projectTemplate = {
   "name": "Untitled Project",
-  "version": "0.0.1",
-  "topology": {
-    "host_interfaces": {
-      "host-0001": {
-        "mode": "bi",
-        "protocol": "protocol-3we4"
-      },
-      "host-0002": {
-        "mode": "bi",
-        "protocol": "protocol-14rf"
-      },
-      "host-0003": {
-        "mode": "bi",
-        "protocol": "protocol-49iu"
-      },
-      "host-0004": {
-        "mode": "bi",
-        "protocol": "protocol-26tg"
-      }
-    }
-  },
-  "view": {
-    "host-0001": {
-      "x": 20,
-      "y": headerHeight + 35
-    },
-    "host-0002": {
-      "x": 130,
-      "y": headerHeight + 35
-    },
-    "host-0003": {
-      "x": 240,
-      "y": headerHeight + 35
-    },
-    "host-0004": {
-      "x": 350,
-      "y": headerHeight + 35
-    }
-  }
+  "version": "0.0.1"
 }
 
 var projectsSeed = {

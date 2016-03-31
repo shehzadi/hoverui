@@ -71,13 +71,26 @@ var Popover = React.createClass({
 		
 		
 		if (this.props.popoverTarget.name == "hostInterfaces"){
+			var selectedProjectHostIfcs = _.get(this.props.selectedProject, 'topology.host_interfaces', {})
 			popover = (
 				<div id={this.props.popoverTarget.name} className="popoverContent" style={popoverPosition}>
 					<span className="inlineInstruction">Click the Host Interfaces to show/hide for this project.</span>
 					<HostIfcList
 	                    selectedProjectIfcMapping = {this.props.selectedProjectIfcMapping}
-	                    selectedProjectHostIfcs = {this.props.selectedProject.topology.host_interfaces || {}}
+	                    selectedProjectHostIfcs = {selectedProjectHostIfcs}
 	                    onIfcMappingClick = {this.onIfcMappingClick}/>
+				</div>
+			)
+		}
+
+		if (this.props.popoverTarget.name == "prioritySelector"){
+			var targetPolicy = this.props.popoverTarget.value;			
+			popover = (
+				<div id={this.props.popoverTarget.name} className="popoverContent" style={popoverPosition}>
+					<span className="inlineInstruction">Set priority ranking for the policies used in this project.</span>
+					<PriorityList
+						handleActions = {this.handleActions}
+						project = {this.props.selectedProject}/>
 				</div>
 			)
 		}

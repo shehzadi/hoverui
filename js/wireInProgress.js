@@ -12,13 +12,13 @@ var WireInProgress = React.createClass({
 			var y1 = staticEnd.top;
 		}
 
-
 		var lengthOfStraight = 15;
 		var pathString = "M" + x1 + " " + y1;
 
 		var startFace = "";
-
+		
 		if (staticEnd.face){startFace = staticEnd.face}
+		else if (staticEnd.defaultFace){startFace = staticEnd.defaultFace}		
 		else if (staticEnd.mode){
 			switch (staticEnd.mode){
 				case "in":
@@ -41,7 +41,6 @@ var WireInProgress = React.createClass({
 				pathString += " V" + (y1 + lengthOfStraight);
 		}
 
-
 		var componentStyle = {
 			stroke: getHSL(this.props.protocols[thisProtocol].hue, "darker"),
 			strokeWidth: 3,
@@ -51,19 +50,23 @@ var WireInProgress = React.createClass({
 		var x2 = this.props.cursorX;
 		var y2 = this.props.cursorY;
 		var endFace = "";
-		if (this.props.isSnapping){
-			if (this.props.isSnapping.ifcLeft){
-				x2 = this.props.isSnapping.ifcLeft;
-				y2 = this.props.isSnapping.ifcTop
+
+		var snapIfc = this.props.isSnapping;
+		if (snapIfc){
+
+			if (snapIfc.ifcLeft){
+				x2 = snapIfc.ifcLeft;
+				y2 = snapIfc.ifcTop
 			}
 			else {
-				x2 = this.props.isSnapping.left;
-				y2 = this.props.isSnapping.top
+				x2 = snapIfc.left;
+				y2 = snapIfc.top
 			}
 
-			if (this.props.isSnapping.face){endFace = this.props.isSnapping.face}
-			else if (this.props.isSnapping.mode){
-				switch (this.props.isSnapping.mode){
+			if (snapIfc.face){endFace = snapIfc.face}
+			else if (snapIfc.defaultFace){endFace = snapIfc.defaultFace}
+			else if (snapIfc.mode){
+				switch (snapIfc.mode){
 					case "in":
 						endFace = "top"; break;
 					default:
@@ -84,7 +87,6 @@ var WireInProgress = React.createClass({
 		}
 
 		pathString += " L" + x2 + " " + y2;
-
 
 		return (
 			<path 
