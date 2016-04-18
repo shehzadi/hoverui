@@ -75,6 +75,7 @@ var Popover = React.createClass({
 					<HostIfcList
 	                    selectedProjectIfcMapping = {this.props.selectedProjectIfcMapping}
 	                    selectedProjectHostIfcs = {selectedProjectHostIfcs}
+	                    networkInterfaces = {this.props.networkInterfaces}
 	                    onIfcMappingClick = {this.onIfcMappingClick}/>
 				</div>
 			)

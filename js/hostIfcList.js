@@ -11,6 +11,7 @@ var HostIfcList = React.createClass({
 	render: function() {	
     var projectHostIfcs = this.props.selectedProjectHostIfcs;
     var localHostIfcMap = this.props.selectedProjectIfcMapping;
+    var networkInterfaces = this.props.networkInterfaces;
 
     var networkJsxArr = [];
     var storageJsxArr = [];

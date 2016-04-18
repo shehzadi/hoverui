@@ -8,6 +8,7 @@ var HomeActions = React.createClass({
 			<ul className="menuContent">
 				<li className = "menuSection">Settings</li>
 				<li><a name="repositories" onMouseUp={this.handleActions}>Data Repositories</a></li>
+				<li><a name="iovisorPath" onMouseUp={this.handleActions}>IO Visor</a></li>
 			</ul>
 		)
 	}
@@ -148,6 +149,7 @@ var Menu = React.createClass({
 		var menu = false;
 
 		var targetRect = this.props.menuTarget.getBoundingClientRect();
+		var networkInterfaces = this.props.networkInterfaces;
 
 		var menuPosition = {
 			left: targetRect.left,
@@ -158,14 +160,14 @@ var Menu = React.createClass({
 			menu = (
 				<div id="menuBackground" onClick={this.closeMenu}>
 	  				<div style={menuPosition} className="menuContainer">
-	  					<InterfaceSelectionList 
+	  					<InterfaceSelectionList
 	  						hostID = {this.props.menuTarget.value}
-	  						ifcMap = {this.props.ifcMap} 
-	  						networkInterfaces = {networkInterfaces} 
-	  						storageInterfaces = {storageInterfaces} 
+	  						ifcMap = {this.props.ifcMap}
+	  						networkInterfaces = {networkInterfaces}
+	  						storageInterfaces = {storageInterfaces}
 	  						handleActions = {this.handleActions}/>
 	  				</div>
-	  			</div>	
+	  			</div>
 			)
 		}
 		

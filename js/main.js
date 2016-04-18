@@ -1,8 +1,10 @@
 
 var IOConsole = React.createClass({
     getInitialState: function() {
+        console.log("get initial state")
         var projectsSrc = this.getLocalSetting("projectsSrc") || "https://boiling-torch-3324.firebaseio.com/v3/users/maxb/projects";
         var modulesSrc = this.getLocalSetting("modulesSrc") || "https://boiling-torch-3324.firebaseio.com/v3/modules";
+        var iovisorLoc = this.getLocalSetting("iovisorLoc") || "";
         
         var categoryVisibility = this.getLocalSetting("categoryVisibility") || {};
 
@@ -29,7 +31,8 @@ var IOConsole = React.createClass({
             projectsIfcMapping: projectsIfcMapping,
             categoryVisibility: categoryVisibility,
             projectsSrc: projectsSrc,
-            modulesSrc: modulesSrc
+            modulesSrc: modulesSrc,
+            iovisorLoc: iovisorLoc
         };
     },
 
@@ -47,6 +50,8 @@ var IOConsole = React.createClass({
     },
 
     componentWillMount: function() {
+        console.log("component will mount")
+        console.log(this.state.iovisorLoc)
         this.firebaseProjectsRef = new Firebase(this.state.projectsSrc);
         this.firebaseProjectsRef.on("value", function(dataSnapshot) {
             this.handleFirebaseProjects(dataSnapshot)
@@ -56,6 +61,24 @@ var IOConsole = React.createClass({
         this.firebaseModulesRef.on("value", function(dataSnapshot) {
             this.handleFirebaseModules(dataSnapshot)
         }.bind(this));
+
+        $.ajax({
+            url: this.state.iovisorLoc + "/modules/host/interfaces/" 
+        }).then(
+            function(data) {
+                this.setState({
+                    networkInterfaces: data
+                });
+            }.bind(this),
+            function() {
+                console.log("Could not get network interfaces from " + "/modules/host/interfaces/");
+                console.log("Using placeholder network interface");
+                this.setState({
+                    networkInterfaces: networkInterfaces
+                });
+            }.bind(this)
+        );
+   
     },
 
     updateDataSources: function(payload){
@@ -97,6 +120,13 @@ var IOConsole = React.createClass({
         this.setState({
             projectsSrc: payload.projectsSrc,
             modulesSrc: payload.modulesSrc
+        });
+    },
+
+    updateIOVisorPath: function(payload){
+        this.setLocalSetting("iovisorLoc", payload.iovisorLoc)
+        this.setState({
+            iovisorLoc: payload.iovisorLoc
         });
     },
 
@@ -240,6 +270,8 @@ var IOConsole = React.createClass({
                 this.openModal("importJSON"); break;
             case "repositories":
                 this.openModal("librariesSettings"); break;
+            case "iovisorPath":
+                this.openModal("IOVisorSettings"); break;
             case "downloadJSON":
                 document.getElementById('download').click(); break;
             case "deleteProject":
@@ -986,6 +1018,9 @@ var IOConsole = React.createClass({
         if (modalName == "librariesSettings"){
             this.updateDataSources(payload)
         }
+        if (modalName == "IOVisorSettings"){
+            this.updateIOVisorPath(payload)
+        }
         if (modalName == "importJSON"){
             importProjectTemplate = JSON.parse(payload);
             importProjectTemplate.name = "Imported Project";
@@ -1164,6 +1199,7 @@ var IOConsole = React.createClass({
                 var modalDialogue = (<ModalDialogue
                     projectsSrc = {this.state.projectsSrc}
                     modulesSrc = {this.state.modulesSrc}
+                    iovisorLoc = {this.state.iovisorLoc}
                     key = {modalName}
                     modalName = {modalName}
                     categories = {this.state.categoriesObject}
@@ -1184,6 +1220,7 @@ var IOConsole = React.createClass({
                     projects = {this.state.projectsObject} 
                     selectedProject = {selectedProject} 
                     ifcMap = {this.state.projectsIfcMapping[this.state.selectedProjectID]}
+                    networkInterfaces = {this.state.networkInterfaces}
                     handleActions = {this.handleActions} 
                     closeMenu = {this.closeMenu} 
                     menuTarget = {this.state.menuTarget}/>
@@ -1194,11 +1231,13 @@ var IOConsole = React.createClass({
         if (this.state.popoverTarget != false){
             popover = (
                 <Popover
-                    projects = {this.state.projectsObject} 
+                    projects = {this.state.projectsObject}
+                    iovisorLoc = {this.state.iovisorLoc} 
                     selectedProject = {selectedProject} 
                     onHostIfcClick = {this.onHostIfcClick} 
                     handleActions = {this.handleActions} 
                     closePopover = {this.closePopover} 
+                    networkInterfaces = {this.state.networkInterfaces}
                     selectedProjectIfcMapping = {this.state.projectsIfcMapping[this.state.selectedProjectID] || {}} 
                     popoverTarget = {this.state.popoverTarget}/>
             );
