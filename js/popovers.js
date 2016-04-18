@@ -50,7 +50,6 @@ var Popover = React.createClass({
 			top: 0
 		}
 
-		//console.log(this.state.popoverRectangle);
 		if (this.state.popoverRectangle){
 			var leftPopoverPosition = (targetRect.left + (targetRect.width / 2)) - (this.state.popoverRectangle.width / 2);
 			var topPopoverPosition = targetRect.top + targetRect.height + (this.props.noseWidth);
@@ -68,16 +67,28 @@ var Popover = React.createClass({
 			}
 		}
 
-		
-		
 		if (this.props.popoverTarget.name == "hostInterfaces"){
+			var selectedProjectHostIfcs = _.get(this.props.selectedProject, 'topology.host_interfaces', {})
 			popover = (
 				<div id={this.props.popoverTarget.name} className="popoverContent" style={popoverPosition}>
 					<span className="inlineInstruction">Click the Host Interfaces to show/hide for this project.</span>
 					<HostIfcList
 	                    selectedProjectIfcMapping = {this.props.selectedProjectIfcMapping}
-	                    selectedProjectHostIfcs = {this.props.selectedProject.topology.host_interfaces || {}}
+	                    selectedProjectHostIfcs = {selectedProjectHostIfcs}
+	                    networkInterfaces = {this.props.networkInterfaces}
 	                    onIfcMappingClick = {this.onIfcMappingClick}/>
+				</div>
+			)
+		}
+
+		if (this.props.popoverTarget.name == "prioritySelector"){
+			var targetPolicy = this.props.popoverTarget.value;			
+			popover = (
+				<div id={this.props.popoverTarget.name} className="popoverContent" style={popoverPosition}>
+					<span className="inlineInstruction">Set priority ranking for the policies used in this project.</span>
+					<PriorityList
+						handleActions = {this.handleActions}
+						project = {this.props.selectedProject}/>
 				</div>
 			)
 		}

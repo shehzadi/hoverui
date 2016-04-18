@@ -8,6 +8,7 @@ var HomeActions = React.createClass({
 			<ul className="menuContent">
 				<li className = "menuSection">Settings</li>
 				<li><a name="repositories" onMouseUp={this.handleActions}>Data Repositories</a></li>
+				<li><a name="iovisorPath" onMouseUp={this.handleActions}>IO Visor</a></li>
 			</ul>
 		)
 	}
@@ -26,7 +27,7 @@ var AddObject = React.createClass({
 				<li className="disabled"><a name="newModule" onMouseUp={this.handleActions}>New Module&hellip;</a></li>
 				<li className="disabled"><a name="newProtocol" onMouseUp={this.handleActions}>New Protocol&hellip;</a></li>
 				<li className = "menuSection">Import Object</li>
-				<li className="disabled"><a name="importProject" onMouseUp={this.handleActions}>Import Project&hellip;</a></li>
+				<li><a name="importProjectJSON" onMouseUp={this.handleActions}>Import Project JSON&hellip;</a></li>
 				<li className="disabled"><a name="importModule" onMouseUp={this.handleActions}>Import Module&hellip;</a></li>
 			</ul>
 		)
@@ -43,7 +44,7 @@ var ProjectActions = React.createClass({
 		if (_.size(this.props.projects) == 1){
 			deleteButtonClass = "disabled"
 		}
-		var wiresObject = this.props.selectedProject.topology.wires || {};
+		var wiresObject = _.get(this.props.selectedProject, 'topology.wires', {})
 
 		var saveAsModuleButtonClass = "";
 		var nWiresToHostInterfaces = 0;
@@ -60,7 +61,7 @@ var ProjectActions = React.createClass({
 			<ul className="menuContent">
 				<li className="disabled"><a name="duplicate" onMouseUp={this.handleActions}>Duplicate Project</a></li>
 				<li className={saveAsModuleButtonClass} ><a name="saveIOModule" onMouseUp={this.handleActions}>Save as IO Module&hellip;</a></li>
-				<li><a name="downloadJSON" onMouseUp={this.handleActions}>Download JSON</a></li>
+				<li><a name="downloadJSON" onMouseUp={this.handleActions}>Save Project JSON</a></li>
 				<li className = "menuSection"></li>
 				<li className={deleteButtonClass}><a name="deleteProject"  onMouseUp={this.handleActions}>Delete Project&hellip;</a></li>
 			</ul>
@@ -148,6 +149,7 @@ var Menu = React.createClass({
 		var menu = false;
 
 		var targetRect = this.props.menuTarget.getBoundingClientRect();
+		var networkInterfaces = this.props.networkInterfaces;
 
 		var menuPosition = {
 			left: targetRect.left,
@@ -158,14 +160,14 @@ var Menu = React.createClass({
 			menu = (
 				<div id="menuBackground" onClick={this.closeMenu}>
 	  				<div style={menuPosition} className="menuContainer">
-	  					<InterfaceSelectionList 
+	  					<InterfaceSelectionList
 	  						hostID = {this.props.menuTarget.value}
-	  						ifcMap = {this.props.ifcMap} 
-	  						networkInterfaces = {networkInterfaces} 
-	  						storageInterfaces = {storageInterfaces} 
+	  						ifcMap = {this.props.ifcMap}
+	  						networkInterfaces = {networkInterfaces}
+	  						storageInterfaces = {storageInterfaces}
 	  						handleActions = {this.handleActions}/>
 	  				</div>
-	  			</div>	
+	  			</div>
 			)
 		}
 		

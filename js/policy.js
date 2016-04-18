@@ -3,6 +3,10 @@ var Policy = React.createClass({
 		this.props.onMouseDown(this.props.policyID, "policy")
 	},
 
+	priorityHandler: function(event){
+		this.props.openPopover(event)
+	},
+
 	top: function(event){event.stopPropagation();this.props.onMouseDown(this.props.policyID, "policy", "top")},
 	topRight: function(event){event.stopPropagation();this.props.onMouseDown(this.props.policyID, "policy", "top right")},
 	right: function(event){event.stopPropagation();this.props.onMouseDown(this.props.policyID, "policy", "right")},
@@ -13,31 +17,35 @@ var Policy = React.createClass({
 	topLeft: function(event){event.stopPropagation();this.props.onMouseDown(this.props.policyID, "policy", "top left")},
 
 	render: function() {
-		var hue = this.props.policyObject.view.hue;
+		var thisPolicy = this.props.policyData[this.props.policyID];
+		var hue = thisPolicy.view.hue;
 		var style = {
 			backgroundColor: getHSL(hue, null, 0.07),
 			borderColor: getHSL(hue, null, 0.4),
-			width: this.props.policyObject.width,
-			height: this.props.policyObject.height,
-			top: this.props.policyObject.top,
-			left: this.props.policyObject.left,
-			zIndex: -1 * this.props.policyObject.width * this.props.policyObject.height
+			width: thisPolicy.width,
+			height: thisPolicy.height,
+			top: thisPolicy.top,
+			left: thisPolicy.left,
+			zIndex: -1 * thisPolicy.width * thisPolicy.height
 		}
 
 		var classString = "policy";
 		if (this.props.isPendingDeletion == this.props.policyID){
 			classString += " pendingDeletion"
 		}
+
+		var buttonLabel = "Priority: " + thisPolicy.priority;
 		return (
 			<div 
 				className = {classString} 
 				onMouseDown = {this.handleMouseDown} 
 				style = {style}>
-  				<div className="policyName">
-  					{this.props.policyObject.module.name}
-	  				<span className="policyVersion">
-	  					{this.props.policyObject.module.version}
-	  				</span>
+  				<div className = "policyHeader">
+	  				<div className = "policyDetails">
+	  					<span className = "policyName">{thisPolicy.module.name}</span>
+						<span className = "policyVersion">{thisPolicy.module.version}</span>
+	  				</div>		
+		  			<button className="priority" onClick={this.priorityHandler} name="prioritySelector" value={this.props.policyID}>{buttonLabel}<span className="caret"></span></button>
   				</div>
   				<div className = "grab top" onMouseDown = {this.top} ></div>
   				<div className = "grab topRight" onMouseDown = {this.topRight}></div>

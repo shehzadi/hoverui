@@ -103,24 +103,36 @@ var HostInterface = React.createClass({
 		if (this.state.isHover  || _.isEqual(this.props.tokenObject, this.props.dragging)){
 			growthW = 4;
 			growthH = 8;
-		}		
+		}
 
-		var fillColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue);
-		var borderColor = getHSL(this.props.protocols[this.props.tokenObject.protocol].hue, "darker");
+		var thisHue = this.props.protocols[this.props.tokenObject.protocol].hue;
+
+		var fillColor = getHSL(thisHue);
+		var borderColor = getHSL(thisHue, "darker");
 
 		// validity for drop
 		var thisOpacity = 1;
 		if (this.state.isValid == false){
 			thisOpacity = 0.2
 		}
+
 		if (_.isEqual(this.props.tokenObject, this.props.dragging)){ //is source
 			thisOpacity = 1
+		}
+
+		var dashArray = "";
+		
+		if (this.props.tokenObject.hostComponentID == this.props.isPendingDeletion){ //is source
+			borderColor = getHSL(thisHue);
+			fillColor = getHSL(thisHue, "lighter");
+			dashArray = "3, 3"
 		}
 	
 		var interfaceStyle = {
 			fill: fillColor,
 			stroke: borderColor,
-			opacity: thisOpacity
+			opacity: thisOpacity,
+			strokeDasharray: dashArray
 		};
 
 		var rotation = 0;
@@ -195,7 +207,6 @@ var HostInterface = React.createClass({
 					className = "hostInterface" 
 					style = {interfaceStyle} 
 					points = {points} 
-					//transform = {transformString} 
 					onMouseEnter={this.onMouseEnter} 
 					onMouseLeave={this.onMouseLeave} 
 					onMouseUp={this.onMouseUp} 

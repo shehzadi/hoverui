@@ -33,6 +33,9 @@ var HostComponent = React.createClass({
 			buttonClassString += " isOpenMenu"
 		}
 
+		if (this.props.isPendingDeletion == this.props.hostComponentID){
+			classNameString += " pendingDeletion"
+  		}
 		
 
 		return (

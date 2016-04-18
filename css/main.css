@@ -204,6 +204,54 @@ body::-webkit-scrollbar {
   font-size: 11px;
 }
 
+.popoverContainer .priorityContainer {
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  margin-top: 5px;
+  padding-top: 3px;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.popoverContainer .priorityContainer .listItem {
+  display: flex;
+  align-items: baseline;
+  margin: 5px 10px;
+}
+
+.popoverContainer .priorityContainer .listItem.selected {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.popoverContainer .priorityContainer .listItem .itemName {
+  margin-left: 0.3em;
+}
+
+.popoverContainer .priorityContainer .listItem .version {
+  flex: 1;
+  margin-left: 0.5em;
+}
+
+.popoverContainer .priorityContainer .listItem button {
+  margin-left: 0px;
+  margin-right: 2px;
+  padding: 0 7px 1px 1px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.popoverContainer .priorityContainer .listItem button:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.popoverContainer .priorityContainer .listItem:first-of-type .priorityUp {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.popoverContainer .priorityContainer .listItem:last-of-type .priorityDown {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
 .nose {
   position: absolute;
   width: 0;
@@ -219,9 +267,16 @@ body::-webkit-scrollbar {
 .inlineInstruction {
   font-style: italic;
   opacity: 0.65;
+  padding-right: 10px;
+  display: inline-block;
 }
 
 #hostInterfaces {
+  width: 250px;
+  padding: 10px;
+}
+
+#prioritySelector {
   width: 250px;
   padding: 10px;
 }
@@ -305,6 +360,10 @@ body::-webkit-scrollbar {
   cursor: text;
 }
 
+.modalContainer .error {
+  color: #ca1c47;
+}
+
 .modalContainer label {
   display: block;
   font-size: 15px;
@@ -350,6 +409,7 @@ body::-webkit-scrollbar {
 .modalContainer main {
   flex-grow: 1;
   margin: 15px 30px 40px 30px;
+  min-height: 150px;
 }
 
 .modalContainer footer {
@@ -380,6 +440,10 @@ body::-webkit-scrollbar {
   padding: 2px 6px;
 }
 
+.modalContainer input[type=file] {
+  margin: 10px 0;
+}
+
 .modalContainer #librariesForm input[type=text] {
   width: 500px;
 }
@@ -388,8 +452,8 @@ body::-webkit-scrollbar {
   padding: 4px 12px;
   min-width: 90px;
   margin: 4px;
-  background-color: #949494;
-  border: 1px solid #878787;
+  background-color: #9e9e9e;
+  border: 1px solid #8c8c8c;
   border-radius: 3px;
   white-space: nowrap;
   font-size: 14px;
@@ -400,17 +464,17 @@ body::-webkit-scrollbar {
 }
 
 .modalContainer input[type=button]:hover:not(.disabled) {
-  background-color: #9c9c9c;
-  border: 1px solid #8c8c8c;
+  background-color: #949494;
+  border: 1px solid gray;
 }
 
 .modalContainer input.affirmative {
-  background-color: #d9d9d9;
+  background-color: #cccccc;
   border: 1px solid #e6e6e6;
 }
 
 .modalContainer input.affirmative:hover:not(.disabled) {
-  background-color: #e6e6e6;
+  background-color: #e0e0e0;
   border: 1px solid white;
 }
 
@@ -503,7 +567,7 @@ body::-webkit-scrollbar {
 
 .workspace .hostComponent {
   position: absolute;
-  background-color: rgba(140, 140, 140, 0.8);
+  background-color: rgba(128, 128, 128, 0.65);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
   font-size: 11px;
   display: flex;
@@ -544,10 +608,14 @@ body::-webkit-scrollbar {
   background-color: #ebbcc9;
 }
 
+.workspace .hostComponent.pendingDeletion {
+  outline: 1px dashed black;
+  opacity: 0.4;
+}
+
 .workspace .instrument {
   position: absolute;
   color: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.5);
   background-color: rgba(38, 38, 38, 0.9);
   padding: 6px 8px;
   font-size: 12px;
@@ -654,18 +722,47 @@ body::-webkit-scrollbar {
   border-width: 1px;
   border-style: solid;
   font-size: 12px;
-  display: flex;
-  flex-direction: column;
   border-radius: 8px;
   justify-content: left;
   align-items: top;
 }
 
-.workspace .policy .policyVersion {
+.workspace .policy .policyHeader {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.workspace .policy .policyHeader .policyDetails {
+  flex: 1;
+  white-space: normal;
+  margin-right: 12px;
+  margin-bottom: 3px;
+}
+
+.workspace .policy .policyHeader .policyDetails .policyName {
+  margin-right: 0.5em;
+  white-space: nowrap;
+}
+
+.workspace .policy .policyHeader .policyDetails .policyVersion {
   font-size: 85%;
   opacity: 0.6;
-  margin-left: 0.5em;
+}
+
+.workspace .policy .policyHeader .priority {
+  color: inherit;
+  font-style: italic;
   display: inline-block;
+  position: relative;
+  top: -1px;
+  font-size: 11px;
+  margin-left: -4px;
+  padding: 1px 5px;
+  background-color: transparent;
+}
+
+.workspace .policy .policyHeader .priority:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .workspace .policy .grab {
@@ -673,16 +770,16 @@ body::-webkit-scrollbar {
 }
 
 .workspace .policy .top, .workspace .policy .bottom {
-  height: 15px;
-  left: 20px;
-  right: 20px;
+  height: 10px;
+  left: 15px;
+  right: 15px;
   cursor: ns-resize;
 }
 
 .workspace .policy .left, .workspace .policy .right {
-  bottom: 20px;
-  top: 20px;
-  width: 15px;
+  bottom: 15px;
+  top: 15px;
+  width: 10px;
   cursor: ew-resize;
 }
 
@@ -695,8 +792,8 @@ body::-webkit-scrollbar {
 }
 
 .workspace .policy .topRight, .workspace .policy .topLeft, .workspace .policy .bottomRight, .workspace .policy .bottomLeft {
-  height: 20px;
-  width: 20px;
+  height: 15px;
+  width: 15px;
 }
 
 .workspace .policy .top, .workspace .policy .topRight, .workspace .policy .topLeft {
@@ -1025,7 +1122,7 @@ body::-webkit-scrollbar {
 }
 
 .tools button, .tools a {
-  padding: 1px 8px 1px 7px;
+  padding: 2px 8px 2px 7px;
   text-decoration: none;
   min-width: 20px;
   margin: 2px;
@@ -1049,13 +1146,13 @@ body::-webkit-scrollbar {
   flex-grow: 1;
   display: flex;
   justify-content: flex-start;
-  font-size: 11.5px;
   padding-left: 25px;
 }
 
 .tools .buttons button {
   padding: 3px 12px;
   min-width: 50px;
+  font-size: 11.5px;
   margin: 3px;
   background-color: #999999;
   border: 1px solid #8c8c8c;
@@ -1076,6 +1173,19 @@ body::-webkit-scrollbar {
   margin-right: -2px;
   vertical-align: middle;
   border-top: 4px dashed;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  opacity: 0.6;
+}
+
+.caretUp {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 4px;
+  margin-right: -2px;
+  vertical-align: middle;
+  border-bottom: 4px dashed;
   border-right: 4px solid transparent;
   border-left: 4px solid transparent;
   opacity: 0.6;

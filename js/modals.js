@@ -1,3 +1,63 @@
+var ImportJSONForm = React.createClass({
+	getInitialState: function() {
+   		return {
+			fileData: false
+		};
+	},
+
+	cancel: function(event) {
+		event.preventDefault();
+		this.props.cancel(this.props.modalName)
+	},
+
+	submit: function(event) {
+		event.preventDefault();
+		var submitPayload = "";
+
+		var file = this.state.fileData.files[0];
+
+		var reader = new FileReader();
+    	reader.readAsText(file);
+
+    	reader.onload = function(event) {
+    		submitPayload = reader.result;
+    		this.props.submit(this.props.modalName, submitPayload)
+    	}.bind(this)		
+	},
+
+	onFormChange: function(event) {
+		var elementName = event.target.attributes.name.value;
+		if (elementName == "uploadField"){
+			this.setState({fileData: event.target})
+		}
+	},
+
+	render: function() {
+		var buttonClassString = "affirmative";
+		var fileName = this.state.fileName;
+		if (fileName == false) {
+			buttonClassString += " disabled";
+		}
+		return (
+			<form id="importJSON">
+				<header>
+					<h1>Import Project JSON</h1>
+					<button onClick={this.cancel}>&times;</button>
+				</header>
+				<main>
+					<p>Choose a JSON file to import&hellip;</p>
+					<input type="file" name="uploadField" accept="application/json" onChange={this.onFormChange}/>
+				</main>
+				<footer>
+					<input type="button" className={buttonClassString} onClick={this.submit} value="Import"/>
+					<input type="button" onClick={this.cancel} value="Cancel"/>
+				</footer>
+			</form>
+		)
+	}
+
+});
+
 var SaveAsModuleForm = React.createClass({
 	getInitialState: function() {
    		return {
@@ -76,8 +136,8 @@ var SaveAsModuleForm = React.createClass({
 				{categoryItems} 					
 			</main>
 			<footer>
-				<input type="button" onClick={this.cancel} value="Cancel"/>
 				<input type="button" className={buttonClassString} onClick={this.submit} value="Publish"/>
+				<input type="button" onClick={this.cancel} value="Cancel"/>
 			</footer>
 		</form>
 		)
@@ -147,8 +207,90 @@ var LibrariesForm = React.createClass({
 			</main>
 			<footer>
 				<span className="validationMessage">{validationMessageString}</span>
-				<input type="button" onClick={this.cancel} value="Cancel"/>
 				<input type="button" className={buttonClassString}  onClick={this.submit} value="Save"/>
+				<input type="button" onClick={this.cancel} value="Cancel"/>
+			</footer>
+		</form>
+		)
+	}
+});
+
+var IOVisorForm = React.createClass({
+	getInitialState: function() {
+   		return {
+			iovisorLoc: this.props.iovisorLoc,
+			invalidClassString: "",
+			buttonClassString: "affirmative",
+			validationMessageString: ""
+		};
+	},
+
+	cancel: function(event) {
+		event.preventDefault();
+		this.props.cancel(this.props.modalName)
+	},
+
+	submit: function(event) {
+		event.preventDefault();
+
+		var submitPayload = {
+			iovisorLoc: this.state.iovisorLoc
+		}
+
+		this.setState({
+			buttonClassString: "affirmative disabled",
+			validationMessageString: "Checking IO Visor path..."
+		});
+
+        $.ajax({
+            url: this.state.iovisorLoc + "/modules/" 
+        }).then(
+            function(data) {
+				this.props.submit(this.props.modalName, submitPayload)
+            }.bind(this),
+            function() {
+            	this.setState({
+            		invalidClassString: "invalid",
+					buttonClassString: "affirmative disabled",
+					validationMessageString: "IO Visor path invalid"
+				});
+                this.setState({
+                    networkInterfaces: networkInterfaces
+                });
+            }.bind(this)
+        );
+	},
+
+	onFormChange: function(event) {
+		var elementName = event.target.attributes.name.value;
+		if (elementName == "iovisorLoc"){
+			console.log(event.target.value)
+			this.setState({
+				iovisorLoc: event.target.value,
+				invalidClassString: "",
+				buttonClassString: "affirmative",
+				validationMessageString: ""
+			})
+		}
+	},
+
+	render: function() {
+		return (
+		<form id="IOVisorForm">
+			<header>
+				<h1>IO Visor Settings</h1>
+				<button onClick={this.cancel}>&times;</button>
+			</header>
+			<main>
+				<p>Provide Path for IO Visor IO Modules.</p>
+				<div>IO Modules</div>
+				<input className={this.state.invalidClassString} type="text" name="iovisorLoc" value={this.state.iovisorLoc} onChange={this.onFormChange}/>
+				<p className="help">e.g. http://localhost:5000</p>
+			</main>
+			<footer>
+				<span className="validationMessage">{this.state.validationMessageString}</span>
+				<input type="button" className={this.state.buttonClassString}  onClick={this.submit} value="Save"/>
+				<input type="button" onClick={this.cancel} value="Cancel"/>
 			</footer>
 		</form>
 		)
@@ -166,6 +308,21 @@ var ModalDialogue = React.createClass({
 
 	render: function() {
 		var modal;
+
+
+		if (this.props.modalName == "importJSON"){
+			modal = (
+				<div className="modalBackground">
+	  				<div className="modalContainer">
+	  					<ImportJSONForm
+	  						modalName = {this.props.modalName}
+	  						cancel = {this.cancel} 
+	  						submit = {this.submit}/>
+	  				</div>
+	  			</div>	
+			)
+		}
+
 		if (this.props.modalName == "librariesSettings"){
 			modal = (
 				<div className="modalBackground">
@@ -174,6 +331,20 @@ var ModalDialogue = React.createClass({
 	  						modalName = {this.props.modalName} 
 	  						projectsSrc = {this.props.projectsSrc} 
 	  						modulesSrc = {this.props.modulesSrc}
+	  						cancel = {this.cancel} 
+	  						submit = {this.submit}/>
+	  				</div>
+	  			</div>	
+			)
+		}
+
+		if (this.props.modalName == "IOVisorSettings"){
+			modal = (
+				<div className="modalBackground">
+	  				<div className="modalContainer">
+	  					<IOVisorForm
+	  						modalName = {this.props.modalName}
+	  						iovisorLoc = {this.props.iovisorLoc}
 	  						cancel = {this.cancel} 
 	  						submit = {this.submit}/>
 	  				</div>
