@@ -469,7 +469,7 @@ var IOConsole = React.createClass({
         var newProjectPoliciesObject = newProjectObject.policies || {};
         var projectDependenciesObject = newProjectObject.dependencies || {};
         
-        if (moduleType == "component"){
+        if (moduleType == "component" || "bpf/forward"){
             var newID = "comp-" + ioid();
             var newViewData = {
                 "x": posX,
@@ -948,7 +948,7 @@ var IOConsole = React.createClass({
         var workspaceOriginX = workspaceElement.left;
         var workspaceOriginY = workspaceElement.top;
 
-        if (dropType == "component"){
+        if (dropType == "component" || dropType == "bpf/forward"){
             var dims = this.props.componentInProgress
         }
         else if (dropType == "policy") {
@@ -1193,7 +1193,7 @@ var IOConsole = React.createClass({
                     thisX = {this.state.cursorX} 
                     thisY = {this.state.cursorY}/>
             }
-            else if (moduleType == "component"){
+            else if (moduleType == "component" || moduleType == "bpf/forward"){
                 componentInProgress = <ComponentInProgress
                     thisModuleID = {moduleID} 
                     moduleName = {moduleName} 
