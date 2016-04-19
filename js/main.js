@@ -1,7 +1,6 @@
 
 var IOConsole = React.createClass({
     getInitialState: function() {
-        console.log("get initial state")
         var projectsSrc = this.getLocalSetting("projectsSrc") || "https://boiling-torch-3324.firebaseio.com/v3/users/maxb/projects";
         var modulesSrc = this.getLocalSetting("modulesSrc") || "https://boiling-torch-3324.firebaseio.com/v3/modules";
         var iovisorLoc = this.getLocalSetting("iovisorLoc") || "";
@@ -50,8 +49,6 @@ var IOConsole = React.createClass({
     },
 
     componentWillMount: function() {
-        console.log("component will mount")
-        console.log(this.state.iovisorLoc)
         this.firebaseProjectsRef = new Firebase(this.state.projectsSrc);
         this.firebaseProjectsRef.on("value", function(dataSnapshot) {
             this.handleFirebaseProjects(dataSnapshot)
@@ -63,7 +60,7 @@ var IOConsole = React.createClass({
         }.bind(this));
 
         $.ajax({
-            url: this.state.iovisorLoc + "/modules/host/interfaces/" 
+            url: this.state.iovisorLoc + "/modules/host/interfaces/"
         }).then(
             function(data) {
                 this.setState({
@@ -128,6 +125,22 @@ var IOConsole = React.createClass({
         this.setState({
             iovisorLoc: payload.iovisorLoc
         });
+        $.ajax({
+            url: this.state.iovisorLoc + "/modules/host/interfaces/"
+        }).then(
+            function(data) {
+                this.setState({
+                    networkInterfaces: data
+                });
+            }.bind(this),
+            function() {
+                console.log("Could not get network interfaces from " + "/modules/host/interfaces/");
+                console.log("Using placeholder network interface");
+                this.setState({
+                    networkInterfaces: networkInterfaces
+                });
+            }.bind(this)
+        );
     },
 
     handleProjectsIfcMapping: function(projectsObj, selectedProject) {

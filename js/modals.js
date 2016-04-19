@@ -264,7 +264,6 @@ var IOVisorForm = React.createClass({
 	onFormChange: function(event) {
 		var elementName = event.target.attributes.name.value;
 		if (elementName == "iovisorLoc"){
-			console.log(event.target.value)
 			this.setState({
 				iovisorLoc: event.target.value,
 				invalidClassString: "",
