@@ -41,9 +41,10 @@ var NameEditor = React.createClass({
 });
 
 var Tools = React.createClass({
+
 	getInitialState: function() {
    		return {
-   			isEditingName: false,
+   			isEditingName: false
    		};
 	},
 
@@ -68,12 +69,16 @@ var Tools = React.createClass({
    		if (event.target.value != this.props.selectedProject.name){
    			this.props.renameProject(event.target.value);
    		}
-   		
 	},
 
 	render: function() {
 		var project = "";
 		var version = "";
+
+		var deployButtonClass = "";
+		if (this.props.iovisorLoc == "") {
+			deployButtonClass = "disabled"
+		}
 
 		var selectedProjectObject = this.props.selectedProject;
 
@@ -100,8 +105,6 @@ var Tools = React.createClass({
 			)
 		}
 
-		
-
 		var downloadData = "data: text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.props.selectedProject));
 
 		return (
@@ -112,7 +115,7 @@ var Tools = React.createClass({
 				<button name="projectActions" onClick={this.openMenu}>More Actions<span className="caret"></span></button>
 				<div className="buttons">
 					<button name="hostInterfaces" onClick={this.openPopover}>Host Interfaces<span className="caret"></span></button>
-					<button className="disabled">Deploy to IO Visor&hellip;</button>
+					<button className={deployButtonClass}>Deploy to IO Visor&hellip;</button>
 				</div>
 			</div>
 		)

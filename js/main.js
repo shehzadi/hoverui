@@ -59,22 +59,7 @@ var IOConsole = React.createClass({
             this.handleFirebaseModules(dataSnapshot)
         }.bind(this));
 
-        $.ajax({
-            url: this.state.iovisorLoc + "/modules/host/interfaces/"
-        }).then(
-            function(data) {
-                this.setState({
-                    networkInterfaces: data
-                });
-            }.bind(this),
-            function() {
-                console.log("Could not get network interfaces from " + "/modules/host/interfaces/");
-                console.log("Using placeholder network interface");
-                this.setState({
-                    networkInterfaces: networkInterfaces
-                });
-            }.bind(this)
-        );
+        this.updateIOVisorPath({iovisorLoc: this.state.iovisorLoc});
    
     },
 
@@ -125,22 +110,30 @@ var IOConsole = React.createClass({
         this.setState({
             iovisorLoc: payload.iovisorLoc
         });
-        $.ajax({
-            url: this.state.iovisorLoc + "/modules/host/interfaces/"
-        }).then(
-            function(data) {
-                this.setState({
-                    networkInterfaces: data
-                });
-            }.bind(this),
-            function() {
-                console.log("Could not get network interfaces from " + "/modules/host/interfaces/");
-                console.log("Using placeholder network interface");
-                this.setState({
-                    networkInterfaces: networkInterfaces
-                });
-            }.bind(this)
-        );
+        if (payload.iovisorLoc == ""){
+            console.log("Empty IO Visor path provided");
+            console.log("Using placeholder network interface");
+            this.setState({
+                networkInterfaces: networkInterfaces
+            });
+        } else{
+            $.ajax({
+                url: this.state.iovisorLoc + "/modules/host/interfaces/"
+            }).then(
+                function(data) {
+                    this.setState({
+                        networkInterfaces: data
+                    });
+                }.bind(this),
+                function() {
+                    console.log("Could not get network interfaces from " + "/modules/host/interfaces/");
+                    console.log("Using placeholder network interface");
+                    this.setState({
+                        networkInterfaces: networkInterfaces
+                    });
+                }.bind(this)
+            );
+        }
     },
 
     handleProjectsIfcMapping: function(projectsObj, selectedProject) {
@@ -1283,7 +1276,8 @@ var IOConsole = React.createClass({
                             openModal = {this.openModal} 
                             openMenu = {this.openMenu}
                             openPopover = {this.openPopover}
-                            renameProject = {this.renameProject}/>
+                            renameProject = {this.renameProject}
+                            iovisorLoc = {this.state.iovisorLoc}/>
                     </div>
                     <div id="workspace">
                         <Workspace 

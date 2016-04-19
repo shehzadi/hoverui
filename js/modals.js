@@ -227,7 +227,7 @@ var IOVisorForm = React.createClass({
 
 	cancel: function(event) {
 		event.preventDefault();
-		this.props.cancel(this.props.modalName)
+		this.props.cancel(this.props.modalName);
 	},
 
 	submit: function(event) {
@@ -242,23 +242,29 @@ var IOVisorForm = React.createClass({
 			validationMessageString: "Checking IO Visor path..."
 		});
 
-        $.ajax({
-            url: this.state.iovisorLoc + "/modules/" 
-        }).then(
-            function(data) {
-				this.props.submit(this.props.modalName, submitPayload)
-            }.bind(this),
-            function() {
-            	this.setState({
-            		invalidClassString: "invalid",
-					buttonClassString: "affirmative disabled",
-					validationMessageString: "IO Visor path invalid"
-				});
-                this.setState({
-                    networkInterfaces: networkInterfaces
-                });
-            }.bind(this)
-        );
+		if (this.state.iovisorLoc != ""){
+			$.ajax({
+				url: this.state.iovisorLoc + "/modules/"
+			}).then(
+				function(data) {
+					this.props.submit(this.props.modalName, submitPayload)
+				}.bind(this),
+				function() {
+					this.setState({
+						invalidClassString: "invalid",
+						buttonClassString: "affirmative disabled",
+						validationMessageString: "IO Visor path invalid"
+					});
+				}.bind(this)
+			);
+		} else{
+			this.setState({
+				invalidClassString: "",
+				buttonClassString: "affirmative",
+				validationMessageString: ""
+			});
+			this.props.submit(this.props.modalName, submitPayload);
+		}
 	},
 
 	onFormChange: function(event) {
@@ -284,7 +290,7 @@ var IOVisorForm = React.createClass({
 				<p>Provide Path for IO Visor IO Modules.</p>
 				<div>IO Modules</div>
 				<input className={this.state.invalidClassString} type="text" name="iovisorLoc" value={this.state.iovisorLoc} onChange={this.onFormChange}/>
-				<p className="help">e.g. http://localhost:5000</p>
+				<p className="help">e.g. http://localhost:5000 or leave empty for none</p>
 			</main>
 			<footer>
 				<span className="validationMessage">{this.state.validationMessageString}</span>
