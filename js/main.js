@@ -12,6 +12,9 @@ var IOConsole = React.createClass({
 
         return {
             projectsObject: {},
+            deployedModules: {},
+            deployedLinks: {},
+            deployedHostModule: {},
             sortedProjectArray: [],
             modulesObject: {},
             sortedModuleArray: [],
@@ -118,7 +121,7 @@ var IOConsole = React.createClass({
             });
         } else{
             $.ajax({
-                url: this.state.iovisorLoc + "/modules/host/interfaces/"
+                url: this.state.iovisorLoc + "/external_interfaces/"
             }).then(
                 function(data) {
                     this.setState({
@@ -126,7 +129,7 @@ var IOConsole = React.createClass({
                     });
                 }.bind(this),
                 function() {
-                    console.log("Could not get network interfaces from " + "/modules/host/interfaces/");
+                    console.log("Could not get network interfaces from " + this.state.iovisorLoc + "/external_interfaces/");
                     console.log("Using placeholder network interface");
                     this.setState({
                         networkInterfaces: networkInterfaces
@@ -1154,6 +1157,140 @@ var IOConsole = React.createClass({
         }
     },
 
+    deleteDeployedModules: function(modules){
+        var promise_array = [];
+        for (var deployedModule in modules){
+            if (modules[deployedModule]["module_type"] == "bpf/forward" || modules[deployedModule]["module_type"] == "bpf/policy"){
+                console.log("Deleting module" + modules[deployedModule]["id"]);
+                promise_array.push(this.deleteIOVisor("/modules/" + modules[deployedModule]["id"]));
+            }
+        }
+        return promise_array;
+    },
+
+    deleteIOVisor: function(path){
+        console.log("delete" + path);
+        return $.ajax({
+            type: "DELETE",
+            url: this.state.iovisorLoc + path
+        })
+    },
+
+    getIOVisor: function(path){
+        return $.ajax({
+            url: this.state.iovisorLoc + path
+        })
+    },
+
+    getIOVisorAsync: function(path){
+        var return_data = "";
+        $.ajax({
+            url: this.state.iovisorLoc + path
+        }).then(
+            function(data) {
+                return_data = data;
+            },
+            function() {
+                console.log("Could not get " + state_var + " from " + this.state.iovisorLoc + path);
+                return_data = "FAILED";
+            }.bind(this)
+        );
+        return return_data;
+    },
+
+    deployToIOVisor: function(){
+        // Read modules and links
+        var deployedModules = "";
+        var deployedLinks = "";
+
+        this.getIOVisor("/modules/")
+            .then(
+                function(input){
+                    var promise_array = this.deleteDeployedModules(input);
+                    return ($.when.apply(this, promise_array))
+
+                }.bind(this))
+            .then(function(){
+                return this.getIOVisor("/modules/")}.bind(this))
+            .then(function(input){
+                console.log(input);
+            });
+/*
+        async_queue([
+            function(callback) {
+                $.ajax({
+                    url: this.state.iovisorLoc + "/modules/"
+                }).then(
+                    function(data) {
+                        var state_return = {};
+                        console.log("found modules" + data)
+                        state_return["deployedModules"] = data;
+                        this.setState(state_return);
+                        callback();
+                    }.bind(this),
+                    function() {
+                        console.log("Could not get deployedModules from " + this.state.iovisorLoc + "modules");
+                        var state_return = {};
+                        state_return["deployedModules"] = "FAILED";
+                        alert("Could not read modules from IO Visor");
+                        this.setState(state_return);
+                    }.bind(this)
+                );
+            },
+            function() {
+                $.ajax({
+                    url: this.state.iovisorLoc + "/links/"
+                }).then(
+                    function(data) {
+                        var state_return = {};
+                        console.log("found links" + data)
+                        state_return["deployedLinks"] = data;
+                        this.setState(state_return);
+                    }.bind(this),
+                    function() {
+                        console.log("Could not get deployedLinks from " + this.state.iovisorLoc + "links");
+                        var state_return = {};
+                        state_return["deployedLinks"] = "FAILED";
+                        alert("Could not read links from IO Visor");
+                        this.setState(state_return);
+                    }.bind(this)
+                );
+            }
+        ], this);*/
+/*
+        deployedModules = this.getIOVisorAsync("/modules/");
+        deployedLinks = this.getIOVisorAsync("/links/");
+
+        if (deployedModules == "FAILED" || deployedLinks == "FAILED"){
+            alert("Could not read modules and links from IO Visor");
+            return;
+        }
+
+        // Delete modules and links
+        for (var deployedLink in deployedLinks){
+            console.log("Found deployed link " + deployedLink)
+        }
+
+        for (var deployedModule in deployedModules){
+            console.log(deployedModule);
+            if (deployedModule["id"] != "host"){
+                // delete deployed modules here
+                console.log("Found deployed module " + deployedModule["display_name"])
+            } else {
+                console.log("Found host module");
+                this.setState({
+                    deployedHostModule: deployedModule
+                });
+            }            
+        }
+
+*/
+        // Read interfaces and confirm if interfaces being deployed are still valid
+        // If valid proceed else alert the user and update networkInterfaces and hostIfcMapping
+
+        // Add new modules and links
+    },
+
     render: function() {
         if (_.isEmpty(this.state.modulesObject) || _.isEmpty(this.state.projectsObject)){
             return false
@@ -1277,7 +1414,8 @@ var IOConsole = React.createClass({
                             openMenu = {this.openMenu}
                             openPopover = {this.openPopover}
                             renameProject = {this.renameProject}
-                            iovisorLoc = {this.state.iovisorLoc}/>
+                            iovisorLoc = {this.state.iovisorLoc}
+                            deployToIOVisor = {this.deployToIOVisor}/>
                     </div>
                     <div id="workspace">
                         <Workspace 

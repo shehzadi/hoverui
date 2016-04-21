@@ -31,6 +31,15 @@ function getInterfaceArray(policy, components, hostComponents){
 	return interfaceArray
 }
 
+var async_queue = function(funcs, scope) {
+    (function next() {
+          if(funcs.length > 0) {
+              var f = funcs.shift();
+              f.apply(scope, [next].concat(Array.prototype.slice.call(arguments, 0)));
+          }
+    })();
+};
+
 function guid() {
   return randomStringOf4() + randomStringOf4() + '-' + randomStringOf4() + '-' + randomStringOf4() + '-' +
     randomStringOf4() + '-' + randomStringOf4() + randomStringOf4() + randomStringOf4();

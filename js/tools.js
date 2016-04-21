@@ -115,7 +115,7 @@ var Tools = React.createClass({
 				<button name="projectActions" onClick={this.openMenu}>More Actions<span className="caret"></span></button>
 				<div className="buttons">
 					<button name="hostInterfaces" onClick={this.openPopover}>Host Interfaces<span className="caret"></span></button>
-					<button className={deployButtonClass}>Deploy to IO Visor&hellip;</button>
+					<button className={deployButtonClass} onClick={this.props.deployToIOVisor}>Deploy to IO Visor&hellip;</button>
 				</div>
 			</div>
 		)

@@ -284,7 +284,7 @@ var Workspace = React.createClass({
 					this.setState({dragging: false}); //set here to reposition component on cancel
 					this.props.handleInstrumentUpdate(dragee, thisInstrument)
 				}
-				else { //component and host component
+				else { //component, bpf/forward and host component
 					this.setState({dragging: false}); //set here to reposition component on cancel	
 					this.props.handleObjectDrop(dragee, deltaX, deltaY);
 				}
