@@ -302,6 +302,22 @@ var IOVisorForm = React.createClass({
 	}
 });
 
+var loadingModal = React.createClass({
+	getInitialState: function() {
+   		return {
+		};
+	},
+
+	render: function() {
+		return (
+		<form id="IOVisorForm">
+			<div className="loadingModal">
+			</div>
+		</form>
+		)
+	}
+});
+
 var ModalDialogue = React.createClass({
 	cancel: function() {
 		this.props.cancelModal()
@@ -368,6 +384,15 @@ var ModalDialogue = React.createClass({
 	  						submit = {this.submit} 
 	  						projectID = {this.props.projectID} 
 	  						projectName = {this.props.selectedProject.name}/>
+	  				</div>
+	  			</div>	
+			)
+		}
+
+		if (this.props.modalName == "loadingModal"){
+			modal = (
+				<div className="modalBackground">
+	  				<div className="modalContainerLoading">
 	  				</div>
 	  			</div>	
 			)

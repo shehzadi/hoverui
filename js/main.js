@@ -1172,91 +1172,42 @@ var IOConsole = React.createClass({
         console.log("delete" + path);
         return $.ajax({
             type: "DELETE",
-            url: this.state.iovisorLoc + path
+            url: this.state.iovisorLoc + path,
+            timeout: 30000
         })
     },
 
     getIOVisor: function(path){
         return $.ajax({
-            url: this.state.iovisorLoc + path
+            url: this.state.iovisorLoc + path,
+            timeout: 30000
         })
     },
 
-    getIOVisorAsync: function(path){
-        var return_data = "";
-        $.ajax({
-            url: this.state.iovisorLoc + path
-        }).then(
-            function(data) {
-                return_data = data;
-            },
-            function() {
-                console.log("Could not get " + state_var + " from " + this.state.iovisorLoc + path);
-                return_data = "FAILED";
-            }.bind(this)
-        );
-        return return_data;
-    },
-
     deployToIOVisor: function(){
-        // Read modules and links
-        var deployedModules = "";
-        var deployedLinks = "";
-
+        // Read modules and delete all of types:
+        // -- bpf/forward
+        // -- bpf/policy
+        // Attached links are automatically deleted by the server to each module
+        // BRENDEN - Could there be any other links to external interfaces that we might want deleted?
+        this.openModal("loadingModal");
         this.getIOVisor("/modules/")
             .then(
                 function(input){
                     var promise_array = this.deleteDeployedModules(input);
-                    return ($.when.apply(this, promise_array))
-
+                    return ($.when.apply(this, promise_array));
                 }.bind(this))
             .then(function(){
                 return this.getIOVisor("/modules/")}.bind(this))
             .then(function(input){
                 console.log(input);
-            });
-/*
-        async_queue([
-            function(callback) {
-                $.ajax({
-                    url: this.state.iovisorLoc + "/modules/"
-                }).then(
-                    function(data) {
-                        var state_return = {};
-                        console.log("found modules" + data)
-                        state_return["deployedModules"] = data;
-                        this.setState(state_return);
-                        callback();
-                    }.bind(this),
-                    function() {
-                        console.log("Could not get deployedModules from " + this.state.iovisorLoc + "modules");
-                        var state_return = {};
-                        state_return["deployedModules"] = "FAILED";
-                        alert("Could not read modules from IO Visor");
-                        this.setState(state_return);
-                    }.bind(this)
-                );
-            },
-            function() {
-                $.ajax({
-                    url: this.state.iovisorLoc + "/links/"
-                }).then(
-                    function(data) {
-                        var state_return = {};
-                        console.log("found links" + data)
-                        state_return["deployedLinks"] = data;
-                        this.setState(state_return);
-                    }.bind(this),
-                    function() {
-                        console.log("Could not get deployedLinks from " + this.state.iovisorLoc + "links");
-                        var state_return = {};
-                        state_return["deployedLinks"] = "FAILED";
-                        alert("Could not read links from IO Visor");
-                        this.setState(state_return);
-                    }.bind(this)
-                );
-            }
-        ], this);*/
+                this.cancelModal("loadingModal");
+            }.bind(this))
+            .fail(function(){
+                this.cancelModal("loadingModal");
+                alert("Deploy was unsuccessful");
+            }.bind(this));
+
 /*
         deployedModules = this.getIOVisorAsync("/modules/");
         deployedLinks = this.getIOVisorAsync("/links/");

@@ -329,6 +329,13 @@ body::-webkit-scrollbar {
   font-size: 14px;
 }
 
+.modalContainerLoading {
+  background-color: transparent;
+  background-image: url("../img/loading.gif");
+  width: 150px;
+  height: 150px;
+}
+
 .modalContainer {
   background-color: #bfbfbf;
   border: 1px solid #333333;
