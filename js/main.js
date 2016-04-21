@@ -1161,10 +1161,35 @@ var IOConsole = React.createClass({
         var promise_array = [];
         for (var deployedModule in modules){
             if (modules[deployedModule]["module_type"] == "bpf/forward" || modules[deployedModule]["module_type"] == "bpf/policy"){
-                console.log("Deleting module" + modules[deployedModule]["id"]);
+                //console.log("Deleting module" + modules[deployedModule]["id"]);
                 promise_array.push(this.deleteIOVisor("/modules/" + modules[deployedModule]["id"]));
             }
         }
+        return promise_array;
+    },
+
+    deployVisibleModules: function(){
+        var promise_array = [];
+        var moduleObject = "";
+        var selectedProjectComponents = this.state.projectsObject[this.state.selectedProjectID].topology.components;
+        _.forEach(selectedProjectComponents, function(component) {
+            moduleObject = this.state.modulesObject[component.module];
+            console.log(component.module);
+            _.unset(moduleObject, 'topology');
+            _.unset(moduleObject, 'description');
+            _.unset(moduleObject, 'categories');
+            _.unset(moduleObject, 'version');
+
+            _.set(moduleObject, 'module_type', moduleObject.type);
+            _.unset(moduleObject, 'type');
+
+            _.set(moduleObject, 'display_name', moduleObject.name);
+            _.unset(moduleObject, 'name');
+
+            _.set(moduleObject, 'tags', []);
+            console.log(JSON.stringify(moduleObject));
+            promise_array.push(this.postIOVisor("/modules/", JSON.stringify(moduleObject)));
+        }.bind(this));
         return promise_array;
     },
 
@@ -1173,14 +1198,24 @@ var IOConsole = React.createClass({
         return $.ajax({
             type: "DELETE",
             url: this.state.iovisorLoc + path,
-            timeout: 30000
+            timeout: 10000
         })
     },
 
     getIOVisor: function(path){
         return $.ajax({
             url: this.state.iovisorLoc + path,
-            timeout: 30000
+            timeout: 10000
+        })
+    },
+
+    postIOVisor: function(path, data){
+        return $.ajax({
+            type: "POST",
+            url: this.state.iovisorLoc + path,
+            data: data,
+            dataType: "json",
+            timeout: 10000
         })
     },
 
@@ -1192,19 +1227,25 @@ var IOConsole = React.createClass({
         // BRENDEN - Could there be any other links to external interfaces that we might want deleted?
         this.openModal("loadingModal");
         this.getIOVisor("/modules/")
-            .then(
+            /*.then(
                 function(input){
                     var promise_array = this.deleteDeployedModules(input);
                     return ($.when.apply(this, promise_array));
-                }.bind(this))
+                }.bind(this))*/
+            .then(function(){
+                var promise_array = this.deployVisibleModules();
+                return ($.when.apply(this, promise_array));
+            }.bind(this))
             .then(function(){
                 return this.getIOVisor("/modules/")}.bind(this))
             .then(function(input){
                 console.log(input);
                 this.cancelModal("loadingModal");
             }.bind(this))
-            .fail(function(){
+            .fail(function(err){
                 this.cancelModal("loadingModal");
+                console.log("Deploy was unsuccessful");
+                console.log(err);
                 alert("Deploy was unsuccessful");
             }.bind(this));
 
